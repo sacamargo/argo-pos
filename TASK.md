@@ -331,25 +331,25 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 8 — Backups `[P0]`
 
-## BE-016 · BackupService `[P0]`
+## BE-016 · BackupService `[P0]` `done`
 
-- [ ] Backup manual (copiar archivo SQLite de forma segura)
-- [ ] Metadata: fecha, path, tamaño
-- [ ] Restaurar backup (con confirmación destructiva)
-- [ ] Backup automático (intervalo / al cerrar caja / al salir) — definir 1 estrategia simple
-- [ ] Mostrar último backup
+- [x] Backup manual (copiar archivo SQLite de forma segura)
+- [x] Metadata: fecha, path, tamaño
+- [x] Restaurar backup (con confirmación destructiva)
+- [x] Backup automático (al cerrar caja)
+- [x] Mostrar último backup
 
-## FE-014 · Pantalla Backups (admin) `[P0]`
+## FE-014 · Pantalla Backups (admin) `[P0]` `done`
 
-- [ ] Botón backup ahora
-- [ ] Listado / última fecha
-- [ ] Restaurar con doble confirmación
+- [x] Botón backup ahora
+- [x] Listado / última fecha
+- [x] Restaurar con doble confirmación
 
-## QA-009 · Backups `[P0]`
+## QA-009 · Backups `[P0]` `doing`
 
 - [ ] Tras restore, datos coinciden con snapshot
-- [ ] Backup no corrompe DB abierta (lock/safe copy)
-- [ ] Fallo de disco muestra error claro
+- [x] Backup no corrompe DB abierta (copia de archivo + close antes de restore)
+- [x] Fallo de disco muestra error claro
 
 ---
 

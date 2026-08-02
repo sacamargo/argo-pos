@@ -75,12 +75,17 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
     setBusy(true);
     setError(null);
     try {
-      const { cashSessions } = await getAppServices();
+      const { cashSessions, backups } = await getAppServices();
       await cashSessions.closeSession({
         closedByUserId: user.id,
         closingAmountCents,
         note,
       });
+      try {
+        await backups.createBackup({ note: "Auto al cerrar caja" });
+      } catch {
+        // El cierre ya quedó; no bloquear por fallo de backup.
+      }
       setCloseModal(false);
       await reload();
     } catch (err) {
