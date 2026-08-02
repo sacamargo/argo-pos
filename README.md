@@ -25,16 +25,22 @@ pnpm install
 pnpm tauri:dev
 ```
 
-Scripts útiles:
+La base SQLite (`argo-pos.db`) se crea sola en el directorio de datos de la app (AppConfig). Migraciones corren al iniciar.
+
+Seed inicial (solo primer arranque):
+
+- usuario `admin`
+- contraseña `admin123`
 
 | Script | Uso |
 |--------|-----|
-| `pnpm dev` | Solo frontend Vite (sin ventana nativa) |
+| `pnpm dev` | Solo frontend Vite (sin ventana nativa / sin SQLite) |
 | `pnpm tauri:dev` | App desktop en desarrollo |
 | `pnpm tauri:build` | Empaquetado nativo |
 | `pnpm typecheck` | TypeScript estricto |
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier |
+| `pnpm db:generate` | Generar migraciones Drizzle desde el schema |
 
 ## Estructura
 
