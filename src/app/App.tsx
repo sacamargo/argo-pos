@@ -6,6 +6,7 @@ import { AppShell } from "@/layouts/app-shell";
 import { LoginForm } from "@/modules/auth/components/login-form";
 import { CatalogScreen } from "@/modules/catalog/components/catalog-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
+import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useSessionStore } from "@/shared/hooks/use-session";
@@ -21,12 +22,7 @@ function SectionContent({ section }: { section: AppSection }) {
     case "catalog":
       return <CatalogScreen />;
     case "inventory":
-      return (
-        <PlaceholderScreen
-          title="Inventario"
-          description="Ingredientes y movimientos de stock."
-        />
-      );
+      return <InventoryScreen />;
     case "users":
       return (
         <PlaceholderScreen title="Usuarios" description="Cuentas admin y vendedor." />
