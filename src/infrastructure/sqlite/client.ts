@@ -55,6 +55,27 @@ export async function getDatabase(): Promise<AppDatabase> {
   return drizzleDb;
 }
 
+/** Runs work inside a SQLite transaction on the shared connection. */
+export async function withTransaction<T>(
+  work: (db: AppDatabase) => Promise<T>,
+): Promise<T> {
+  const sqlite = await getSqliteConnection();
+  const db = await getDatabase();
+  await sqlite.execute("BEGIN IMMEDIATE");
+  try {
+    const result = await work(db);
+    await sqlite.execute("COMMIT");
+    return result;
+  } catch (error) {
+    try {
+      await sqlite.execute("ROLLBACK");
+    } catch {
+      // ignore rollback failures after a failed begin/commit path
+    }
+    throw error;
+  }
+}
+
 export function isTauriRuntime(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }

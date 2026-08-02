@@ -55,6 +55,25 @@ export class DrizzleProductRepository implements ProductRepository {
     return rows.map(mapProduct);
   }
 
+  async listActive(): Promise<Product[]> {
+    const rows = await this.db
+      .select({
+        id: products.id,
+        categoryId: products.categoryId,
+        name: products.name,
+        imagePath: products.imagePath,
+        priceCents: products.priceCents,
+        active: products.active,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+      })
+      .from(products)
+      .where(eq(products.active, true))
+      .orderBy(asc(products.name));
+
+    return rows.map(mapProduct);
+  }
+
   async listRecipeByProductId(productId: string): Promise<ProductRecipeItem[]> {
     const rows = await this.db
       .select({

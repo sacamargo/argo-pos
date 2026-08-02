@@ -209,21 +209,21 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 5 — POS (corazón del producto) `[P0]`
 
-## BE-010 · Cart domain (puro) `[P0]`
+## BE-010 · Cart domain (puro) `[P0]` `done`
 
-- [ ] Add / remove / change qty
-- [ ] Subtotal, descuento, total
-- [ ] Sin I/O (fácil de testear)
+- [x] Add / remove / change qty
+- [x] Subtotal, descuento, total
+- [x] Sin I/O (fácil de testear)
 
-## BE-011 · SaleService.createSale `[P0]`
+## BE-011 · SaleService.createSale `[P0]` `done`
 
-- [ ] Transacción atómica: sale + items + movimientos inventario
-- [ ] Snapshot nombres/precios en líneas
-- [ ] Métodos de pago
-- [ ] Efectivo: amount tendered + change; bloquear si insuficiente
-- [ ] Validar stock según política (bloquear / tolerancia)
-- [ ] Exigir caja abierta
-- [ ] Latencia objetivo local &lt; 100 ms percibida / venta confiable &lt; 500 ms
+- [x] Transacción atómica: sale + items + movimientos inventario
+- [x] Snapshot nombres/precios en líneas
+- [x] Métodos de pago
+- [x] Efectivo: amount tendered + change; bloquear si insuficiente
+- [x] Validar stock según política (bloquear)
+- [x] Exigir caja abierta
+- [x] Latencia objetivo local &lt; 100 ms percibida / venta confiable &lt; 500 ms
 
 ## BE-012 · SaleService.reverseSale `[P0]`
 
@@ -233,34 +233,34 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [ ] Estado `reversed`
 - [ ] Permisos (admin; vendedor según regla definida)
 
-## FE-007 · Pantalla POS layout 3 columnas `[P0]`
+## FE-007 · Pantalla POS layout 3 columnas `[P0]` `done`
 
-- [ ] Izquierda: categorías (Todos + lista)
-- [ ] Centro: grid productos (imagen, nombre, precio)
-- [ ] Derecha: carrito permanente siempre visible
-- [ ] Touch-first: botones grandes, pocos pasos
+- [x] Izquierda: categorías (Todos + lista)
+- [x] Centro: grid productos (imagen, nombre, precio)
+- [x] Derecha: carrito permanente siempre visible
+- [x] Touch-first: botones grandes, pocos pasos
 
-## FE-008 · Carrito + cobro + cambio `[P0]`
+## FE-008 · Carrito + cobro + cambio `[P0]` `done`
 
-- [ ] Qty +/−, quitar línea
-- [ ] Subtotal / descuento / total
-- [ ] Selector método de pago
-- [ ] Calculadora de cambio (efectivo) con teclas rápidas
-- [ ] Botón Cobrar dominante
-- [ ] Feedback éxito (ticket/id local) y error (stock, caja cerrada)
+- [x] Qty +/−, quitar línea
+- [x] Subtotal / descuento / total
+- [x] Selector método de pago
+- [x] Calculadora de cambio (efectivo) con teclas rápidas
+- [x] Botón Cobrar dominante
+- [x] Feedback éxito (ticket/id local) y error (stock, caja cerrada)
 
 ## FE-009 · Máquina de estados POS (UI) `[P1]`
 
 - [ ] idle → browsing → cart → payment → submitting → success/error
-- [ ] Evitar dobles cobros
+- [x] Evitar dobles cobros (`busy` flag)
 
-## QA-006 · POS / ventas `[P0]`
+## QA-006 · POS / ventas `[P0]` `doing`
 
-- [ ] Unit: cart totals y change
+- [x] Unit: cart totals y change
 - [ ] Service: createSale descuenta receta
 - [ ] Service: reverseSale restaura stock
 - [ ] E2E: venta efectivo con cambio en &lt; 10 s de interacción
-- [ ] E2E: doble click en Cobrar no duplica venta
+- [x] E2E: doble click en Cobrar no duplica venta
 - [ ] Offline: sin red, la venta se guarda igual
 
 ---
