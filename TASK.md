@@ -122,15 +122,15 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 2 — Catálogo (productos + categorías)
 
-## BE-006 · CategoryService CRUD `[P0]`
+## BE-006 · CategoryService CRUD `[P0]` `done`
 
-- [ ] Crear / listar / editar / activar-desactivar
-- [ ] Un solo nivel (sin árbol)
+- [x] Crear / listar / editar / activar-desactivar
+- [x] Un solo nivel (sin árbol)
 
-## FE-002 · Pantalla Categorías (admin) `[P0]`
+## FE-002 · Pantalla Categorías (admin) `[P0]` `done`
 
-- [ ] Lista + alta rápida
-- [ ] Soft deactivate
+- [x] Lista + alta rápida
+- [x] Soft deactivate
 
 ## BE-007 · ProductService CRUD + receta `[P0]`
 
