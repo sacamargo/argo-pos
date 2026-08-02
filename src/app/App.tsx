@@ -4,6 +4,7 @@ import { Badge } from "@/components";
 import { canAccessSection } from "@/domain/services/permissions";
 import { AppShell } from "@/layouts/app-shell";
 import { LoginForm } from "@/modules/auth/components/login-form";
+import { BackupsScreen } from "@/modules/backup/components/backups-screen";
 import { CatalogScreen } from "@/modules/catalog/components/catalog-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
@@ -33,9 +34,7 @@ function SectionContent({ section }: { section: AppSection }) {
         <PlaceholderScreen title="Ajustes" description="Preferencias del negocio." />
       );
     case "backup":
-      return (
-        <PlaceholderScreen title="Backup" description="Respaldo y restauración local." />
-      );
+      return <BackupsScreen />;
   }
 }
 

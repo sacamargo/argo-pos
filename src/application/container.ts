@@ -1,4 +1,5 @@
 import { AuthService } from "@/application/services/auth-service";
+import { BackupService } from "@/application/services/backup-service";
 import { CashSessionService } from "@/application/services/cash-session-service";
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
@@ -7,6 +8,8 @@ import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
 import { UserService } from "@/application/services/user-service";
+import { TauriBackupFileStore } from "@/infrastructure/backup/tauri-backup-file-store";
+import { DrizzleBackupRepository } from "@/infrastructure/repositories/drizzle-backup-repository";
 import { DrizzleCashSessionRepository } from "@/infrastructure/repositories/drizzle-cash-session-repository";
 import { DrizzleCategoryRepository } from "@/infrastructure/repositories/drizzle-category-repository";
 import { DrizzleIngredientRepository } from "@/infrastructure/repositories/drizzle-ingredient-repository";
@@ -27,6 +30,7 @@ export type AppServices = {
   saleQueries: SaleQueryService;
   dashboard: DashboardService;
   users: UserService;
+  backups: BackupService;
 };
 
 let services: AppServices | null = null;
@@ -45,6 +49,7 @@ export async function getAppServices(): Promise<AppServices> {
   const cashSessions = new DrizzleCashSessionRepository(db);
   const paymentMethods = new DrizzlePaymentMethodRepository(db);
   const sales = new DrizzleSaleRepository(db);
+  const backups = new DrizzleBackupRepository(db);
   const runInTransaction = async <T>(work: () => Promise<T>) =>
     withTransaction(async () => work());
 
@@ -66,7 +71,12 @@ export async function getAppServices(): Promise<AppServices> {
     saleQueries: new SaleQueryService(sales, paymentMethods),
     dashboard: new DashboardService(sales, cashSessions, ingredients),
     users: new UserService(users),
+    backups: new BackupService(backups, new TauriBackupFileStore()),
   };
 
   return services;
+}
+
+export function resetAppServices(): void {
+  services = null;
 }

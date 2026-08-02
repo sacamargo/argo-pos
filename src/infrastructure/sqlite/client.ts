@@ -55,6 +55,15 @@ export async function getDatabase(): Promise<AppDatabase> {
   return drizzleDb;
 }
 
+/** Closes the SQLite pool so the DB file can be replaced (restore). */
+export async function closeDatabase(): Promise<void> {
+  if (sqliteConnection) {
+    await sqliteConnection.close();
+  }
+  sqliteConnection = null;
+  drizzleDb = null;
+}
+
 /** Runs work inside a SQLite transaction on the shared connection. */
 export async function withTransaction<T>(
   work: (db: AppDatabase) => Promise<T>,
