@@ -9,6 +9,7 @@ import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
 import { PosScreen } from "@/modules/pos/components/pos-screen";
 import { SalesHistoryScreen } from "@/modules/sales/components/sales-history-screen";
+import { UsersScreen } from "@/modules/users/components/users-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useSessionStore } from "@/shared/hooks/use-session";
@@ -26,9 +27,7 @@ function SectionContent({ section }: { section: AppSection }) {
     case "inventory":
       return <InventoryScreen />;
     case "users":
-      return (
-        <PlaceholderScreen title="Usuarios" description="Cuentas admin y vendedor." />
-      );
+      return <UsersScreen />;
     case "settings":
       return (
         <PlaceholderScreen title="Ajustes" description="Preferencias del negocio." />
