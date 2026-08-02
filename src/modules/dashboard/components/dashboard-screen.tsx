@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components";
+import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
 
 export function DashboardScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -55,14 +56,16 @@ export function DashboardScreen() {
           <Badge variant="secondary">Capas activas</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          Datos reales vía Application → Domain → Infrastructure → SQLite.
+          Resumen del turno y catálogo activo.
         </p>
       </div>
+
+      <CashSessionControls />
 
       <Card>
         <CardHeader>
           <CardTitle>Categorías activas</CardTitle>
-          <CardDescription>Listado desde CategoryService (BE-003).</CardDescription>
+          <CardDescription>Listado desde CategoryService.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
