@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/button";
 import type { PublicUser } from "@/domain/entities/user";
 import { canAccessSection } from "@/domain/services/permissions";
+import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useThemeStore } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/lib/cn";
@@ -61,6 +62,7 @@ export function AppShell({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <CashSessionControls compact />
           <Button
             variant="outline"
             size="icon"

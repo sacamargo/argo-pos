@@ -186,24 +186,24 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 4 — Caja (apertura / cierre)
 
-## BE-009 · CashSessionService `[P0]`
+## BE-009 · CashSessionService `[P0]` `done`
 
-- [ ] Abrir caja (monto inicial, usuario, timestamp)
-- [ ] Cerrar caja (monto contado, diferencia, notas)
-- [ ] Una sesión abierta a la vez
-- [ ] Bloquear cobro si no hay caja abierta (regla de negocio MVP)
+- [x] Abrir caja (monto inicial, usuario, timestamp)
+- [x] Cerrar caja (monto contado, diferencia, notas)
+- [x] Una sesión abierta a la vez
+- [x] Bloquear cobro si no hay caja abierta (regla de negocio MVP)
 
-## FE-006 · UI apertura / cierre de caja `[P0]`
+## FE-006 · UI apertura / cierre de caja `[P0]` `done`
 
-- [ ] Modal/pantalla abrir
-- [ ] Modal cerrar con resumen del turno
-- [ ] Indicador “Caja abierta” en header/dashboard
+- [x] Modal/pantalla abrir
+- [x] Modal cerrar con resumen del turno
+- [x] Indicador “Caja abierta” en header/dashboard
 
-## QA-005 · Caja `[P0]`
+## QA-005 · Caja `[P0]` `doing`
 
-- [ ] No vender sin sesión abierta
-- [ ] Cierre registra totales del período
-- [ ] Reapertura solo tras cierre
+- [x] No vender sin sesión abierta (`requireOpenSession`)
+- [x] Cierre registra totales del período
+- [x] Reapertura solo tras cierre
 
 ---
 
