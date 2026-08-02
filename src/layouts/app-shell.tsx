@@ -4,6 +4,7 @@ import {
   LogOut,
   Moon,
   Package,
+  Receipt,
   Settings,
   ShoppingCart,
   Sun,
@@ -22,6 +23,7 @@ import { cn } from "@/shared/lib/cn";
 const ICONS = {
   dashboard: LayoutDashboard,
   pos: ShoppingCart,
+  sales: Receipt,
   catalog: Package,
   inventory: Warehouse,
   users: Users,

@@ -1,4 +1,11 @@
-import type { Sale, SaleItem, SaleWithItems } from "@/domain/entities/sale";
+import type {
+  Sale,
+  SaleDetail,
+  SaleListItem,
+  SaleItem,
+  SaleReversal,
+  SaleWithItems,
+} from "@/domain/entities/sale";
 
 export type CreateSaleItemInput = {
   id: string;
@@ -22,8 +29,28 @@ export type CreateSaleRecordInput = {
   items: CreateSaleItemInput[];
 };
 
+export type CreateSaleReversalInput = {
+  id: string;
+  saleId: string;
+  reason: string;
+  userId: string;
+  createdAt: string;
+};
+
+export type ListSalesFilter = {
+  fromIso: string;
+  toIso: string;
+  paymentMethodId?: string | null;
+  status?: "completed" | "reversed" | "all";
+};
+
 export interface SaleRepository {
   create(input: CreateSaleRecordInput): Promise<Sale>;
   findByIdWithItems(id: string): Promise<SaleWithItems | null>;
+  findDetailById(id: string): Promise<SaleDetail | null>;
   listItems(saleId: string): Promise<SaleItem[]>;
+  list(filter: ListSalesFilter): Promise<SaleListItem[]>;
+  markReversed(saleId: string): Promise<Sale>;
+  createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
+  findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;
 }

@@ -7,11 +7,12 @@ describe("role permissions", () => {
     expect(canAccessSection("vendedor", "dashboard")).toBe(true);
     expect(canAccessSection("vendedor", "catalog")).toBe(false);
     expect(canAccessSection("vendedor", "users")).toBe(false);
-    expect(sectionsForRole("vendedor")).toEqual(["dashboard", "pos"]);
+    expect(sectionsForRole("vendedor")).toEqual(["dashboard", "pos", "sales"]);
   });
 
   it("allows admin full access", () => {
     expect(canAccessSection("admin", "backup")).toBe(true);
+    expect(canAccessSection("admin", "sales")).toBe(true);
     expect(sectionsForRole("admin")).toContain("inventory");
   });
 });

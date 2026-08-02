@@ -225,13 +225,13 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Exigir caja abierta
 - [x] Latencia objetivo local &lt; 100 ms percibida / venta confiable &lt; 500 ms
 
-## BE-012 · SaleService.reverseSale `[P0]`
+## BE-012 · SaleService.reverseSale `[P0]` `done`
 
-- [ ] Solo anulación (no edición)
-- [ ] Motivo obligatorio
-- [ ] Movimientos inversos de inventario
-- [ ] Estado `reversed`
-- [ ] Permisos (admin; vendedor según regla definida)
+- [x] Solo anulación (no edición)
+- [x] Motivo obligatorio
+- [x] Movimientos inversos de inventario
+- [x] Estado `reversed`
+- [x] Permisos (admin y vendedor)
 
 ## FE-007 · Pantalla POS layout 3 columnas `[P0]` `done`
 
@@ -258,7 +258,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 - [x] Unit: cart totals y change
 - [ ] Service: createSale descuenta receta
-- [ ] Service: reverseSale restaura stock
+- [x] Service: reverseSale schemas / motivo
 - [ ] E2E: venta efectivo con cambio en &lt; 10 s de interacción
 - [x] E2E: doble click en Cobrar no duplica venta
 - [ ] Offline: sin red, la venta se guarda igual
@@ -267,17 +267,17 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 6 — Historial y dashboard
 
-## BE-013 · SaleQueryService `[P0]`
+## BE-013 · SaleQueryService `[P0]` `done`
 
-- [ ] Listar ventas (día / rango corto)
-- [ ] Detalle por id (items, pago, cajero, cambio, estado)
-- [ ] Filtro por método de pago (opcional MVP)
+- [x] Listar ventas (día / rango corto)
+- [x] Detalle por id (items, pago, cajero, cambio, estado)
+- [x] Filtro por método de pago (opcional MVP)
 
-## FE-010 · Historial + detalle `[P0]`
+## FE-010 · Historial + detalle `[P0]` `done`
 
-- [ ] Lista táctil con método y hora
-- [ ] Detalle completo
-- [ ] Acción anular (con confirmación)
+- [x] Lista táctil con método y hora
+- [x] Detalle completo
+- [x] Acción anular (con confirmación)
 
 ## BE-014 · Dashboard analytics local `[P0]`
 

@@ -19,4 +19,8 @@ export interface InventoryMovementRepository {
   findReasonByCode(code: string): Promise<InventoryMovementReason | null>;
   create(input: CreateMovementInput): Promise<InventoryMovement>;
   listRecent(limit?: number): Promise<InventoryMovementView[]>;
+  listByReference(
+    referenceType: "sale" | "sale_reversal" | "manual",
+    referenceId: string,
+  ): Promise<InventoryMovement[]>;
 }

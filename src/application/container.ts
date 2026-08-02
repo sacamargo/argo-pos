@@ -3,6 +3,7 @@ import { CashSessionService } from "@/application/services/cash-session-service"
 import { CategoryService } from "@/application/services/category-service";
 import { InventoryService } from "@/application/services/inventory-service";
 import { ProductService } from "@/application/services/product-service";
+import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
 import { DrizzleCashSessionRepository } from "@/infrastructure/repositories/drizzle-cash-session-repository";
 import { DrizzleCategoryRepository } from "@/infrastructure/repositories/drizzle-category-repository";
@@ -21,6 +22,7 @@ export type AppServices = {
   inventory: InventoryService;
   cashSessions: CashSessionService;
   sales: SaleService;
+  saleQueries: SaleQueryService;
 };
 
 let services: AppServices | null = null;
@@ -39,6 +41,8 @@ export async function getAppServices(): Promise<AppServices> {
   const cashSessions = new DrizzleCashSessionRepository(db);
   const paymentMethods = new DrizzlePaymentMethodRepository(db);
   const sales = new DrizzleSaleRepository(db);
+  const runInTransaction = async <T>(work: () => Promise<T>) =>
+    withTransaction(async () => work());
 
   services = {
     auth: new AuthService(users),
@@ -53,8 +57,9 @@ export async function getAppServices(): Promise<AppServices> {
       movements,
       paymentMethods,
       cashSessions,
-      async (work) => withTransaction(async () => work()),
+      runInTransaction,
     ),
+    saleQueries: new SaleQueryService(sales, paymentMethods),
   };
 
   return services;

@@ -11,10 +11,16 @@ export function canAccessSection(role: UserRole, section: AppSection): boolean {
   return !ADMIN_ONLY.includes(section);
 }
 
+/** Admin y vendedor pueden anular ventas (motivo obligatorio). */
+export function canReverseSale(role: UserRole): boolean {
+  return role === "admin" || role === "vendedor";
+}
+
 export function sectionsForRole(role: UserRole): AppSection[] {
   const all: AppSection[] = [
     "dashboard",
     "pos",
+    "sales",
     "catalog",
     "inventory",
     "users",
