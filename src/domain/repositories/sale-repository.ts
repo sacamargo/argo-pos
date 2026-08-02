@@ -44,12 +44,25 @@ export type ListSalesFilter = {
   status?: "completed" | "reversed" | "all";
 };
 
+export type DaySalesSummary = {
+  salesCount: number;
+  revenueCents: number;
+  unitsSold: number;
+  topProducts: Array<{
+    productName: string;
+    quantity: number;
+    revenueCents: number;
+  }>;
+  lastSale: SaleListItem | null;
+};
+
 export interface SaleRepository {
   create(input: CreateSaleRecordInput): Promise<Sale>;
   findByIdWithItems(id: string): Promise<SaleWithItems | null>;
   findDetailById(id: string): Promise<SaleDetail | null>;
   listItems(saleId: string): Promise<SaleItem[]>;
   list(filter: ListSalesFilter): Promise<SaleListItem[]>;
+  summarizeCompletedDay(fromIso: string, toIso: string): Promise<DaySalesSummary>;
   markReversed(saleId: string): Promise<Sale>;
   createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;

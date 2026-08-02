@@ -279,24 +279,24 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Detalle completo
 - [x] Acción anular (con confirmación)
 
-## BE-014 · Dashboard analytics local `[P0]`
+## BE-014 · Dashboard analytics local `[P0]` `done`
 
-- [ ] Ventas del día / ingresos
-- [ ] Productos vendidos (top o conteo)
-- [ ] Última venta
-- [ ] Estado caja abierta/cerrada
-- [ ] Stock crítico (admin)
+- [x] Ventas del día / ingresos
+- [x] Productos vendidos (top o conteo)
+- [x] Última venta
+- [x] Estado caja abierta/cerrada
+- [x] Stock crítico (admin)
 
-## FE-011 · Dashboard `[P0]`
+## FE-011 · Dashboard `[P0]` `done`
 
-- [ ] Cards mínimas
-- [ ] Sin gráficas decorativas
-- [ ] Vendedor: versión reducida (sin inventario crítico / admin)
+- [x] Cards mínimas
+- [x] Sin gráficas decorativas
+- [x] Vendedor: versión reducida (sin inventario crítico / admin)
 
-## QA-007 · Historial / dashboard `[P1]`
+## QA-007 · Historial / dashboard `[P1]` `doing`
 
-- [ ] Totales del día coinciden con sales completed
-- [ ] Anuladas no suman a ingresos
+- [x] Totales del día coinciden con sales completed (anuladas excluidas en summary)
+- [x] Anuladas no suman a ingresos
 - [ ] Detalle muestra snapshots correctos
 
 ---

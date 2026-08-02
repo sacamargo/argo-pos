@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { paymentMethods, saleItems, saleReversals, sales } from "@/database/schema";
 import { users } from "@/database/schema/users";
 import type {
@@ -12,6 +12,7 @@ import type {
 import type {
   CreateSaleRecordInput,
   CreateSaleReversalInput,
+  DaySalesSummary,
   ListSalesFilter,
   SaleRepository,
 } from "@/domain/repositories/sale-repository";
@@ -186,6 +187,63 @@ export class DrizzleSaleRepository implements SaleRepository {
       paymentMethodName: row.paymentMethodName,
       cashierUsername: row.cashierUsername,
     }));
+  }
+
+  async summarizeCompletedDay(fromIso: string, toIso: string): Promise<DaySalesSummary> {
+    const dayFilter = and(
+      gte(sales.createdAt, fromIso),
+      lte(sales.createdAt, toIso),
+      eq(sales.status, "completed"),
+    );
+
+    const [totals] = await this.db
+      .select({
+        salesCount: sql<number>`count(*)`.mapWith(Number),
+        revenueCents: sql<number>`coalesce(sum(${sales.totalCents}), 0)`.mapWith(Number),
+      })
+      .from(sales)
+      .where(dayFilter);
+
+    const [units] = await this.db
+      .select({
+        unitsSold: sql<number>`coalesce(sum(${saleItems.quantity}), 0)`.mapWith(Number),
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(dayFilter);
+
+    const productRows = await this.db
+      .select({
+        productName: saleItems.productNameSnapshot,
+        quantity: sql<number>`coalesce(sum(${saleItems.quantity}), 0)`.mapWith(Number),
+        revenueCents: sql<number>`coalesce(sum(${saleItems.lineTotalCents}), 0)`.mapWith(
+          Number,
+        ),
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(dayFilter)
+      .groupBy(saleItems.productNameSnapshot)
+      .orderBy(desc(sql`sum(${saleItems.quantity})`))
+      .limit(5);
+
+    const completed = await this.list({
+      fromIso,
+      toIso,
+      status: "completed",
+    });
+
+    return {
+      salesCount: totals?.salesCount ?? 0,
+      revenueCents: totals?.revenueCents ?? 0,
+      unitsSold: units?.unitsSold ?? 0,
+      topProducts: productRows.map((row) => ({
+        productName: row.productName,
+        quantity: row.quantity,
+        revenueCents: row.revenueCents,
+      })),
+      lastSale: completed[0] ?? null,
+    };
   }
 
   async markReversed(saleId: string): Promise<Sale> {
