@@ -38,6 +38,10 @@ export class ProductService {
     return this.products.listAll();
   }
 
+  async listActive(): Promise<Product[]> {
+    return this.products.listActive();
+  }
+
   async getById(id: string): Promise<ProductWithRecipe | null> {
     return this.products.findByIdWithRecipe(id);
   }

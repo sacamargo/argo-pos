@@ -7,6 +7,7 @@ import { LoginForm } from "@/modules/auth/components/login-form";
 import { CatalogScreen } from "@/modules/catalog/components/catalog-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
+import { PosScreen } from "@/modules/pos/components/pos-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useSessionStore } from "@/shared/hooks/use-session";
@@ -16,9 +17,7 @@ function SectionContent({ section }: { section: AppSection }) {
     case "dashboard":
       return <DashboardScreen />;
     case "pos":
-      return (
-        <PlaceholderScreen title="POS" description="Venta rápida con carrito y cobro." />
-      );
+      return <PosScreen />;
     case "catalog":
       return <CatalogScreen />;
     case "inventory":
