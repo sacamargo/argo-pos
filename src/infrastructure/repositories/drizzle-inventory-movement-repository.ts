@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type {
   InventoryMovement,
   InventoryMovementReason,
@@ -113,6 +113,33 @@ export class DrizzleInventoryMovementRepository implements InventoryMovementRepo
       ingredientName: row.ingredientName,
       reasonName: row.reasonName,
       reasonCode: row.reasonCode,
+    }));
+  }
+
+  async listByReference(
+    referenceType: "sale" | "sale_reversal" | "manual",
+    referenceId: string,
+  ): Promise<InventoryMovement[]> {
+    const rows = await this.db
+      .select()
+      .from(inventoryMovements)
+      .where(
+        and(
+          eq(inventoryMovements.referenceType, referenceType),
+          eq(inventoryMovements.referenceId, referenceId),
+        ),
+      );
+
+    return rows.map((row) => ({
+      id: row.id,
+      ingredientId: row.ingredientId,
+      reasonId: row.reasonId,
+      quantity: row.quantity,
+      note: row.note,
+      referenceType: row.referenceType,
+      referenceId: row.referenceId,
+      userId: row.userId,
+      createdAt: row.createdAt,
     }));
   }
 }

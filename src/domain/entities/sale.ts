@@ -36,3 +36,22 @@ export type SaleWithItems = Sale & {
   paymentMethodCode: string;
   paymentMethodName: string;
 };
+
+export type SaleListItem = Sale & {
+  paymentMethodCode: string;
+  paymentMethodName: string;
+  cashierUsername: string;
+};
+
+export type SaleReversal = {
+  id: string;
+  saleId: string;
+  reason: string;
+  userId: string;
+  createdAt: string;
+};
+
+export type SaleDetail = SaleWithItems & {
+  cashierUsername: string;
+  reversal: SaleReversal | null;
+};

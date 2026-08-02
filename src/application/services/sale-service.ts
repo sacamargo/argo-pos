@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { PaymentMethod, SaleWithItems } from "@/domain/entities/sale";
+import type { PaymentMethod, SaleDetail, SaleWithItems } from "@/domain/entities/sale";
+import type { UserRole } from "@/domain/entities/user";
 import type { CashSessionRepository } from "@/domain/repositories/cash-session-repository";
 import type { IngredientRepository } from "@/domain/repositories/ingredient-repository";
 import type { InventoryMovementRepository } from "@/domain/repositories/inventory-movement-repository";
@@ -14,6 +15,7 @@ import {
   lineTotalCents,
   type Cart,
 } from "@/domain/services/cart";
+import { canReverseSale } from "@/domain/services/permissions";
 
 const cartLineSchema = z.object({
   productId: z.string().min(1),
@@ -30,6 +32,13 @@ export const createSaleSchema = z.object({
     discountCents: z.number().int().min(0),
   }),
   amountTenderedCents: z.number().int().min(0).nullable().optional(),
+});
+
+export const reverseSaleSchema = z.object({
+  saleId: z.string().min(1),
+  userId: z.string().min(1),
+  role: z.enum(["admin", "vendedor"]),
+  reason: z.string().trim().min(3, "Indica un motivo (mín. 3 caracteres)").max(200),
 });
 
 export class SaleService {
@@ -179,5 +188,63 @@ export class SaleService {
       throw new Error("La venta se creó pero no se pudo leer");
     }
     return created;
+  }
+
+  async reverseSale(raw: unknown): Promise<SaleDetail> {
+    const input = reverseSaleSchema.parse(raw);
+    if (!canReverseSale(input.role as UserRole)) {
+      throw new Error("No tienes permiso para anular ventas");
+    }
+
+    const sale = await this.sales.findByIdWithItems(input.saleId);
+    if (!sale) {
+      throw new Error("Venta no encontrada");
+    }
+    if (sale.status !== "completed") {
+      throw new Error("La venta ya está anulada");
+    }
+
+    const existingReversal = await this.sales.findReversalBySaleId(sale.id);
+    if (existingReversal) {
+      throw new Error("La venta ya tiene una anulación registrada");
+    }
+
+    const reversalReason = await this.movements.findReasonByCode("reversal_in");
+    if (!reversalReason) {
+      throw new Error("Motivo de anulación no configurado");
+    }
+
+    const originalMovements = await this.movements.listByReference("sale", sale.id);
+
+    await this.runInTransaction(async () => {
+      await this.sales.markReversed(sale.id);
+      await this.sales.createReversal({
+        id: crypto.randomUUID(),
+        saleId: sale.id,
+        reason: input.reason,
+        userId: input.userId,
+        createdAt: new Date().toISOString(),
+      });
+
+      for (const movement of originalMovements) {
+        const restoreQty = -movement.quantity;
+        await this.movements.create({
+          ingredientId: movement.ingredientId,
+          reasonId: reversalReason.id,
+          quantity: restoreQty,
+          note: `Anulación ${sale.id.slice(0, 8)}: ${input.reason}`,
+          userId: input.userId,
+          referenceType: "sale_reversal",
+          referenceId: sale.id,
+        });
+        await this.ingredients.applyStockDelta(movement.ingredientId, restoreQty);
+      }
+    });
+
+    const detail = await this.sales.findDetailById(sale.id);
+    if (!detail) {
+      throw new Error("La anulación se registró pero no se pudo leer");
+    }
+    return detail;
   }
 }

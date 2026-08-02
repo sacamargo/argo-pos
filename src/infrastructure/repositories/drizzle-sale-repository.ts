@@ -1,8 +1,18 @@
-import { eq } from "drizzle-orm";
-import { paymentMethods, saleItems, sales } from "@/database/schema";
-import type { Sale, SaleItem, SaleWithItems } from "@/domain/entities/sale";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { paymentMethods, saleItems, saleReversals, sales } from "@/database/schema";
+import { users } from "@/database/schema/users";
+import type {
+  Sale,
+  SaleDetail,
+  SaleItem,
+  SaleListItem,
+  SaleReversal,
+  SaleWithItems,
+} from "@/domain/entities/sale";
 import type {
   CreateSaleRecordInput,
+  CreateSaleReversalInput,
+  ListSalesFilter,
   SaleRepository,
 } from "@/domain/repositories/sale-repository";
 import type { AppDatabase } from "@/infrastructure/sqlite/client";
@@ -18,6 +28,16 @@ function mapSale(row: typeof sales.$inferSelect): Sale {
     totalCents: row.totalCents,
     amountTenderedCents: row.amountTenderedCents,
     changeCents: row.changeCents,
+    createdAt: row.createdAt,
+  };
+}
+
+function mapReversal(row: typeof saleReversals.$inferSelect): SaleReversal {
+  return {
+    id: row.id,
+    saleId: row.saleId,
+    reason: row.reason,
+    userId: row.userId,
     createdAt: row.createdAt,
   };
 }
@@ -100,6 +120,111 @@ export class DrizzleSaleRepository implements SaleRepository {
       paymentMethodCode: row.paymentMethodCode,
       paymentMethodName: row.paymentMethodName,
     };
+  }
+
+  async findDetailById(id: string): Promise<SaleDetail | null> {
+    const [row] = await this.db
+      .select({
+        sale: sales,
+        paymentMethodCode: paymentMethods.code,
+        paymentMethodName: paymentMethods.name,
+        cashierUsername: users.username,
+      })
+      .from(sales)
+      .innerJoin(paymentMethods, eq(sales.paymentMethodId, paymentMethods.id))
+      .innerJoin(users, eq(sales.userId, users.id))
+      .where(eq(sales.id, id))
+      .limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    const items = await this.listItems(id);
+    const reversal = await this.findReversalBySaleId(id);
+
+    return {
+      ...mapSale(row.sale),
+      items,
+      paymentMethodCode: row.paymentMethodCode,
+      paymentMethodName: row.paymentMethodName,
+      cashierUsername: row.cashierUsername,
+      reversal,
+    };
+  }
+
+  async list(filter: ListSalesFilter): Promise<SaleListItem[]> {
+    const conditions = [
+      gte(sales.createdAt, filter.fromIso),
+      lte(sales.createdAt, filter.toIso),
+    ];
+
+    if (filter.paymentMethodId) {
+      conditions.push(eq(sales.paymentMethodId, filter.paymentMethodId));
+    }
+
+    if (filter.status === "completed" || filter.status === "reversed") {
+      conditions.push(eq(sales.status, filter.status));
+    }
+
+    const rows = await this.db
+      .select({
+        sale: sales,
+        paymentMethodCode: paymentMethods.code,
+        paymentMethodName: paymentMethods.name,
+        cashierUsername: users.username,
+      })
+      .from(sales)
+      .innerJoin(paymentMethods, eq(sales.paymentMethodId, paymentMethods.id))
+      .innerJoin(users, eq(sales.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(sales.createdAt));
+
+    return rows.map((row) => ({
+      ...mapSale(row.sale),
+      paymentMethodCode: row.paymentMethodCode,
+      paymentMethodName: row.paymentMethodName,
+      cashierUsername: row.cashierUsername,
+    }));
+  }
+
+  async markReversed(saleId: string): Promise<Sale> {
+    await this.db
+      .update(sales)
+      .set({ status: "reversed" })
+      .where(eq(sales.id, saleId));
+
+    const updated = await this.findSale(saleId);
+    if (!updated) {
+      throw new Error("Venta no encontrada tras anular");
+    }
+    return updated;
+  }
+
+  async createReversal(input: CreateSaleReversalInput): Promise<SaleReversal> {
+    await this.db.insert(saleReversals).values({
+      id: input.id,
+      saleId: input.saleId,
+      reason: input.reason,
+      userId: input.userId,
+      createdAt: input.createdAt,
+    });
+
+    const created = await this.findReversalBySaleId(input.saleId);
+    if (!created) {
+      throw new Error("No se pudo registrar la anulación");
+    }
+    return created;
+  }
+
+  async findReversalBySaleId(saleId: string): Promise<SaleReversal | null> {
+    const [row] = await this.db
+      .select()
+      .from(saleReversals)
+      .where(eq(saleReversals.saleId, saleId))
+      .limit(1);
+
+    return row ? mapReversal(row) : null;
   }
 
   private async findSale(id: string): Promise<Sale | null> {
