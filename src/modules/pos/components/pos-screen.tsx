@@ -17,6 +17,7 @@ import { PosCart } from "@/modules/pos/components/pos-cart";
 import { PosCategories } from "@/modules/pos/components/pos-categories";
 import { PosProductGrid } from "@/modules/pos/components/pos-product-grid";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import { getErrorMessage } from "@/shared/utils/error-message";
 
 export function PosScreen() {
   const user = useSessionStore((state) => state.user);
@@ -100,7 +101,7 @@ export function PosScreen() {
       setPayOpen(false);
       setSuccess(sale);
     } catch (err) {
-      setPayError(err instanceof Error ? err.message : "No se pudo cobrar");
+      setPayError(getErrorMessage(err, "No se pudo cobrar"));
     } finally {
       setBusy(false);
     }

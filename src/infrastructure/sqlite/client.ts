@@ -59,21 +59,18 @@ export async function getDatabase(): Promise<AppDatabase> {
 export async function withTransaction<T>(
   work: (db: AppDatabase) => Promise<T>,
 ): Promise<T> {
-  const sqlite = await getSqliteConnection();
+  /**
+   * IMPORTANT: `@tauri-apps/plugin-sql` uses a sqlx connection pool.
+   * Separate `execute("BEGIN")` / `COMMIT` / `ROLLBACK` calls land on
+   * *different* pooled connections, so they do not form a real transaction
+   * and can leave a write lock open (SQLITE_BUSY / "database is locked").
+   * See tauri-apps/plugins-workspace#886.
+   *
+   * Until the plugin exposes real transactions (or SQLite max_connections=1),
+   * run statements sequentially without BEGIN/COMMIT wrappers.
+   */
   const db = await getDatabase();
-  await sqlite.execute("BEGIN IMMEDIATE");
-  try {
-    const result = await work(db);
-    await sqlite.execute("COMMIT");
-    return result;
-  } catch (error) {
-    try {
-      await sqlite.execute("ROLLBACK");
-    } catch {
-      // ignore rollback failures after a failed begin/commit path
-    }
-    throw error;
-  }
+  return work(db);
 }
 
 export function isTauriRuntime(): boolean {
