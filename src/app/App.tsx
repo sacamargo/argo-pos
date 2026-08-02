@@ -92,6 +92,14 @@ export function App() {
                         <TableCell>Categorías demo</TableCell>
                         <TableCell>{dbStatus.categoryCount}</TableCell>
                       </TableRow>
+                      <TableRow>
+                        <TableCell>Productos demo</TableCell>
+                        <TableCell>{dbStatus.productCount}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Ingredientes demo</TableCell>
+                        <TableCell>{dbStatus.ingredientCount}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 ) : null}

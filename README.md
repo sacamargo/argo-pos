@@ -27,11 +27,13 @@ pnpm tauri:dev
 
 La base SQLite (`argo-pos.db`) se crea sola en el directorio de datos de la app (AppConfig). Migraciones corren al iniciar.
 
-Seed inicial (solo primer arranque):
+Precios se guardan en **centavos enteros** (`price_cents`) para evitar errores de redondeo.
 
-- usuario `admin`
-- contraseña `admin123`
+Seed inicial (solo primer arranque / seed core):
 
+- usuario `admin` / `admin123`
+- métodos de pago, categorías, motivos de inventario
+- producto demo `Granizado limón` + ingrediente `Base limón`
 | Script | Uso |
 |--------|-----|
 | `pnpm dev` | Solo frontend Vite (sin ventana nativa / sin SQLite) |

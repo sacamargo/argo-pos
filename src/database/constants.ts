@@ -6,3 +6,4 @@ export const SEED_ADMIN_USERNAME = "admin";
 export const SEED_ADMIN_PASSWORD = "admin123";
 
 export const SEED_META_KEY = "seed.v1";
+export const SEED_CORE_META_KEY = "seed.core.v1";

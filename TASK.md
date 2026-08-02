@@ -52,23 +52,23 @@ Prioridad: `P0` crítico para vender · `P1` necesario MVP · `P2` pulido MVP
 
 **Criterio de hecho:** app crea/abre DB al iniciar; migraciones aplican solas. ✅
 
-## BE-002 · Schema Core MVP `[P0]`
+## BE-002 · Schema Core MVP `[P0]` `done`
 
 Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
-- [ ] `users` (rol admin/vendedor, password hash, active)
-- [ ] `categories`
-- [ ] `products` (+ imagen path, precio, estado, categoría)
-- [ ] `product_recipes` / recipe items → ingredientes
-- [ ] `ingredients` (stock cache derivado o saldo + min)
-- [ ] `inventory_movements` + catálogo de motivos
-- [ ] `payment_methods`
-- [ ] `cash_sessions` (apertura/cierre)
-- [ ] `sales` (inmutables) + `sale_items` + `sale_reversals`
-- [ ] `settings` / preferencias (tema, paths backup)
-- [ ] `backups` metadata (fecha, path)
+- [x] `users` (rol admin/vendedor, password hash, active)
+- [x] `categories`
+- [x] `products` (+ imagen path, precio, estado, categoría)
+- [x] `product_recipes` / recipe items → ingredientes
+- [x] `ingredients` (stock cache derivado o saldo + min)
+- [x] `inventory_movements` + catálogo de motivos
+- [x] `payment_methods`
+- [x] `cash_sessions` (apertura/cierre)
+- [x] `sales` (inmutables) + `sale_items` + `sale_reversals`
+- [x] `settings` / preferencias (tema, paths backup)
+- [x] `backups` metadata (fecha, path)
 
-**Criterio de hecho:** migraciones verdes; seed reproducible.
+**Criterio de hecho:** migraciones verdes; seed reproducible. ✅
 
 ## BE-003 · Capas Domain / Application / Infrastructure `[P0]`
 
