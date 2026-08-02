@@ -4,6 +4,7 @@ import { Badge } from "@/components";
 import { canAccessSection } from "@/domain/services/permissions";
 import { AppShell } from "@/layouts/app-shell";
 import { LoginForm } from "@/modules/auth/components/login-form";
+import { CategoriesScreen } from "@/modules/catalog/components/categories-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
@@ -18,12 +19,7 @@ function SectionContent({ section }: { section: AppSection }) {
         <PlaceholderScreen title="POS" description="Venta rápida con carrito y cobro." />
       );
     case "catalog":
-      return (
-        <PlaceholderScreen
-          title="Catálogo"
-          description="Productos, categorías y recetas."
-        />
-      );
+      return <CategoriesScreen />;
     case "inventory":
       return (
         <PlaceholderScreen
