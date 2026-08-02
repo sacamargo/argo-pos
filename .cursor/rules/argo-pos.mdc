@@ -1,0 +1,37 @@
+---
+description: Reglas obligatorias de desarrollo Argo POS
+globs:
+alwaysApply: true
+---
+
+# Argo POS — reglas de desarrollo
+
+La prioridad es la mantenibilidad. Escribir código simple, no código rápido.
+
+## Arquitectura
+
+- Cada módulo es independiente. No importar lógica interna entre módulos.
+- Comunicación entre módulos solo vía services públicos.
+- UI → Service → (Repository solo si CRUD o queries complejas) → Supabase/RPC.
+- Componentes y rutas de `app/` nunca importan el client de Supabase.
+- Si solo hay una RPC, el Service la llama directamente (sin repository vacío).
+- Service valida y orquesta; no transforma datos, formatea fechas, calcula precios ni arma DTOs (eso va en mappers / validators / utils).
+
+## Código
+
+- Componentes máximo 250 líneas; si crecen, dividir.
+- Tipos viven en el módulo correspondiente; no duplicar.
+- Formularios: Zod.
+- Mutaciones importantes: Server Actions o RPC. Nunca lógica crítica solo en el cliente.
+- Componentes reutilizables vía design system / tokens. Sin CSS one-off por pantalla.
+- Prohibido: `any`, `@ts-ignore`, lógica duplicada.
+- Schema Future (customers, assets, cash_*, suppliers) no se crea hasta necesidad real.
+
+## Producto
+
+- POS es el corazón. Registrar venta &lt; 10 s UX; cobro RPC &lt; 500 ms.
+- Ver PRODUCT_PRINCIPLES.md y ROADMAP.md.
+
+## Calidad
+
+Cada cambio debe mantener en verde: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.

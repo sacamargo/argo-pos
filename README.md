@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Argo POS
 
-## Getting Started
+> **Argo POS existe para que cualquier negocio pueda registrar una venta en menos de 10 segundos, conocer su inventario en tiempo real y tomar decisiones con datos, sin necesidad de aprender a usar un software complejo.**
 
-First, run the development server:
+Sistema web POS para pequeños negocios de alimentos y bebidas. El primer cliente de validación es una tienda de granizados; el producto está diseñado para adaptarse a cafeterías, heladerías y comercios similares.
+
+## Stack
+
+- Next.js (App Router) + React + TypeScript
+- Tailwind CSS v4 + design system propio
+- Supabase (Postgres, Auth, RLS)
+- Zod + React Hook Form
+
+## Principios
+
+Ver [PRODUCT_PRINCIPLES.md](./PRODUCT_PRINCIPLES.md) y [ROADMAP.md](./ROADMAP.md).
+
+## Arranque local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local
+# Completa NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplica las migraciones en `supabase/migrations` desde el SQL Editor de Supabase o con la CLI.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Guía paso a paso: [SETUP.md](./SETUP.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Arquitectura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+UI → Service → (Repository si CRUD/queries complejas) → Supabase / RPC
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Módulos: `core`, `pos`, `catalog`, `inventory`, `analytics`, `auth`, `dashboard`, `shared`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**KPI:** una venta confirmada debe resolverse en &lt; 500 ms (cliente → RPC → OK).
