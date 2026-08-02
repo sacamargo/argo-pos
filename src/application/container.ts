@@ -1,6 +1,7 @@
 import { AuthService } from "@/application/services/auth-service";
 import { CashSessionService } from "@/application/services/cash-session-service";
 import { CategoryService } from "@/application/services/category-service";
+import { DashboardService } from "@/application/services/dashboard-service";
 import { InventoryService } from "@/application/services/inventory-service";
 import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
@@ -23,6 +24,7 @@ export type AppServices = {
   cashSessions: CashSessionService;
   sales: SaleService;
   saleQueries: SaleQueryService;
+  dashboard: DashboardService;
 };
 
 let services: AppServices | null = null;
@@ -60,6 +62,7 @@ export async function getAppServices(): Promise<AppServices> {
       runInTransaction,
     ),
     saleQueries: new SaleQueryService(sales, paymentMethods),
+    dashboard: new DashboardService(sales, cashSessions, ingredients),
   };
 
   return services;
