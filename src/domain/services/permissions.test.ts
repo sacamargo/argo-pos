@@ -5,6 +5,7 @@ describe("role permissions", () => {
   it("allows vendedor only operational sections", () => {
     expect(canAccessSection("vendedor", "pos")).toBe(true);
     expect(canAccessSection("vendedor", "dashboard")).toBe(true);
+    expect(canAccessSection("vendedor", "sales")).toBe(true);
     expect(canAccessSection("vendedor", "catalog")).toBe(false);
     expect(canAccessSection("vendedor", "users")).toBe(false);
     expect(sectionsForRole("vendedor")).toEqual(["dashboard", "pos", "sales"]);

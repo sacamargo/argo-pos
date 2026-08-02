@@ -303,18 +303,18 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 7 — Usuarios y settings
 
-## BE-015 · UserService (admin) `[P0]`
+## BE-015 · UserService (admin) `[P0]` `done`
 
-- [ ] Crear usuario (admin/vendedor)
-- [ ] Activar/desactivar
-- [ ] Cambiar password
-- [ ] No permitir quedarse sin admin activo
+- [x] Crear usuario (admin/vendedor)
+- [x] Activar/desactivar
+- [x] Cambiar password
+- [x] No permitir quedarse sin admin activo
 
-## FE-012 · Pantalla Usuarios `[P0]`
+## FE-012 · Pantalla Usuarios `[P0]` `done`
 
-- [ ] Lista + alta
-- [ ] Toggle activo
-- [ ] Solo admin
+- [x] Lista + alta
+- [x] Toggle activo
+- [x] Solo admin
 
 ## FE-013 · Settings `[P1]`
 
@@ -322,10 +322,10 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [ ] Datos del negocio (nombre)
 - [ ] Preferencias de backup path (si aplica)
 
-## QA-008 · Usuarios / permisos `[P0]`
+## QA-008 · Usuarios / permisos `[P0]` `doing`
 
-- [ ] Vendedor no entra a productos/inventario/usuarios/backups
-- [ ] Admin sí
+- [x] Vendedor no entra a productos/inventario/usuarios/backups (guards de sección)
+- [x] Admin sí
 
 ---
 

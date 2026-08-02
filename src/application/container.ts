@@ -6,6 +6,7 @@ import { InventoryService } from "@/application/services/inventory-service";
 import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
+import { UserService } from "@/application/services/user-service";
 import { DrizzleCashSessionRepository } from "@/infrastructure/repositories/drizzle-cash-session-repository";
 import { DrizzleCategoryRepository } from "@/infrastructure/repositories/drizzle-category-repository";
 import { DrizzleIngredientRepository } from "@/infrastructure/repositories/drizzle-ingredient-repository";
@@ -25,6 +26,7 @@ export type AppServices = {
   sales: SaleService;
   saleQueries: SaleQueryService;
   dashboard: DashboardService;
+  users: UserService;
 };
 
 let services: AppServices | null = null;
@@ -63,6 +65,7 @@ export async function getAppServices(): Promise<AppServices> {
     ),
     saleQueries: new SaleQueryService(sales, paymentMethods),
     dashboard: new DashboardService(sales, cashSessions, ingredients),
+    users: new UserService(users),
   };
 
   return services;
