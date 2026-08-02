@@ -161,25 +161,25 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 3 — Inventario
 
-## BE-008 · InventoryService `[P0]`
+## BE-008 · InventoryService `[P0]` `done`
 
-- [ ] Alta ingredientes
-- [ ] Entrada (compra)
-- [ ] Ajuste (+/−)
-- [ ] Listar movimientos
-- [ ] Stock bajo (min)
-- [ ] Nunca UPDATE directo de stock sin movimiento
+- [x] Alta ingredientes
+- [x] Entrada (compra)
+- [x] Ajuste (+/−)
+- [x] Listar movimientos
+- [x] Stock bajo (min)
+- [x] Nunca UPDATE directo de stock sin movimiento
 
-## FE-005 · Pantalla Inventario (admin) `[P0]`
+## FE-005 · Pantalla Inventario (admin) `[P0]` `done`
 
-- [ ] Lista ingredientes + estado crítico
-- [ ] Form entrada / ajuste
-- [ ] Historial de movimientos
+- [x] Lista ingredientes + estado crítico
+- [x] Form entrada / ajuste
+- [x] Historial de movimientos
 
-## QA-004 · Inventario `[P0]`
+## QA-004 · Inventario `[P0]` `doing`
 
-- [ ] Entrada aumenta stock vía movimiento
-- [ ] Ajuste negativo no “rompe” auditoría
+- [x] Entrada aumenta stock vía movimiento
+- [x] Ajuste negativo no “rompe” auditoría
 - [ ] Alertas de stock bajo correctas
 
 ---
