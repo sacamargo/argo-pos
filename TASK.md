@@ -132,18 +132,18 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Lista + alta rápida
 - [x] Soft deactivate
 
-## BE-007 · ProductService CRUD + receta `[P0]`
+## BE-007 · ProductService CRUD + receta `[P0]` `done`
 
-- [ ] Producto: nombre, categoría, imagen, precio, estado
-- [ ] Receta: ingredientes + cantidades
-- [ ] Validar precio > 0 y categoría existente
+- [x] Producto: nombre, categoría, imagen, precio, estado
+- [x] Receta: ingredientes + cantidades
+- [x] Validar precio > 0 y categoría existente
 
-## FE-003 · Pantalla Productos (admin) `[P0]`
+## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 
-- [ ] Grid/lista táctil
-- [ ] Formulario crear/editar
-- [ ] Selector de imagen local
-- [ ] Editor de receta simple
+- [x] Grid/lista táctil
+- [x] Formulario crear/editar
+- [x] Selector de imagen local
+- [x] Editor de receta simple
 
 ## FE-004 · Carga de imágenes locales `[P1]`
 
@@ -151,10 +151,10 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [ ] Referenciar path en producto
 - [ ] Placeholder si no hay imagen
 
-## QA-003 · Catálogo `[P0]`
+## QA-003 · Catálogo `[P0]` `doing`
 
-- [ ] Tests service producto/categoría
-- [ ] Receta inválida rechazada
+- [x] Tests service producto/categoría
+- [x] Receta inválida rechazada
 - [ ] UI: crear producto aparece en POS
 
 ---
