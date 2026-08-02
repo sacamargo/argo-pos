@@ -43,14 +43,14 @@ Prioridad: `P0` crítico para vender · `P1` necesario MVP · `P2` pulido MVP
 
 **Criterio de hecho:** shell navegable con tema claro/oscuro. ✅
 
-## BE-001 · SQLite + Drizzle bootstrap `[P0]`
+## BE-001 · SQLite + Drizzle bootstrap `[P0]` `done`
 
-- [ ] Configurar Drizzle + SQLite (ruta de archivo en app data)
-- [ ] Pipeline de migraciones
-- [ ] Conexión única / pool seguro en proceso local
-- [ ] Seed mínimo (admin inicial, métodos de pago, categorías demo opcionales)
+- [x] Configurar Drizzle + SQLite (ruta de archivo en app data)
+- [x] Pipeline de migraciones
+- [x] Conexión única / pool seguro en proceso local
+- [x] Seed mínimo (admin inicial, métodos de pago, categorías demo opcionales)
 
-**Criterio de hecho:** app crea/abre DB al iniciar; migraciones aplican solas.
+**Criterio de hecho:** app crea/abre DB al iniciar; migraciones aplican solas. ✅
 
 ## BE-002 · Schema Core MVP `[P0]`
 

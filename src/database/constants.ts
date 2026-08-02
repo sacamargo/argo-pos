@@ -1,0 +1,8 @@
+export const DATABASE_URL = "sqlite:argo-pos.db";
+export const DATABASE_FILE_NAME = "argo-pos.db";
+
+/** Default local admin for first boot. Change after BE-004 auth lands. */
+export const SEED_ADMIN_USERNAME = "admin";
+export const SEED_ADMIN_PASSWORD = "admin123";
+
+export const SEED_META_KEY = "seed.v1";
