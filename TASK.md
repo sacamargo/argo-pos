@@ -23,15 +23,15 @@ Prioridad: `P0` crítico para vender · `P1` necesario MVP · `P2` pulido MVP
 
 # Fase 0 — Fundación (DX / BE)
 
-## DX-001 · Scaffold del monorepo Tauri + Vite + React + TS `[P0]`
+## DX-001 · Scaffold del monorepo Tauri + Vite + React + TS `[P0]` `done`
 
-- [ ] Inicializar app Tauri v2 + Vite + React + TypeScript (strict)
-- [ ] Configurar pnpm, Node LTS, scripts (`dev`, `build`, `tauri:dev`, `tauri:build`)
-- [ ] ESLint + Prettier alineados al stack
-- [ ] Estructura de carpetas según ARCHITECTURE.md
-- [ ] README mínimo de arranque local
+- [x] Inicializar app Tauri v2 + Vite + React + TypeScript (strict)
+- [x] Configurar pnpm, Node LTS, scripts (`dev`, `build`, `tauri:dev`, `tauri:build`)
+- [x] ESLint + Prettier alineados al stack
+- [x] Estructura de carpetas según ARCHITECTURE.md
+- [x] README mínimo de arranque local
 
-**Criterio de hecho:** `pnpm tauri:dev` abre ventana vacía sin errores.
+**Criterio de hecho:** `pnpm tauri:dev` abre ventana vacía sin errores. ✅
 
 ## DX-002 · Design system base `[P0]`
 
