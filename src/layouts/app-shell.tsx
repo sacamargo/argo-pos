@@ -1,6 +1,7 @@
 import {
   Archive,
   LayoutDashboard,
+  LogOut,
   Moon,
   Package,
   Settings,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/button";
+import type { PublicUser } from "@/domain/entities/user";
+import { canAccessSection } from "@/domain/services/permissions";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useThemeStore } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/lib/cn";
@@ -26,39 +29,57 @@ const ICONS = {
 } as const;
 
 type AppShellProps = {
+  user: PublicUser;
   activeSection: AppSection;
   onNavigate: (section: AppSection) => void;
+  onLogout: () => void;
   children: ReactNode;
 };
 
-export function AppShell({ activeSection, onNavigate, children }: AppShellProps) {
+export function AppShell({
+  user,
+  activeSection,
+  onNavigate,
+  onLogout,
+  children,
+}: AppShellProps) {
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const activeItem = NAV_ITEMS.find((item) => item.id === activeSection);
+  const visibleItems = NAV_ITEMS.filter((item) => canAccessSection(user.role, item.id));
+  const activeItem = visibleItems.find((item) => item.id === activeSection);
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <span className="text-sm font-semibold tracking-tight">Argo POS</span>
           <span className="hidden text-sm text-muted-foreground sm:inline">
             {activeItem?.label ?? "Inicio"}
           </span>
+          <span className="truncate rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+            {user.username} · {user.role}
+          </span>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleTheme}
-          aria-label={theme === "dark" ? "Activar tema claro" : "Activar tema oscuro"}
-        >
-          {theme === "dark" ? <Sun /> : <Moon />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Activar tema claro" : "Activar tema oscuro"}
+          >
+            {theme === "dark" ? <Sun /> : <Moon />}
+          </Button>
+          <Button variant="outline" onClick={onLogout} className="gap-2">
+            <LogOut className="size-4" />
+            Salir
+          </Button>
+        </div>
       </header>
 
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card p-3">
           <nav className="flex flex-1 flex-col gap-1" aria-label="Principal">
-            {NAV_ITEMS.map((item) => {
+            {visibleItems.map((item) => {
               const Icon = ICONS[item.id];
               const isActive = item.id === activeSection;
 

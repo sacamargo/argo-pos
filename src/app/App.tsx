@@ -1,30 +1,63 @@
 import { useEffect, useState } from "react";
 import { ensureDatabaseReady, type DatabaseStatus } from "@/application/ensure-database";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-  Modal,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components";
+import { Badge } from "@/components";
+import { canAccessSection } from "@/domain/services/permissions";
 import { AppShell } from "@/layouts/app-shell";
+import { LoginForm } from "@/modules/auth/components/login-form";
+import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
+import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
+import { useSessionStore } from "@/shared/hooks/use-session";
+
+function SectionContent({ section }: { section: AppSection }) {
+  switch (section) {
+    case "dashboard":
+      return <DashboardScreen />;
+    case "pos":
+      return (
+        <PlaceholderScreen title="POS" description="Venta rápida con carrito y cobro." />
+      );
+    case "catalog":
+      return (
+        <PlaceholderScreen
+          title="Catálogo"
+          description="Productos, categorías y recetas."
+        />
+      );
+    case "inventory":
+      return (
+        <PlaceholderScreen
+          title="Inventario"
+          description="Ingredientes y movimientos de stock."
+        />
+      );
+    case "users":
+      return (
+        <PlaceholderScreen title="Usuarios" description="Cuentas admin y vendedor." />
+      );
+    case "settings":
+      return (
+        <PlaceholderScreen title="Ajustes" description="Preferencias del negocio." />
+      );
+    case "backup":
+      return (
+        <PlaceholderScreen title="Backup" description="Respaldo y restauración local." />
+      );
+  }
+}
 
 export function App() {
+  const user = useSessionStore((state) => state.user);
+  const hydrated = useSessionStore((state) => state.hydrated);
+  const hydrate = useSessionStore((state) => state.hydrate);
+  const clearSession = useSessionStore((state) => state.clearSession);
+
   const [section, setSection] = useState<AppSection>("dashboard");
-  const [modalOpen, setModalOpen] = useState(false);
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
-  const active = NAV_ITEMS.find((item) => item.id === section);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,106 +73,48 @@ export function App() {
     };
   }, []);
 
-  return (
-    <AppShell activeSection={section} onNavigate={setSection}>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{active?.label}</h1>
-            <Badge variant="secondary">MVP</Badge>
-          </div>
-          <p className="max-w-2xl text-sm text-muted-foreground">{active?.description}</p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Base de datos local</CardTitle>
-            <CardDescription>
-              SQLite en el directorio de la app + migraciones automáticas + seed inicial.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {!dbStatus ? (
-              <p className="text-sm text-muted-foreground">Inicializando SQLite…</p>
-            ) : (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={dbStatus.ready ? "success" : "destructive"}>
-                    {dbStatus.ready ? "Lista" : "No lista"}
-                  </Badge>
-                  <Badge variant="outline">{dbStatus.runtime}</Badge>
-                  <Badge variant="secondary">{dbStatus.databaseFile}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{dbStatus.message}</p>
-                {dbStatus.ready ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Dato</TableHead>
-                        <TableHead>Valor</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>Admin seed</TableCell>
-                        <TableCell>{dbStatus.adminUsername ?? "—"}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Métodos de pago</TableCell>
-                        <TableCell>{dbStatus.paymentMethodCount}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Categorías demo</TableCell>
-                        <TableCell>{dbStatus.categoryCount}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Productos demo</TableCell>
-                        <TableCell>{dbStatus.productCount}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Ingredientes demo</TableCell>
-                        <TableCell>{dbStatus.ingredientCount}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                ) : null}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Design system</CardTitle>
-            <CardDescription>
-              Componentes base disponibles para los módulos.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input placeholder="Buscar (ejemplo de Input)" aria-label="Buscar" />
-              <Button onClick={() => setModalOpen(true)}>Abrir modal</Button>
-            </div>
-          </CardContent>
-        </Card>
+  if (!hydrated || !dbStatus) {
+    return (
+      <div className="flex h-full items-center justify-center bg-background text-sm text-muted-foreground">
+        Inicializando Argo POS…
       </div>
+    );
+  }
 
-      <Modal
-        open={modalOpen}
-        title="Modal de ejemplo"
-        description="Base para cobros y confirmaciones."
-        onClose={() => setModalOpen(false)}
-      >
-        <p className="text-sm text-muted-foreground">
-          Este modal cierra con Escape, clic fuera o el botón de cerrar.
+  if (!dbStatus.ready) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 bg-background p-6 text-center">
+        <Badge variant="destructive">Base no lista</Badge>
+        <p className="max-w-md text-sm text-muted-foreground">{dbStatus.message}</p>
+        <p className="text-xs text-muted-foreground">
+          Usa `pnpm tauri:dev` para abrir la app nativa.
         </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setModalOpen(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={() => setModalOpen(false)}>Entendido</Button>
-        </div>
-      </Modal>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginForm />;
+  }
+
+  const activeSection = canAccessSection(user.role, section) ? section : "dashboard";
+  const active = NAV_ITEMS.find((item) => item.id === activeSection);
+
+  return (
+    <AppShell
+      user={user}
+      activeSection={activeSection}
+      onNavigate={(next) => {
+        if (canAccessSection(user.role, next)) {
+          setSection(next);
+        }
+      }}
+      onLogout={clearSession}
+    >
+      <div className="mb-4 flex items-center gap-2 lg:hidden">
+        <Badge variant="outline">{active?.label}</Badge>
+      </div>
+      <SectionContent section={activeSection} />
     </AppShell>
   );
 }

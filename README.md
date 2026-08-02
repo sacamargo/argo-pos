@@ -31,7 +31,8 @@ Precios se guardan en **centavos enteros** (`price_cents`) para evitar errores d
 
 Seed inicial (solo primer arranque / seed core):
 
-- usuario `admin` / `admin123`
+- admin / `admin123`
+- vendedor / `vendedor123`
 - métodos de pago, categorías, motivos de inventario
 - producto demo `Granizado limón` + ingrediente `Base limón`
 | Script | Uso |
@@ -43,6 +44,7 @@ Seed inicial (solo primer arranque / seed core):
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier |
 | `pnpm db:generate` | Generar migraciones Drizzle desde el schema |
+| `pnpm test` | Vitest (unitarios) |
 
 ## Estructura
 

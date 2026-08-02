@@ -8,7 +8,11 @@ import {
   users,
 } from "@/database/schema";
 import { getDatabase, isTauriRuntime } from "@/infrastructure/sqlite/client";
-import { seedBootstrapIfNeeded, seedCoreIfNeeded } from "@/infrastructure/sqlite/seed";
+import {
+  seedBootstrapIfNeeded,
+  seedCoreIfNeeded,
+  seedVendorIfNeeded,
+} from "@/infrastructure/sqlite/seed";
 
 export type DatabaseStatus = {
   ready: boolean;
@@ -42,6 +46,7 @@ export async function ensureDatabaseReady(): Promise<DatabaseStatus> {
   try {
     const didBootstrap = await seedBootstrapIfNeeded();
     const didCore = await seedCoreIfNeeded();
+    const didVendor = await seedVendorIfNeeded();
     const db = await getDatabase();
 
     const [admin] = await db
@@ -68,7 +73,7 @@ export async function ensureDatabaseReady(): Promise<DatabaseStatus> {
       productCount: productRows.length,
       ingredientCount: ingredientRows.length,
       message:
-        didBootstrap || didCore
+        didBootstrap || didCore || didVendor
           ? "Schema listo: migraciones aplicadas y seed reproducible cargado."
           : "Base lista. Migraciones al día; seed ya existía.",
     };

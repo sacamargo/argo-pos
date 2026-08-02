@@ -70,51 +70,51 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 **Criterio de hecho:** migraciones verdes; seed reproducible. ✅
 
-## BE-003 · Capas Domain / Application / Infrastructure `[P0]`
+## BE-003 · Capas Domain / Application / Infrastructure `[P0]` `done`
 
-- [ ] Contratos de repositories (interfaces en domain)
-- [ ] Implementaciones Drizzle en infrastructure
-- [ ] Application services (orquestación + Zod)
-- [ ] Regla: UI no importa Drizzle/SQLite/Tauri directo
+- [x] Contratos de repositories (interfaces en domain)
+- [x] Implementaciones Drizzle en infrastructure
+- [x] Application services (orquestación + Zod)
+- [x] Regla: UI no importa Drizzle/SQLite/Tauri directo
 
-**Criterio de hecho:** un caso de uso (login o listar categorías) atraviesa todas las capas.
+**Criterio de hecho:** un caso de uso (login o listar categorías) atraviesa todas las capas. ✅
 
-## BE-004 · Seguridad local de usuarios `[P0]`
+## BE-004 · Seguridad local de usuarios `[P0]` `done`
 
-- [ ] Hash de contraseñas (nunca texto plano)
-- [ ] Sesión local segura (quién está logueado)
-- [ ] Guards por rol (admin vs vendedor)
+- [x] Hash de contraseñas (nunca texto plano)
+- [x] Sesión local segura (quién está logueado)
+- [x] Guards por rol (admin vs vendedor)
 
-**Criterio de hecho:** vendedor no puede abrir rutas/módulos de admin.
+**Criterio de hecho:** vendedor no puede abrir rutas/módulos de admin. ✅
 
-## QA-001 · Base de testing `[P1]`
+## QA-001 · Base de testing `[P1]` `done`
 
-- [ ] Vitest configurado
+- [x] Vitest configurado
 - [ ] Helpers de DB en memoria/archivo temporal para tests
-- [ ] Convención de tests por capa (domain/service primero)
+- [x] Convención de tests por capa (domain/service primero)
 
-**Criterio de hecho:** `pnpm test` corre al menos 1 test de dominio.
+**Criterio de hecho:** `pnpm test` corre al menos 1 test de dominio. ✅
 
 ---
 
 # Fase 1 — Auth y shell
 
-## FE-001 · Login táctil `[P0]`
+## FE-001 · Login táctil `[P0]` `done`
 
-- [ ] Pantalla login (usuario/contraseña, botones grandes)
-- [ ] Validación Zod + RHF
-- [ ] Feedback de error claro
-- [ ] Redirect post-login según rol
+- [x] Pantalla login (usuario/contraseña, botones grandes)
+- [x] Validación Zod + RHF
+- [x] Feedback de error claro
+- [x] Redirect post-login según rol
 
-## BE-005 · AuthService.login / logout / session `[P0]`
+## BE-005 · AuthService.login / logout / session `[P0]` `done`
 
-- [ ] Validar credenciales
-- [ ] Persistencia de sesión local
-- [ ] Logout limpia sesión
+- [x] Validar credenciales
+- [x] Persistencia de sesión local
+- [x] Logout limpia sesión
 
-## QA-002 · Auth `[P0]`
+## QA-002 · Auth `[P0]` `doing`
 
-- [ ] Unit: hash/verify password
+- [x] Unit: hash/verify password
 - [ ] Service: login ok / fail / usuario inactivo
 - [ ] E2E (Playwright o checklist): login admin y vendedor
 

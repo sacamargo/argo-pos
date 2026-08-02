@@ -4,6 +4,9 @@ import {
   SEED_ADMIN_USERNAME,
   SEED_CORE_META_KEY,
   SEED_META_KEY,
+  SEED_VENDOR_META_KEY,
+  SEED_VENDOR_PASSWORD,
+  SEED_VENDOR_USERNAME,
 } from "@/database/constants";
 import {
   appMeta,
@@ -176,6 +179,45 @@ export async function seedCoreIfNeeded(): Promise<boolean> {
   await db.insert(appMeta).values({
     key: SEED_CORE_META_KEY,
     value: now,
+  });
+
+  return true;
+}
+
+export async function seedVendorIfNeeded(): Promise<boolean> {
+  const db = await getDatabase();
+  const existing = await db
+    .select()
+    .from(appMeta)
+    .where(eq(appMeta.key, SEED_VENDOR_META_KEY))
+    .limit(1);
+
+  if (existing[0]) {
+    return false;
+  }
+
+  const [already] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username, SEED_VENDOR_USERNAME))
+    .limit(1);
+
+  if (!already) {
+    const now = new Date().toISOString();
+    const passwordHash = await hashPassword(SEED_VENDOR_PASSWORD);
+    await db.insert(users).values({
+      id: crypto.randomUUID(),
+      username: SEED_VENDOR_USERNAME,
+      passwordHash,
+      role: "vendedor",
+      active: true,
+      createdAt: now,
+    });
+  }
+
+  await db.insert(appMeta).values({
+    key: SEED_VENDOR_META_KEY,
+    value: new Date().toISOString(),
   });
 
   return true;

@@ -4,6 +4,9 @@ export const DATABASE_FILE_NAME = "argo-pos.db";
 /** Default local admin for first boot. Change after BE-004 auth lands. */
 export const SEED_ADMIN_USERNAME = "admin";
 export const SEED_ADMIN_PASSWORD = "admin123";
+export const SEED_VENDOR_USERNAME = "vendedor";
+export const SEED_VENDOR_PASSWORD = "vendedor123";
 
 export const SEED_META_KEY = "seed.v1";
 export const SEED_CORE_META_KEY = "seed.core.v1";
+export const SEED_VENDOR_META_KEY = "seed.vendor.v1";
