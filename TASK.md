@@ -33,15 +33,15 @@ Prioridad: `P0` crítico para vender · `P1` necesario MVP · `P2` pulido MVP
 
 **Criterio de hecho:** `pnpm tauri:dev` abre ventana vacía sin errores. ✅
 
-## DX-002 · Design system base `[P0]`
+## DX-002 · Design system base `[P0]` `done`
 
-- [ ] Tailwind + tokens (claro/oscuro)
-- [ ] Tipografía Inter + Lucide
-- [ ] Componentes base shadcn: Button, Input, Card, Modal, Table, Badge
-- [ ] Layout shell (Header / Sidebar / Content)
-- [ ] Theme toggle (claro/oscuro) persistido localmente
+- [x] Tailwind + tokens (claro/oscuro)
+- [x] Tipografía Inter + Lucide
+- [x] Componentes base shadcn: Button, Input, Card, Modal, Table, Badge
+- [x] Layout shell (Header / Sidebar / Content)
+- [x] Theme toggle (claro/oscuro) persistido localmente
 
-**Criterio de hecho:** shell navegable con tema claro/oscuro.
+**Criterio de hecho:** shell navegable con tema claro/oscuro. ✅
 
 ## BE-001 · SQLite + Drizzle bootstrap `[P0]`
 
