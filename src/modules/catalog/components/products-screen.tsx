@@ -37,6 +37,7 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const reload = async () => {
@@ -106,6 +107,24 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
     }
   };
 
+  const onPickImage = async (file: File) => {
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const { productImages } = await getAppServices();
+      const saved = await productImages.saveFromFile(file);
+      setForm((current) => ({ ...current, imagePath: saved.fileName }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la imagen");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const onClearImage = () => {
+    setForm((current) => ({ ...current, imagePath: "" }));
+  };
+
   const onSave = async () => {
     setSaving(true);
     setError(null);
@@ -166,7 +185,10 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
         ingredients={ingredients}
         error={error}
         saving={saving}
+        uploadingImage={uploadingImage}
         onChange={setForm}
+        onPickImage={(file) => void onPickImage(file)}
+        onClearImage={onClearImage}
         onSave={() => void onSave()}
         onReset={startCreate}
       />
@@ -195,7 +217,7 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {categoryName(product.categoryId)}
-                        {product.imagePath ? ` · ${product.imagePath}` : ""}
+                        {product.imagePath ? " · Con imagen" : ""}
                       </div>
                     </TableCell>
                     <TableCell>{formatPesos(product.priceCents)}</TableCell>

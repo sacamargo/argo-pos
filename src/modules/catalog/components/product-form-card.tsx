@@ -9,6 +9,7 @@ import {
   CardTitle,
   Input,
 } from "@/components";
+import { ProductImage } from "@/modules/shared/components/product-image";
 import type { ProductFormState } from "@/modules/catalog/components/product-form-state";
 
 type ProductFormCardProps = {
@@ -17,7 +18,10 @@ type ProductFormCardProps = {
   ingredients: Ingredient[];
   error: string | null;
   saving: boolean;
+  uploadingImage: boolean;
   onChange: (next: ProductFormState) => void;
+  onPickImage: (file: File) => void;
+  onClearImage: () => void;
   onSave: () => void;
   onReset: () => void;
 };
@@ -28,7 +32,10 @@ export function ProductFormCard({
   ingredients,
   error,
   saving,
+  uploadingImage,
   onChange,
+  onPickImage,
+  onClearImage,
   onSave,
   onReset,
 }: ProductFormCardProps) {
@@ -81,28 +88,42 @@ export function ProductFormCard({
           value={form.pricePesos}
           onChange={(event) => onChange({ ...form, pricePesos: event.target.value })}
         />
+
         <div className="space-y-2">
-          <Input
-            className="h-12"
-            placeholder="Ruta de imagen (opcional)"
-            value={form.imagePath}
-            onChange={(event) => onChange({ ...form, imagePath: event.target.value })}
-          />
+          <div className="h-28 overflow-hidden rounded-md border border-border">
+            <ProductImage imagePath={form.imagePath || null} alt={form.name || "Producto"} />
+          </div>
           <Input
             className="h-12"
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            disabled={uploadingImage || saving}
             onChange={(event) => {
               const file = event.target.files?.[0];
+              event.target.value = "";
               if (!file) {
                 return;
               }
-              onChange({ ...form, imagePath: file.name });
+              onPickImage(file);
             }}
           />
-          <p className="text-xs text-muted-foreground">
-            El selector guarda el nombre del archivo; FE-004 lo moverá a datos de la app.
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {form.imagePath ? (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={uploadingImage || saving}
+                onClick={onClearImage}
+              >
+                Quitar imagen
+              </Button>
+            ) : null}
+            <p className="text-xs text-muted-foreground">
+              {uploadingImage
+                ? "Guardando imagen…"
+                : "Se copia a la carpeta de datos de la app (máx. 5 MB)."}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-2 rounded-md border border-border p-3">
@@ -185,7 +206,7 @@ export function ProductFormCard({
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button className="h-12" disabled={saving} onClick={onSave}>
+          <Button className="h-12" disabled={saving || uploadingImage} onClick={onSave}>
             {saving ? "Guardando…" : form.id ? "Actualizar" : "Crear producto"}
           </Button>
           {form.id ? (

@@ -30,7 +30,7 @@ La base SQLite (`argo-pos.db`) se crea sola en el directorio de datos de la app:
 - macOS: `~/Library/Application Support/com.argo.pos/`
 - Windows: `%APPDATA%\com.argo.pos\` (AppData Roaming)
 
-Backups: subcarpeta `backups/` dentro de ese mismo directorio. Nunca se escribe la DB junto al `.exe`.
+Backups: subcarpeta `backups/` dentro de ese mismo directorio. Imágenes de productos: subcarpeta `images/`. Nunca se escribe la DB junto al `.exe`.
 
 Migraciones corren al iniciar.
 
