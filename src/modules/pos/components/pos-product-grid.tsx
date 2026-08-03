@@ -1,4 +1,5 @@
 import type { Product } from "@/domain/entities/product";
+import { ProductImage } from "@/modules/shared/components/product-image";
 import { formatPesos } from "@/shared/utils/money";
 
 type PosProductGridProps = {
@@ -24,12 +25,8 @@ export function PosProductGrid({ products, onAdd }: PosProductGridProps) {
           onClick={() => onAdd(product)}
           className="flex min-h-36 flex-col overflow-hidden rounded-lg border border-border bg-card text-left transition-colors hover:border-primary hover:bg-accent/40"
         >
-          <div className="flex h-24 items-center justify-center bg-muted text-xs text-muted-foreground">
-            {product.imagePath ? (
-              <span className="truncate px-2">{product.imagePath}</span>
-            ) : (
-              "Sin imagen"
-            )}
+          <div className="h-24 overflow-hidden">
+            <ProductImage imagePath={product.imagePath} alt={product.name} />
           </div>
           <div className="flex flex-1 flex-col justify-between gap-1 p-3">
             <span className="text-sm font-semibold leading-snug">{product.name}</span>

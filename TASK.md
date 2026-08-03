@@ -145,11 +145,11 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Selector de imagen local
 - [x] Editor de receta simple
 
-## FE-004 · Carga de imágenes locales `[P1]`
+## FE-004 · Carga de imágenes locales `[P1]` `done`
 
-- [ ] Guardar en carpeta de datos de la app
-- [ ] Referenciar path en producto
-- [ ] Placeholder si no hay imagen
+- [x] Guardar en carpeta de datos de la app
+- [x] Referenciar path en producto
+- [x] Placeholder si no hay imagen
 
 ## QA-003 · Catálogo `[P0]` `doing`
 

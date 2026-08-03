@@ -4,11 +4,13 @@ import { CashSessionService } from "@/application/services/cash-session-service"
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
 import { InventoryService } from "@/application/services/inventory-service";
+import { ProductImageService } from "@/application/services/product-image-service";
 import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
 import { UserService } from "@/application/services/user-service";
 import { TauriBackupFileStore } from "@/infrastructure/backup/tauri-backup-file-store";
+import { TauriProductImageStore } from "@/infrastructure/images/tauri-product-image-store";
 import { DrizzleBackupRepository } from "@/infrastructure/repositories/drizzle-backup-repository";
 import { DrizzleCashSessionRepository } from "@/infrastructure/repositories/drizzle-cash-session-repository";
 import { DrizzleCategoryRepository } from "@/infrastructure/repositories/drizzle-category-repository";
@@ -24,6 +26,7 @@ export type AppServices = {
   auth: AuthService;
   categories: CategoryService;
   products: ProductService;
+  productImages: ProductImageService;
   inventory: InventoryService;
   cashSessions: CashSessionService;
   sales: SaleService;
@@ -57,6 +60,7 @@ export async function getAppServices(): Promise<AppServices> {
     auth: new AuthService(users),
     categories: new CategoryService(categories),
     products: new ProductService(products, categories, ingredients),
+    productImages: new ProductImageService(new TauriProductImageStore()),
     inventory: new InventoryService(ingredients, movements),
     cashSessions: new CashSessionService(cashSessions),
     sales: new SaleService(
