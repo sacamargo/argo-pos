@@ -43,14 +43,51 @@ pnpm tauri:build
 - En macOS genera `.app` (validación local del bundle). El `.dmg` es opcional y puede fallar en entornos headless.
 - El instalador Windows (NSIS/MSI) se genera en CI: workflow `.github/workflows/build-windows.yml` (`workflow_dispatch` o tag `v*`).
 
+### Probar en Windows (recomendado)
+
+**Opción A — Descargar instalador desde GitHub Actions**
+
+1. Abre [Actions del repo](https://github.com/sacamargo/argo-pos/actions/workflows/build-windows.yml).
+2. Entra al run disparado por el tag `v0.1.0` (o el más reciente en verde).
+3. Al final, descarga el artifact `argo-pos-windows` (zip con `.exe` NSIS y/o `.msi`).
+4. En el portátil Windows: descomprime → ejecuta el instalador NSIS (`Argo POS_…_x64-setup.exe`).
+5. Abre **Argo POS** desde el menú Inicio.
+
+**Opción B — Compilar en el propio Windows** (si el artifact aún no está listo)
+
+Requisitos: Node 20, pnpm 9, Rust stable ([rustup](https://rustup.rs/)), [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) con workload “Desktop development with C++”, WebView2 Runtime.
+
+```powershell
+git clone https://github.com/sacamargo/argo-pos.git
+cd argo-pos
+git checkout v0.1.0
+pnpm install
+pnpm tauri:build
+```
+
+Instalador generado en:
+
+`src-tauri\target\release\bundle\nsis\`
+
 ## Checklist de release (QA-010)
 
-1. Instalar en PC limpio (Windows preferido)
-2. Login admin → crear producto/categoría/ingrediente
-3. Abrir caja → vender efectivo con cambio **sin internet**
-4. Ver historial → anular venta (stock vuelve)
-5. Backup manual → restaurar → reinicio recupera datos
-6. Login vendedor: POS + historial; sin catálogo/inventario/usuarios/backup
+Credenciales seed (primer arranque):
+
+- admin / `admin123`
+- vendedor / `vendedor123`
+
+Datos locales (no van junto al `.exe`):
+
+`%APPDATA%\com.argo.pos\` → `argo-pos.db`, `backups\`, `images\`
+
+1. Instalar en el PC Windows (artifact CI o build local).
+2. **Sin internet** (modo avión): login admin.
+3. Catálogo: categoría → producto (opcional: imagen) → inventario con stock.
+4. Abrir caja → POS: vender en efectivo con cambio (&lt; 10 s de interacción).
+5. Historial → anular venta (revisar que el stock vuelva).
+6. Backup manual → restaurar (frase `RESTAURAR`) → cerrar y reabrir app: datos OK.
+7. Cerrar sesión → login `vendedor` / `vendedor123`: solo POS + historial/dashboard reducido; sin catálogo/inventario/usuarios/backups.
+8. Reinicio forzado (cerrar app a la fuerza) y reabrir: DB intacta.
 
 Precios se guardan en **centavos enteros** (`price_cents`) para evitar errores de redondeo.
 
