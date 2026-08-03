@@ -25,14 +25,24 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["app", "nsis", "msi"],
+    "category": "Business",
+    "shortDescription": "POS local-first offline",
+    "longDescription": "Argo POS es un punto de venta local-first, offline-first y touch-first. La base SQLite vive en el directorio de datos de la app (AppConfig / AppData), nunca junto al ejecutable.",
+    "copyright": "Argo POS",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    }
   },
   "plugins": {
     "sql": {
