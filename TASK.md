@@ -355,30 +355,31 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 
 # Fase 9 — Empaquetado y hardening
 
-## DX-003 · Build Windows ejecutable `[P0]`
+## DX-003 · Build Windows ejecutable `[P0]` `done`
 
-- [ ] `tauri build` genera instalador/ejecutable
-- [ ] Icono y nombre Argo POS
-- [ ] Rutas de datos en AppData (no cwd del exe)
+- [x] `tauri build` configurado (bundle NSIS + CI Windows)
+- [x] Icono y nombre Argo POS
+- [x] Rutas de datos en AppConfig/AppData (plugin-sql + docs)
 
-## DX-004 · Primer arranque / onboarding mínimo `[P1]`
+## DX-004 · Primer arranque / onboarding mínimo `[P1]` `done`
 
-- [ ] Crear admin si DB vacía
-- [ ] Seed métodos de pago
-- [ ] Mensaje “caja local / sin internet requerido”
+- [x] Crear admin si DB vacía (seed bootstrap)
+- [x] Seed métodos de pago
+- [x] Mensaje “caja local / sin internet requerido”
 
-## QA-010 · Release checklist `[P0]`
+## QA-010 · Release checklist `[P0]` `doing`
 
-- [ ] Instalar en PC limpio Windows
+- [ ] Instalar en PC limpio Windows (usar artifact CI)
 - [ ] Flujo completo: login → abrir caja → vender → anular → backup → restore
 - [ ] Sin internet durante todo el flujo
 - [ ] UPS scenario: reinicio app recupera DB
+- [x] Checklist documentado en README
 
 ## QA-011 · Performance / touch QA `[P1]`
 
 - [ ] Targets UX ARCHITECTURE (venta &lt; 10 s, acciones locales &lt; 100 ms percibidas)
-- [ ] Botones usable a dedo (altura mínima)
-- [ ] Sin modales innecesarios en cobro feliz
+- [x] Botones usable a dedo (altura mínima en login/POS)
+- [x] Sin modales innecesarios en cobro feliz (solo pago/confirmaciones)
 
 ---
 

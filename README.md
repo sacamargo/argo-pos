@@ -25,7 +25,32 @@ pnpm install
 pnpm tauri:dev
 ```
 
-La base SQLite (`argo-pos.db`) se crea sola en el directorio de datos de la app (AppConfig). Migraciones corren al iniciar.
+La base SQLite (`argo-pos.db`) se crea sola en el directorio de datos de la app:
+
+- macOS: `~/Library/Application Support/com.argo.pos/`
+- Windows: `%APPDATA%\com.argo.pos\` (AppData Roaming)
+
+Backups: subcarpeta `backups/` dentro de ese mismo directorio. Nunca se escribe la DB junto al `.exe`.
+
+Migraciones corren al iniciar.
+
+## Empaquetado
+
+```bash
+pnpm tauri:build
+```
+
+- En macOS genera `.app` (validación local del bundle). El `.dmg` es opcional y puede fallar en entornos headless.
+- El instalador Windows (NSIS/MSI) se genera en CI: workflow `.github/workflows/build-windows.yml` (`workflow_dispatch` o tag `v*`).
+
+## Checklist de release (QA-010)
+
+1. Instalar en PC limpio (Windows preferido)
+2. Login admin → crear producto/categoría/ingrediente
+3. Abrir caja → vender efectivo con cambio **sin internet**
+4. Ver historial → anular venta (stock vuelve)
+5. Backup manual → restaurar → reinicio recupera datos
+6. Login vendedor: POS + historial; sin catálogo/inventario/usuarios/backup
 
 Precios se guardan en **centavos enteros** (`price_cents`) para evitar errores de redondeo.
 

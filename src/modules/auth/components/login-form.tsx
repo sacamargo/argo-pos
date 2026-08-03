@@ -65,6 +65,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           <CardDescription>Ingresa para vender u operar el negocio.</CardDescription>
         </CardHeader>
         <CardContent>
+          <p className="mb-4 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            Caja local · sin internet requerido. Los datos viven en este computador.
+          </p>
           <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="username">
