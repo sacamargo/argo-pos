@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="1 · Pesos → centavos">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">1 · Pesos → centavos</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Dinero</text>
+    
+    <rect x="60" y="120" width="280" height="120" rx="14" fill="#fff" stroke="#d4d4d8"/>
+    <text x="90" y="170" font-family="system-ui" font-size="16" fill="#71717a">UI: pesos COP</text>
+    <text x="90" y="205" font-family="system-ui" font-size="28" font-weight="700">$12.500</text>
+    <text x="370" y="190" font-family="system-ui" font-size="28" fill="#2563eb">→</text>
+    <rect x="430" y="120" width="320" height="120" rx="14" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="460" y="170" font-family="system-ui" font-size="16" fill="#1e3a8a">DB: centavos enteros</text>
+    <text x="460" y="205" font-family="system-ui" font-size="26" font-weight="700" fill="#1e3a8a">1.250.000</text>
+    <text x="60" y="320" font-family="system-ui" font-size="14" fill="#71717a">Evita errores de redondeo en cobros y reportes</text>
+    
+  </g>
+</svg>

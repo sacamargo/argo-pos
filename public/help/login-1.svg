@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="1 · Pantalla de acceso">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">1 · Pantalla de acceso</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Login</text>
+    
+    <text x="48" y="110" font-family="system-ui" font-size="28" font-weight="700" fill="#18181b">Argo POS</text>
+    <text x="48" y="140" font-family="system-ui" font-size="14" fill="#71717a">Caja local · sin internet requerido</text>
+    <rect x="48" y="180" width="320" height="48" rx="10" fill="#fafafa" stroke="#a1a1aa"/>
+    <text x="64" y="210" font-family="system-ui" font-size="14" fill="#a1a1aa">Usuario</text>
+    <rect x="48" y="248" width="320" height="48" rx="10" fill="#fafafa" stroke="#a1a1aa"/>
+    <text x="64" y="278" font-family="system-ui" font-size="14" fill="#a1a1aa">Contraseña</text>
+    <rect x="48" y="320" width="320" height="52" rx="12" fill="#2563eb"/>
+    <text x="170" y="352" font-family="system-ui" font-size="16" font-weight="600" fill="#fff">Entrar</text>
+    <circle cx="400" cy="346" r="18" fill="#f59e0b"/>
+    <text x="394" y="352" font-family="system-ui" font-size="14" font-weight="700" fill="#18181b">1</text>
+    
+  </g>
+</svg>

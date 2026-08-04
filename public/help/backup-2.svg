@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="2 · Restore destructivo">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">2 · Restore destructivo</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Restaurar</text>
+    
+    <rect x="40" y="90" width="400" height="80" rx="12" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="60" y="125" font-family="system-ui" font-size="14" font-weight="600" fill="#991b1b">Acción destructiva · 2 pasos</text>
+    <text x="60" y="150" font-family="system-ui" font-size="13" fill="#991b1b">Reemplaza la base actual</text>
+    <text x="40" y="220" font-family="system-ui" font-size="14">Escribe exactamente:</text>
+    <rect x="40" y="240" width="280" height="48" rx="10" fill="#fff" stroke="#dc2626" stroke-width="2"/>
+    <text x="56" y="270" font-family="system-ui" font-size="16" font-weight="700" fill="#dc2626">RESTAURAR</text>
+    <rect x="40" y="320" width="220" height="48" rx="10" fill="#dc2626"/>
+    <text x="70" y="350" font-family="system-ui" font-size="14" font-weight="600" fill="#fff">Confirmar restore</text>
+    
+  </g>
+</svg>

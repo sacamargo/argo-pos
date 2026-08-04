@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="1 · Navegación y roles">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">1 · Navegación y roles</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Shell</text>
+    
+    <rect x="20" y="60" width="140" height="380" rx="12" fill="#18181b"/>
+    <text x="40" y="100" fill="#fafafa" font-family="system-ui" font-size="13" font-weight="600">Dashboard</text>
+    <text x="40" y="130" fill="#fafafa" font-family="system-ui" font-size="13">POS</text>
+    <text x="40" y="160" fill="#fafafa" font-family="system-ui" font-size="13">Ventas</text>
+    <text x="40" y="190" fill="#a1a1aa" font-family="system-ui" font-size="12">Catálogo*</text>
+    <text x="40" y="220" fill="#a1a1aa" font-family="system-ui" font-size="12">Inventario*</text>
+    <text x="40" y="250" fill="#a1a1aa" font-family="system-ui" font-size="12">Usuarios*</text>
+    <text x="40" y="280" fill="#a1a1aa" font-family="system-ui" font-size="12">Backup*</text>
+    <rect x="28" y="300" width="120" height="36" rx="8" fill="#2563eb"/>
+    <text x="52" y="323" fill="#fff" font-family="system-ui" font-size="13" font-weight="600">Tutorial</text>
+    <text x="40" y="400" fill="#71717a" font-family="system-ui" font-size="11">* solo admin</text>
+    <rect x="180" y="60" width="420" height="60" rx="10" fill="#fff" stroke="#d4d4d8"/>
+    <text x="200" y="95" font-family="system-ui" font-size="14">Caja · Tema · Salir</text>
+    
+  </g>
+</svg>

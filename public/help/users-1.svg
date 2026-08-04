@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="1 · Crear usuario">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">1 · Crear usuario</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Usuarios</text>
+    
+    <text x="40" y="110" font-family="system-ui" font-size="16" font-weight="700">Crear usuario</text>
+    <rect x="40" y="140" width="300" height="44" rx="8" fill="#fafafa" stroke="#d4d4d8"/>
+    <text x="56" y="168" font-family="system-ui" font-size="13" fill="#a1a1aa">Usuario 3–40 (a-z 0-9 ._ -)</text>
+    <rect x="40" y="200" width="300" height="44" rx="8" fill="#fafafa" stroke="#d4d4d8"/>
+    <text x="56" y="228" font-family="system-ui" font-size="13" fill="#a1a1aa">Contraseña mín. 6</text>
+    <rect x="40" y="260" width="300" height="44" rx="8" fill="#fafafa" stroke="#d4d4d8"/>
+    <text x="56" y="288" font-family="system-ui" font-size="13" fill="#a1a1aa">Rol: admin | vendedor</text>
+    <rect x="40" y="330" width="180" height="48" rx="10" fill="#2563eb"/>
+    <text x="70" y="360" font-family="system-ui" font-size="14" font-weight="600" fill="#fff">Crear usuario</text>
+    
+  </g>
+</svg>

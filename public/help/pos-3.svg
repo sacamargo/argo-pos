@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-label="3 · Cobro en efectivo">
+  <rect width="960" height="600" fill="#f4f4f5"/>
+  <text x="24" y="42" fill="#18181b" font-family="system-ui,sans-serif" font-size="22" font-weight="700">3 · Cobro en efectivo</text>
+  
+  <g transform="translate(20,70)">
+    <rect width="920" height="480" rx="16" fill="#fff" stroke="#d4d4d8"/>
+    <rect width="920" height="44" rx="16" fill="#18181b"/>
+    <rect y="28" width="920" height="16" fill="#18181b"/>
+    <text x="16" y="28" fill="#fafafa" font-family="system-ui,sans-serif" font-size="15" font-weight="600">Pago</text>
+    
+    <text x="40" y="100" font-family="system-ui" font-size="15" font-weight="600">Método de pago</text>
+    <rect x="40" y="115" width="280" height="44" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="56" y="143" font-family="system-ui" font-size="14">Efectivo</text>
+    <text x="40" y="200" font-family="system-ui" font-size="15" font-weight="600">Recibido (COP)</text>
+    <rect x="40" y="215" width="280" height="44" rx="10" fill="#fafafa" stroke="#d4d4d8"/>
+    <text x="56" y="243" font-family="system-ui" font-size="14">20000</text>
+    <g font-family="system-ui" font-size="12">
+      <rect x="40" y="280" width="64" height="32" rx="8" fill="#f4f4f5"/><text x="52" y="300">Exacto</text>
+      <rect x="112" y="280" width="52" height="32" rx="8" fill="#f4f4f5"/><text x="122" y="300">+1k</text>
+      <rect x="172" y="280" width="52" height="32" rx="8" fill="#f4f4f5"/><text x="182" y="300">+5k</text>
+      <rect x="232" y="280" width="60" height="32" rx="8" fill="#f4f4f5"/><text x="242" y="300">+10k</text>
+    </g>
+    <text x="40" y="350" font-family="system-ui" font-size="16" font-weight="700" fill="#16a34a">Cambio $4.000</text>
+    <rect x="40" y="380" width="280" height="48" rx="12" fill="#2563eb"/>
+    <text x="110" y="410" font-family="system-ui" font-size="15" font-weight="700" fill="#fff">Confirmar cobro</text>
+    
+  </g>
+</svg>

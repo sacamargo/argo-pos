@@ -7,7 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
+import { HelpVisualSteps } from "@/modules/help/components/help-visual-steps";
 import { HELP_MODULES } from "@/modules/help/content/modules";
+import { HELP_VISUAL_STEPS } from "@/modules/help/content/visual-steps";
 import { cn } from "@/shared/lib/cn";
 
 function audienceLabel(audience: (typeof HELP_MODULES)[number]["audience"]): string {
@@ -29,13 +31,15 @@ export function HelpScreen() {
     return null;
   }
 
+  const visualSteps = active.visualSteps ?? HELP_VISUAL_STEPS[active.id] ?? [];
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Tutorial</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Guía por módulo: qué hace cada pantalla, qué espera cada campo y qué hace cada
-          botón. Úsala para capacitar al equipo antes de operar en caja.
+          Guía por módulo con pasos visuales, campos y botones. Los gráficos viven offline en
+          la app (SVG hoy; también puedes añadir GIF/PNG en <code>/help</code>).
         </p>
       </div>
 
@@ -77,6 +81,9 @@ export function HelpScreen() {
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-xl">{active.title}</CardTitle>
               <Badge variant="secondary">{audienceLabel(active.audience)}</Badge>
+              {visualSteps.length > 0 ? (
+                <Badge variant="outline">{visualSteps.length} pasos visuales</Badge>
+              ) : null}
             </div>
             <CardDescription className="text-sm leading-relaxed">
               {active.summary}
@@ -87,6 +94,10 @@ export function HelpScreen() {
             </p>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
+            {visualSteps.length > 0 ? (
+              <HelpVisualSteps key={active.id} steps={visualSteps} />
+            ) : null}
+
             {active.fields.length > 0 ? (
               <section className="space-y-2">
                 <h2 className="text-sm font-semibold tracking-tight">Campos</h2>

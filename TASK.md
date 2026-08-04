@@ -327,6 +327,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Sección Tutorial en menú (admin y vendedor)
 - [x] Guías por módulo: propósito, campos, botones, tips
 - [x] Contenido alineado a validaciones reales (pesos/centavos, RESTAURAR, caja, etc.)
+- [x] Pasos visuales offline (SVG storyboards + soporte GIF/PNG en `/public/help`)
 
 ## QA-008 · Usuarios / permisos `[P0]` `doing`
 
