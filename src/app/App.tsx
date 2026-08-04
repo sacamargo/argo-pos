@@ -7,6 +7,7 @@ import { LoginForm } from "@/modules/auth/components/login-form";
 import { BackupsScreen } from "@/modules/backup/components/backups-screen";
 import { CatalogScreen } from "@/modules/catalog/components/catalog-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
+import { HelpScreen } from "@/modules/help/components/help-screen";
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
 import { PosScreen } from "@/modules/pos/components/pos-screen";
 import { SalesHistoryScreen } from "@/modules/sales/components/sales-history-screen";
@@ -35,6 +36,8 @@ function SectionContent({ section }: { section: AppSection }) {
       );
     case "backup":
       return <BackupsScreen />;
+    case "help":
+      return <HelpScreen />;
   }
 }
 

@@ -308,6 +308,8 @@ src/
 
         backup/
 
+        help/
+
     components/
 
     layouts/
