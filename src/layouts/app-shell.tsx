@@ -1,5 +1,6 @@
 import {
   Archive,
+  BookOpen,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -29,6 +30,7 @@ const ICONS = {
   users: Users,
   settings: Settings,
   backup: Archive,
+  help: BookOpen,
 } as const;
 
 type AppShellProps = {

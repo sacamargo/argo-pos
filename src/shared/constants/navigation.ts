@@ -6,7 +6,8 @@ export type AppSection =
   | "inventory"
   | "users"
   | "settings"
-  | "backup";
+  | "backup"
+  | "help";
 
 export type NavItem = {
   id: AppSection;
@@ -23,4 +24,5 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "users", label: "Usuarios", description: "Cuentas y roles" },
   { id: "settings", label: "Ajustes", description: "Preferencias del negocio" },
   { id: "backup", label: "Backup", description: "Respaldo y restauración" },
+  { id: "help", label: "Tutorial", description: "Guía de cada módulo" },
 ];

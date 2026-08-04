@@ -253,6 +253,8 @@ Una pantalla está lista para implementar solo si:
 - Cobrar es el CTA dominante.
 - Evitar modales excepto pago/confirmaciones destructivas.
 
+La sección **Tutorial** (FE-015) es guía opcional de capacitación; las pantallas operativas siguen debiendo usarse sin depender de ella.
+
 ---
 
 ## 10. QA — Definition of Done

@@ -26,6 +26,7 @@ export function sectionsForRole(role: UserRole): AppSection[] {
     "users",
     "settings",
     "backup",
+    "help",
   ];
 
   return all.filter((section) => canAccessSection(role, section));

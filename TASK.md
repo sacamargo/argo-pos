@@ -322,10 +322,17 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [ ] Datos del negocio (nombre)
 - [ ] Preferencias de backup path (si aplica)
 
+## FE-015 · Tutorial in-app `[P1]` `done`
+
+- [x] Sección Tutorial en menú (admin y vendedor)
+- [x] Guías por módulo: propósito, campos, botones, tips
+- [x] Contenido alineado a validaciones reales (pesos/centavos, RESTAURAR, caja, etc.)
+
 ## QA-008 · Usuarios / permisos `[P0]` `doing`
 
 - [x] Vendedor no entra a productos/inventario/usuarios/backups (guards de sección)
 - [x] Admin sí
+- [x] Vendedor sí entra a Tutorial
 
 ---
 
