@@ -1,6 +1,18 @@
 # Argo POS
 
+<p align="center">
+  <img src="./docs/argo-pos-preview.svg" alt="Vista previa de Argo POS: layout de 3 columnas con categorías, productos y carrito" width="100%" />
+</p>
+
 POS local-first (Tauri + React + SQLite). Offline-first. Touch-first.
+
+<p align="center">
+  <img src="./public/help/pos-1.svg" alt="Tutorial · elegir producto" width="32%" />
+  <img src="./public/help/pos-3.svg" alt="Tutorial · cobro en efectivo" width="32%" />
+  <img src="./public/help/backup-2.svg" alt="Tutorial · restore con RESTAURAR" width="32%" />
+</p>
+
+<p align="center"><sub>Tutorial in-app con pasos visuales offline (SVG; también admite GIF/PNG).</sub></p>
 
 Documentación de producto:
 
@@ -48,7 +60,7 @@ pnpm tauri:build
 **Opción A — Descargar instalador desde GitHub Actions**
 
 1. Abre [Actions del repo](https://github.com/sacamargo/argo-pos/actions/workflows/build-windows.yml).
-2. Entra al run disparado por el tag `v0.1.0` (o el más reciente en verde).
+2. Entra al run del tag más reciente en verde (p. ej. `v0.1.3`).
 3. Al final, descarga el artifact `argo-pos-windows` (zip con `.exe` NSIS y/o `.msi`).
 4. En el portátil Windows: descomprime → ejecuta el instalador NSIS (`Argo POS_…_x64-setup.exe`).
 5. Abre **Argo POS** desde el menú Inicio.
@@ -60,7 +72,7 @@ Requisitos: Node 20, pnpm 9, Rust stable ([rustup](https://rustup.rs/)), [Visual
 ```powershell
 git clone https://github.com/sacamargo/argo-pos.git
 cd argo-pos
-git checkout v0.1.0
+git checkout v0.1.3
 pnpm install
 pnpm tauri:build
 ```
