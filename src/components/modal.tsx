@@ -52,11 +52,11 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          "relative z-10 w-full max-w-lg rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm",
+          "relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm",
           className,
         )}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
           <div className="space-y-1">
             <h2 id="modal-title" className="text-lg font-semibold tracking-tight">
               {title}
@@ -69,7 +69,7 @@ export function Modal({
             <X />
           </Button>
         </div>
-        {children}
+        <div className="min-h-0 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

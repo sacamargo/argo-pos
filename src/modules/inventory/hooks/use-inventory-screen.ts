@@ -14,6 +14,9 @@ export function useInventoryScreen() {
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newUnit, setNewUnit] = useState(DEFAULT_INVENTORY_UNIT);
   const [newMin, setNewMin] = useState("0");
@@ -65,10 +68,23 @@ export function useInventoryScreen() {
 
   const resetCreateFields = () => {
     setEditingId(null);
+    setEditOpen(false);
+    setCreateOpen(false);
     setNewName("");
     setNewUnit(DEFAULT_INVENTORY_UNIT);
     setNewMin("0");
     setNewInitial("0");
+  };
+
+  const openCreate = () => {
+    setError(null);
+    setEditingId(null);
+    setEditOpen(false);
+    setNewName("");
+    setNewUnit(DEFAULT_INVENTORY_UNIT);
+    setNewMin("0");
+    setNewInitial("0");
+    setCreateOpen(true);
   };
 
   const createIngredient = async () => {
@@ -116,10 +132,12 @@ export function useInventoryScreen() {
 
   const startEdit = (item: Ingredient) => {
     setError(null);
+    setCreateOpen(false);
     setEditingId(item.id);
     setNewName(item.name);
     setNewUnit(item.unit);
     setNewMin(String(item.minStock));
+    setEditOpen(true);
   };
 
   const toggleActive = async (item: Ingredient) => {
@@ -193,6 +211,9 @@ export function useInventoryScreen() {
     busy,
     busyId,
     editingItem,
+    createOpen,
+    editOpen,
+    moveOpen,
     newName,
     newUnit,
     newMin,
@@ -212,6 +233,8 @@ export function useInventoryScreen() {
     setEntryNote,
     setAdjustQty,
     setAdjustNote,
+    setMoveOpen,
+    openCreate,
     createIngredient,
     saveEdit,
     startEdit,

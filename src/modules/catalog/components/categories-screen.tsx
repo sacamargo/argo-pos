@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  Modal,
   Table,
   TableBody,
   TableCell,
@@ -27,6 +28,7 @@ type CreateFormValues = z.infer<typeof createCategoryInputSchema>;
 export function CategoriesScreen() {
   const [rows, setRows] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -48,7 +50,6 @@ export function CategoriesScreen() {
 
   useEffect(() => {
     let cancelled = false;
-
     void (async () => {
       try {
         await reload();
@@ -62,11 +63,15 @@ export function CategoriesScreen() {
         }
       }
     })();
-
     return () => {
       cancelled = true;
     };
   }, [reload]);
+
+  const closeForm = () => {
+    setFormOpen(false);
+    reset({ name: "" });
+  };
 
   const onCreate = handleSubmit(async (values) => {
     setError(null);
@@ -76,7 +81,7 @@ export function CategoriesScreen() {
         name: values.name,
         sortOrder: rows.length + 1,
       });
-      reset({ name: "" });
+      closeForm();
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la categoría");
@@ -98,38 +103,27 @@ export function CategoriesScreen() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Categorías</h1>
-        <p className="text-sm text-muted-foreground">
-          Un solo nivel. Desactivar oculta la categoría sin borrarla.
-        </p>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Categorías</h2>
+          <p className="text-sm text-muted-foreground">
+            Un solo nivel. Desactivar oculta la categoría sin borrarla.
+          </p>
+        </div>
+        <Button
+          className="h-11"
+          onClick={() => {
+            setError(null);
+            reset({ name: "" });
+            setFormOpen(true);
+          }}
+        >
+          Agregar categoría
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Alta rápida</CardTitle>
-          <CardDescription>Nombre visible en POS y catálogo.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="flex flex-col gap-3 sm:flex-row" onSubmit={onCreate}>
-            <div className="flex-1 space-y-1">
-              <Input
-                placeholder="Ej. Granizados"
-                className="h-12"
-                aria-label="Nombre de categoría"
-                {...register("name")}
-              />
-              {errors.name ? (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              ) : null}
-            </div>
-            <Button type="submit" size="lg" className="h-12" disabled={isSubmitting}>
-              {isSubmitting ? "Guardando…" : "Agregar"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {error && !formOpen ? <p className="text-sm text-destructive">{error}</p> : null}
 
       <Card>
         <CardHeader>
@@ -138,8 +132,12 @@ export function CategoriesScreen() {
         </CardHeader>
         <CardContent>
           {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
-          {error ? <p className="mb-3 text-sm text-destructive">{error}</p> : null}
-          {!loading ? (
+          {!loading && rows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aún no hay categorías. Pulsa “Agregar categoría”.
+            </p>
+          ) : null}
+          {!loading && rows.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -175,6 +173,36 @@ export function CategoriesScreen() {
           ) : null}
         </CardContent>
       </Card>
+
+      <Modal
+        open={formOpen}
+        title="Agregar categoría"
+        description="Nombre visible en POS y catálogo."
+        onClose={closeForm}
+      >
+        <form className="flex flex-col gap-3" onSubmit={onCreate}>
+          <div className="space-y-1">
+            <Input
+              placeholder="Ej. Granizados"
+              className="h-12"
+              aria-label="Nombre de categoría"
+              {...register("name")}
+            />
+            {errors.name ? (
+              <p className="text-sm text-destructive">{errors.name.message}</p>
+            ) : null}
+            {error && formOpen ? <p className="text-sm text-destructive">{error}</p> : null}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" className="h-12" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando…" : "Crear categoría"}
+            </Button>
+            <Button type="button" variant="outline" className="h-12" onClick={closeForm}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

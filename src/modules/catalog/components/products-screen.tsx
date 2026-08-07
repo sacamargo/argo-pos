@@ -1,8 +1,4 @@
-import { useEffect, useState } from "react";
-import { getAppServices } from "@/application/container";
 import type { Category } from "@/domain/entities/category";
-import type { Ingredient } from "@/domain/entities/ingredient";
-import type { Product } from "@/domain/entities/product";
 import {
   Badge,
   Button,
@@ -11,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Modal,
   Table,
   TableBody,
   TableCell,
@@ -18,233 +15,56 @@ import {
   TableHeader,
   TableRow,
 } from "@/components";
-import { ProductFormCard } from "@/modules/catalog/components/product-form-card";
-import {
-  emptyProductForm,
-  type ProductFormState,
-} from "@/modules/catalog/components/product-form-state";
-import { centsToPesos, formatPesos, pesosToCents } from "@/shared/utils/money";
+import { ProductFormFields } from "@/modules/catalog/components/product-form-fields";
+import { useProductsScreen } from "@/modules/catalog/hooks/use-products-screen";
+import { formatPesos } from "@/shared/utils/money";
 
 type ProductsScreenProps = {
   categories: Category[];
 };
 
 export function ProductsScreen({ categories }: ProductsScreenProps) {
-  const activeCategories = categories.filter((category) => category.active);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [form, setForm] = useState<ProductFormState>(emptyProductForm());
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const reload = async () => {
-    const { products: productService } = await getAppServices();
-    const [productRows, ingredientRows] = await Promise.all([
-      productService.listAll(),
-      productService.listActiveIngredients(),
-    ]);
-    setProducts(productRows);
-    setIngredients(ingredientRows);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await reload();
-        if (!cancelled) {
-          const firstActiveId = categories.find((category) => category.active)?.id ?? "";
-          setForm(emptyProductForm(firstActiveId));
-        }
-      } catch {
-        if (!cancelled) {
-          setError("No se pudieron cargar los productos.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [categories]);
-
-  const startCreate = () => {
-    setError(null);
-    setForm(emptyProductForm(activeCategories[0]?.id ?? ""));
-  };
-
-  const startEdit = async (productId: string) => {
-    setError(null);
-    setBusyId(productId);
-    try {
-      const { products: productService } = await getAppServices();
-      const detail = await productService.getById(productId);
-      if (!detail) {
-        setError("Producto no encontrado");
-        return;
-      }
-      setForm({
-        id: detail.id,
-        name: detail.name,
-        categoryId: detail.categoryId ?? activeCategories[0]?.id ?? "",
-        imagePath: detail.imagePath ?? "",
-        pricePesos: String(centsToPesos(detail.priceCents)),
-        fulfillmentType: detail.fulfillmentType,
-        inventoryLinkMode: "existing",
-        stockItemId: detail.stockItemId ?? "",
-        qtyPerSale: String(detail.qtyPerSale ?? 1),
-        newInventoryUnit: "und",
-        newInventoryMin: "0",
-        newInventoryInitial: "0",
-        recipe: detail.recipe.map((item) => ({
-          ingredientId: item.ingredientId,
-          quantity: String(item.quantity),
-        })),
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo abrir el producto");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const onPickImage = async (file: File) => {
-    setUploadingImage(true);
-    setError(null);
-    try {
-      const { productImages } = await getAppServices();
-      const saved = await productImages.saveFromFile(file);
-      setForm((current) => ({ ...current, imagePath: saved.fileName }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo guardar la imagen");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const onClearImage = () => {
-    setForm((current) => ({ ...current, imagePath: "" }));
-  };
-
-  const onSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const price = Number(form.pricePesos);
-      if (!Number.isFinite(price) || price <= 0) {
-        throw new Error("El precio debe ser mayor a 0");
-      }
-
-      const base = {
-        name: form.name,
-        categoryId: form.categoryId,
-        imagePath: form.imagePath.trim() ? form.imagePath.trim() : null,
-        priceCents: pesosToCents(price),
-      };
-
-      if (form.fulfillmentType === "compound") {
-        if (ingredients.length === 0) {
-          throw new Error(
-            "Para un producto Compuesto primero crea los insumos en Inventario (vaso, base, etc.).",
-          );
-        }
-        if (form.recipe.length === 0) {
-          throw new Error("Agrega al menos un ítem a la receta (ej. vaso + base).");
-        }
-      }
-
-      const payload =
-        form.fulfillmentType === "simple"
-          ? form.id || form.inventoryLinkMode === "existing"
-            ? {
-                ...base,
-                fulfillmentType: "simple" as const,
-                stockItemId: form.stockItemId,
-                qtyPerSale: Number(form.qtyPerSale),
-                recipe: [],
-              }
-            : {
-                ...base,
-                fulfillmentType: "simple" as const,
-                qtyPerSale: Number(form.qtyPerSale),
-                recipe: [],
-                createInventory: {
-                  unit: form.newInventoryUnit,
-                  minStock: Number(form.newInventoryMin) || 0,
-                  initialStock: Number(form.newInventoryInitial) || 0,
-                },
-              }
-          : {
-              ...base,
-              fulfillmentType: "compound" as const,
-              recipe: form.recipe.map((item) => ({
-                ingredientId: item.ingredientId,
-                quantity: Number(item.quantity),
-              })),
-            };
-
-      const { products: productService } = await getAppServices();
-      if (form.id) {
-        await productService.update({ id: form.id, ...payload });
-      } else {
-        await productService.create(payload);
-      }
-      await reload();
-      startCreate();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo guardar el producto");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const toggleActive = async (product: Product) => {
-    setBusyId(product.id);
-    setError(null);
-    try {
-      const { products: productService } = await getAppServices();
-      await productService.setActive({ id: product.id, active: !product.active });
-      await reload();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cambiar el estado");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const categoryName = (categoryId: string | null) =>
-    categories.find((category) => category.id === categoryId)?.name ?? "—";
+  const s = useProductsScreen(categories);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <ProductFormCard
-        form={form}
-        categories={categories}
-        ingredients={ingredients}
-        error={error}
-        saving={saving}
-        uploadingImage={uploadingImage}
-        onChange={setForm}
-        onPickImage={(file) => void onPickImage(file)}
-        onClearImage={onClearImage}
-        onSave={() => void onSave()}
-        onReset={startCreate}
-      />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Productos</h2>
+          <p className="text-sm text-muted-foreground">
+            Lo que se vende en el POS. Agregar o editar abre un formulario.
+          </p>
+        </div>
+        <Button
+          className="h-11"
+          onClick={s.startCreate}
+          disabled={s.activeCategories.length === 0}
+        >
+          Agregar producto
+        </Button>
+      </div>
+
+      {s.activeCategories.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Primero crea una categoría activa en la pestaña Categorías.
+        </p>
+      ) : null}
+
+      {s.listError ? <p className="text-sm text-destructive">{s.listError}</p> : null}
 
       <Card>
         <CardHeader>
           <CardTitle>Listado</CardTitle>
-          <CardDescription>{products.length} producto(s)</CardDescription>
+          <CardDescription>{s.products.length} producto(s)</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
-          {!loading ? (
+          {s.loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
+          {!s.loading && s.products.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aún no hay productos. Pulsa “Agregar producto”.
+            </p>
+          ) : null}
+          {!s.loading && s.products.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -255,13 +75,13 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
+                {s.products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {product.fulfillmentType === "simple" ? "Simple" : "Compuesto"} ·{" "}
-                        {categoryName(product.categoryId)}
+                        {s.categoryName(product.categoryId)}
                         {product.imagePath ? " · Con imagen" : ""}
                       </div>
                     </TableCell>
@@ -274,15 +94,15 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                     <TableCell className="space-x-2 text-right">
                       <Button
                         variant="outline"
-                        disabled={busyId === product.id}
-                        onClick={() => void startEdit(product.id)}
+                        disabled={s.busyId === product.id}
+                        onClick={() => void s.startEdit(product.id)}
                       >
                         Editar
                       </Button>
                       <Button
                         variant="ghost"
-                        disabled={busyId === product.id}
-                        onClick={() => void toggleActive(product)}
+                        disabled={s.busyId === product.id}
+                        onClick={() => void s.toggleActive(product)}
                       >
                         {product.active ? "Desactivar" : "Activar"}
                       </Button>
@@ -294,6 +114,28 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
           ) : null}
         </CardContent>
       </Card>
+
+      <Modal
+        open={s.formOpen}
+        title={s.form.id ? "Editar producto" : "Agregar producto"}
+        description="Simple = se vende tal cual. Compuesto = se arma con receta (granizado)."
+        onClose={s.closeForm}
+        className="max-w-2xl"
+      >
+        <ProductFormFields
+          form={s.form}
+          categories={categories}
+          ingredients={s.ingredients}
+          error={s.error}
+          saving={s.saving}
+          uploadingImage={s.uploadingImage}
+          onChange={s.setForm}
+          onPickImage={(file) => void s.onPickImage(file)}
+          onClearImage={() => s.setForm((current) => ({ ...current, imagePath: "" }))}
+          onSave={() => void s.onSave()}
+          onCancel={s.closeForm}
+        />
+      </Modal>
     </div>
   );
 }
