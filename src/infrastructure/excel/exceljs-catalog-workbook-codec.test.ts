@@ -105,11 +105,29 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
     expect(headerValues(products)).toEqual([...CATALOG_WORKBOOK_HEADERS.products]);
     expect(headerValues(recipes)).toEqual([...CATALOG_WORKBOOK_HEADERS.recipes]);
 
+    expect(String(categories.getCell(2, 1).value)).toBe("EJ-CAT-GRAN");
     expect(String(categories.getCell(2, 2).value)).toContain("Granizados");
-    expect(String(inventory.getCell(2, 2).value)).toContain("Base limón");
+    expect(String(categories.getCell(3, 2).value)).toContain("Snacks");
+
+    expect(String(inventory.getCell(2, 2).value)).toContain("Vaso 16 oz");
+    expect(String(inventory.getCell(2, 3).value)).toBe("und");
+    expect(String(inventory.getCell(5, 2).value)).toContain("Base sabor mora");
+    expect(String(inventory.getCell(5, 3).value)).toBe("ml");
+    expect(String(inventory.getCell(7, 2).value)).toContain("Doritos");
+
+    expect(String(products.getCell(2, 2).value)).toBe("Doritos");
     expect(String(products.getCell(2, 4).value)).toBe("Simple");
+    expect(String(products.getCell(2, 5).value)).toBe("EJ-INV-DORITOS");
+    expect(String(products.getCell(3, 2).value)).toContain("Granizado mora");
     expect(String(products.getCell(3, 4).value)).toBe("Compuesto");
-    expect(Number(recipes.getCell(2, 3).value)).toBe(250);
+
+    expect(String(recipes.getCell(2, 1).value)).toBe("EJ-PROD-GRAN-MORA");
+    expect(String(recipes.getCell(2, 2).value)).toBe("EJ-INV-VASO16");
+    expect(Number(recipes.getCell(2, 3).value)).toBe(1);
+    expect(String(recipes.getCell(5, 2).value)).toBe("EJ-INV-BASE-MORA");
+    expect(Number(recipes.getCell(5, 3).value)).toBe(250);
+    expect(recipes.rowCount).toBe(6);
+
     expect(String(instructions.getCell(1, 1).value)).toMatch(/Argo POS/i);
 
     const instructionText = Array.from(
@@ -118,6 +136,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
     ).join("\n");
     expect(instructionText).toMatch(/Simple/);
     expect(instructionText).toMatch(/Compuesto/);
+    expect(instructionText).toMatch(/Granizado mora/);
     expect(instructionText).not.toMatch(/\bcompound\b/i);
   });
 
