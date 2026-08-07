@@ -34,6 +34,19 @@ const INSTRUCTION_LINES = [
   "Orden sugerido al completar el archivo: Categorias → Inventario → Productos → Recetas.",
 ] as const;
 
+const CATEGORY_WIDTHS = [16, 28];
+const INVENTORY_WIDTHS = [16, 28, 10, 12, 14, 16];
+const PRODUCT_WIDTHS = [16, 28, 18, 12, 18, 18, 12, 10];
+const RECIPE_WIDTHS = [20, 20, 12];
+
+function boolSiNo(value: boolean): "si" | "no" {
+  return value ? "si" : "no";
+}
+
+function emptyIfNull(value: string | number | null | undefined): string | number {
+  return value ?? "";
+}
+
 /**
  * ExcelJS adapter for CatalogWorkbookCodec.
  *
@@ -53,29 +66,110 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
   }
 
   async buildTemplate(): Promise<Uint8Array> {
+    const workbook = await this.createBaseWorkbook();
+    this.fillTemplateExamples(workbook);
+    return this.writeBytes(workbook);
+  }
+
+  async buildExport(data: CatalogWorkbookDto): Promise<Uint8Array> {
+    const workbook = await this.createBaseWorkbook();
+    this.fillExportData(workbook, data);
+    return this.writeBytes(workbook);
+  }
+
+  async parse(bytes: Uint8Array): Promise<CatalogWorkbookDto> {
+    void bytes;
+    throw new Error("CatalogWorkbookCodec.parse is not implemented yet");
+  }
+
+  private async createBaseWorkbook(): Promise<Workbook> {
     const ExcelJS = await this.loadExcelJS();
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Argo POS";
     workbook.created = new Date();
 
     await this.addInstructionsSheet(workbook);
-    this.addCategoriesSheet(workbook);
-    this.addInventorySheet(workbook);
-    this.addProductsSheet(workbook);
-    this.addRecipesSheet(workbook);
+    this.styleDataSheet(
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.categories),
+      [...CATALOG_WORKBOOK_HEADERS.categories],
+      CATEGORY_WIDTHS,
+    );
+    this.styleDataSheet(
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.inventory),
+      [...CATALOG_WORKBOOK_HEADERS.inventory],
+      INVENTORY_WIDTHS,
+    );
+    this.styleDataSheet(
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.products),
+      [...CATALOG_WORKBOOK_HEADERS.products],
+      PRODUCT_WIDTHS,
+    );
+    this.styleDataSheet(
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.recipes),
+      [...CATALOG_WORKBOOK_HEADERS.recipes],
+      RECIPE_WIDTHS,
+    );
 
+    return workbook;
+  }
+
+  private async writeBytes(workbook: Workbook): Promise<Uint8Array> {
     const buffer = await workbook.xlsx.writeBuffer();
     return new Uint8Array(buffer);
   }
 
-  async buildExport(data: CatalogWorkbookDto): Promise<Uint8Array> {
-    void data;
-    throw new Error("CatalogWorkbookCodec.buildExport is not implemented yet");
+  private fillTemplateExamples(workbook: Workbook): void {
+    workbook
+      .getWorksheet(CATALOG_WORKBOOK_SHEETS.categories)
+      ?.addRow(["", "Granizados"]);
+    workbook
+      .getWorksheet(CATALOG_WORKBOOK_SHEETS.inventory)
+      ?.addRow(["", "Base limón", "ml", 5000, 500, "no"]);
+    const products = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products);
+    products?.addRow(["", "Agua 600ml", "", "simple", "", 1, 2500, "si"]);
+    products?.addRow(["", "Granizado limón", "", "compound", "", "", 8000, "si"]);
+    workbook
+      .getWorksheet(CATALOG_WORKBOOK_SHEETS.recipes)
+      ?.addRow(["", "", 250]);
   }
 
-  async parse(bytes: Uint8Array): Promise<CatalogWorkbookDto> {
-    void bytes;
-    throw new Error("CatalogWorkbookCodec.parse is not implemented yet");
+  private fillExportData(workbook: Workbook, data: CatalogWorkbookDto): void {
+    const categories = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.categories);
+    for (const row of data.categories) {
+      categories?.addRow([row.code, row.name]);
+    }
+
+    const inventory = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.inventory);
+    for (const row of data.inventory) {
+      inventory?.addRow([
+        row.code,
+        row.name,
+        row.unit,
+        emptyIfNull(row.stockQuantity),
+        row.minStock,
+        boolSiNo(row.updateStock),
+      ]);
+    }
+
+    const products = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products);
+    for (const row of data.products) {
+      const isSimple = row.fulfillmentType === "simple";
+      products?.addRow([
+        row.code,
+        row.name,
+        row.categoryCode,
+        row.fulfillmentType,
+        isSimple ? emptyIfNull(row.inventoryCode) : "",
+        isSimple ? emptyIfNull(row.qtyPerSale) : "",
+        row.pricePesos,
+        boolSiNo(row.active),
+      ]);
+    }
+
+    const recipes = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.recipes);
+    for (const row of data.recipes) {
+      recipes?.addRow([row.productCode, row.inventoryCode, row.quantity]);
+    }
   }
 
   private async addInstructionsSheet(workbook: Workbook): Promise<void> {
@@ -93,39 +187,6 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
     } catch {
       // Protection is best-effort; template remains usable without it.
     }
-  }
-
-  private addCategoriesSheet(workbook: Workbook): void {
-    const sheet = workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.categories);
-    this.styleDataSheet(sheet, [...CATALOG_WORKBOOK_HEADERS.categories], [16, 28]);
-    sheet.addRow(["", "Granizados"]);
-  }
-
-  private addInventorySheet(workbook: Workbook): void {
-    const sheet = workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.inventory);
-    this.styleDataSheet(
-      sheet,
-      [...CATALOG_WORKBOOK_HEADERS.inventory],
-      [16, 28, 10, 12, 14, 16],
-    );
-    sheet.addRow(["", "Base limón", "ml", 5000, 500, "no"]);
-  }
-
-  private addProductsSheet(workbook: Workbook): void {
-    const sheet = workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.products);
-    this.styleDataSheet(
-      sheet,
-      [...CATALOG_WORKBOOK_HEADERS.products],
-      [16, 28, 18, 12, 18, 18, 12, 10],
-    );
-    sheet.addRow(["", "Agua 600ml", "", "simple", "", 1, 2500, "si"]);
-    sheet.addRow(["", "Granizado limón", "", "compound", "", "", 8000, "si"]);
-  }
-
-  private addRecipesSheet(workbook: Workbook): void {
-    const sheet = workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.recipes);
-    this.styleDataSheet(sheet, [...CATALOG_WORKBOOK_HEADERS.recipes], [20, 20, 12]);
-    sheet.addRow(["", "", 250]);
   }
 
   private styleDataSheet(

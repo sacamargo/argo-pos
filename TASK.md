@@ -144,6 +144,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] `CatalogService` fachada (snapshot + orquestación; Excel pendiente)
 - [x] `CatalogWorkbookCodec` port + adapter ExcelJS (stubs; plantilla/export/import pendientes)
 - [x] `buildTemplate()` plantilla oficial (hojas + headers + ejemplos)
+- [x] `buildExport()` DTO → workbook (sin UI)
 
 ## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 
