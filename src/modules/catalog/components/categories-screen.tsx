@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { getAppServices } from "@/application/container";
@@ -22,11 +22,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components";
+import { ListSearchInput } from "@/modules/shared/components/list-search-input";
+import { matchesNameSearch } from "@/shared/utils/name-search";
 
 type CreateFormValues = z.infer<typeof createCategoryInputSchema>;
 
 export function CategoriesScreen() {
   const [rows, setRows] = useState<Category[]>([]);
+  const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,6 +44,11 @@ export function CategoriesScreen() {
     resolver: zodResolver(createCategoryInputSchema),
     defaultValues: { name: "" },
   });
+
+  const filtered = useMemo(
+    () => rows.filter((category) => matchesNameSearch(category.name, query)),
+    [rows, query],
+  );
 
   const reload = useCallback(async () => {
     const { categories } = await getAppServices();
@@ -125,10 +133,20 @@ export function CategoriesScreen() {
 
       {error && !formOpen ? <p className="text-sm text-destructive">{error}</p> : null}
 
+      <ListSearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Buscar categoría por nombre…"
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Listado</CardTitle>
-          <CardDescription>{rows.length} categoría(s)</CardDescription>
+          <CardDescription>
+            {query.trim()
+              ? `${filtered.length} de ${rows.length} categoría(s)`
+              : `${rows.length} categoría(s)`}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
@@ -137,7 +155,12 @@ export function CategoriesScreen() {
               Aún no hay categorías. Pulsa “Agregar categoría”.
             </p>
           ) : null}
-          {!loading && rows.length > 0 ? (
+          {!loading && rows.length > 0 && filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Ninguna categoría coincide con “{query.trim()}”.
+            </p>
+          ) : null}
+          {!loading && filtered.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -148,7 +171,7 @@ export function CategoriesScreen() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((category) => (
+                {filtered.map((category) => (
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.name}</TableCell>
                     <TableCell>{category.sortOrder}</TableCell>
