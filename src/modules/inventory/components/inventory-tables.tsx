@@ -2,6 +2,7 @@ import type { Ingredient } from "@/domain/entities/ingredient";
 import type { InventoryMovementView } from "@/domain/entities/inventory";
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
@@ -19,9 +20,19 @@ type IngredientsTableProps = {
   loading: boolean;
   ingredients: Ingredient[];
   lowCount: number;
+  busyId: string | null;
+  onEdit: (item: Ingredient) => void;
+  onToggleActive: (item: Ingredient) => void;
 };
 
-export function IngredientsTable({ loading, ingredients, lowCount }: IngredientsTableProps) {
+export function IngredientsTable({
+  loading,
+  ingredients,
+  lowCount,
+  busyId,
+  onEdit,
+  onToggleActive,
+}: IngredientsTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -42,11 +53,12 @@ export function IngredientsTable({ loading, ingredients, lowCount }: Ingredients
                 <TableHead>Stock</TableHead>
                 <TableHead>Mínimo</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {ingredients.map((item) => {
-                const low = item.stockQuantity <= item.minStock;
+                const low = item.active && item.stockQuantity <= item.minStock;
                 return (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
@@ -57,9 +69,29 @@ export function IngredientsTable({ loading, ingredients, lowCount }: Ingredients
                       {item.minStock} {item.unit}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={low ? "destructive" : item.active ? "success" : "secondary"}>
-                        {low ? "Stock bajo" : item.active ? "OK" : "Inactivo"}
+                      <Badge
+                        variant={
+                          !item.active ? "secondary" : low ? "destructive" : "success"
+                        }
+                      >
+                        {!item.active ? "Oculto" : low ? "Stock bajo" : "OK"}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="space-x-2 text-right">
+                      <Button
+                        variant="outline"
+                        disabled={busyId === item.id}
+                        onClick={() => onEdit(item)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={busyId === item.id}
+                        onClick={() => onToggleActive(item)}
+                      >
+                        {item.active ? "Ocultar" : "Mostrar"}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

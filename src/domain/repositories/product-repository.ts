@@ -47,4 +47,12 @@ export interface ProductRepository {
   deleteAllRecipeItems(): Promise<number>;
   /** Maintenance wipe: hard-delete product row (caller ensures no blocking FKs). */
   deleteById(id: string): Promise<void>;
+  /**
+   * Active catalog links that block deactivating an inventory item.
+   * asStock = simple product stockItemId; inRecipe = compound recipe line.
+   */
+  findActiveLinksToIngredient(ingredientId: string): Promise<{
+    asStock: boolean;
+    inRecipe: boolean;
+  }>;
 }
