@@ -227,8 +227,233 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
     });
   });
 
-  it("keeps parse unimplemented", async () => {
+  describe("parse", () => {
     const codec = new ExcelJsCatalogWorkbookCodec();
-    await expect(codec.parse(new Uint8Array())).rejects.toThrow(/not implemented/i);
+
+    async function workbookToBytes(workbook: ExcelJS.Workbook): Promise<Uint8Array> {
+      const buffer = await workbook.xlsx.writeBuffer();
+      return new Uint8Array(buffer);
+    }
+
+    function addRequiredSheets(workbook: ExcelJS.Workbook) {
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.instructions);
+      for (const [name, headers] of [
+        [CATALOG_WORKBOOK_SHEETS.categories, CATALOG_WORKBOOK_HEADERS.categories],
+        [CATALOG_WORKBOOK_SHEETS.inventory, CATALOG_WORKBOOK_HEADERS.inventory],
+        [CATALOG_WORKBOOK_SHEETS.products, CATALOG_WORKBOOK_HEADERS.products],
+        [CATALOG_WORKBOOK_SHEETS.recipes, CATALOG_WORKBOOK_HEADERS.recipes],
+      ] as const) {
+        const sheet = workbook.addWorksheet(name);
+        sheet.addRow([...headers]);
+      }
+    }
+
+    it("parses a valid exported workbook (round-trip)", async () => {
+      const source: CatalogWorkbookDto = {
+        categories: [
+          { code: "CAT-A1", name: "Bebidas", active: true, sortOrder: 0 },
+        ],
+        inventory: [
+          {
+            code: "INV-B1",
+            name: "Vaso",
+            unit: "und",
+            stockQuantity: 40,
+            minStock: 5,
+            active: true,
+            updateStock: false,
+          },
+        ],
+        products: [
+          {
+            code: "PROD-S1",
+            name: "Agua",
+            categoryCode: "CAT-A1",
+            fulfillmentType: "simple",
+            pricePesos: 2500,
+            active: true,
+            inventoryCode: "INV-B1",
+            qtyPerSale: 1,
+          },
+        ],
+        recipes: [],
+      };
+
+      const bytes = await codec.buildExport(source);
+      const parsed = await codec.parse(bytes);
+
+      expect(parsed.categories).toEqual([
+        { code: "CAT-A1", name: "Bebidas", active: true, sortOrder: 0 },
+      ]);
+      expect(parsed.inventory[0]).toMatchObject({
+        code: "INV-B1",
+        name: "Vaso",
+        unit: "und",
+        stockQuantity: 40,
+        minStock: 5,
+        updateStock: false,
+      });
+      expect(parsed.products[0]).toMatchObject({
+        code: "PROD-S1",
+        fulfillmentType: "simple",
+        inventoryCode: "INV-B1",
+        qtyPerSale: 1,
+        pricePesos: 2500,
+      });
+      expect(parsed.recipes).toEqual([]);
+    });
+
+    it("parses an empty workbook", async () => {
+      const bytes = await codec.buildExport(emptyDto);
+      const parsed = await codec.parse(bytes);
+      expect(parsed).toEqual(emptyDto);
+    });
+
+    it("ignores fully empty rows", async () => {
+      const workbook = new ExcelJS.Workbook();
+      addRequiredSheets(workbook);
+      const categories = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.categories)!;
+      categories.addRow(["", ""]);
+      categories.addRow(["CAT-X", "Extras"]);
+      categories.addRow(["", ""]);
+
+      const parsed = await codec.parse(await workbookToBytes(workbook));
+      expect(parsed.categories).toEqual([
+        { code: "CAT-X", name: "Extras", active: true, sortOrder: 0 },
+      ]);
+    });
+
+    it("throws when a required sheet is missing", async () => {
+      const workbook = new ExcelJS.Workbook();
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.instructions);
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.categories).addRow([
+        ...CATALOG_WORKBOOK_HEADERS.categories,
+      ]);
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.inventory).addRow([
+        ...CATALOG_WORKBOOK_HEADERS.inventory,
+      ]);
+      workbook.addWorksheet(CATALOG_WORKBOOK_SHEETS.products).addRow([
+        ...CATALOG_WORKBOOK_HEADERS.products,
+      ]);
+      // recipes missing
+
+      await expect(codec.parse(await workbookToBytes(workbook))).rejects.toThrow(
+        /Falta la hoja requerida "Recetas"/,
+      );
+    });
+
+    it("throws when a required column is missing", async () => {
+      const workbook = new ExcelJS.Workbook();
+      addRequiredSheets(workbook);
+      const categories = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.categories)!;
+      categories.spliceRows(1, 1, ["codigo"]); // missing nombre
+
+      await expect(codec.parse(await workbookToBytes(workbook))).rejects.toThrow(
+        /Falta la columna requerida "nombre"/,
+      );
+    });
+
+    it("parses a simple product", async () => {
+      const bytes = await codec.buildExport({
+        ...emptyDto,
+        products: [
+          {
+            code: "PROD-S1",
+            name: "Agua",
+            categoryCode: "CAT-A1",
+            fulfillmentType: "simple",
+            pricePesos: 2500,
+            active: true,
+            inventoryCode: "INV-B1",
+            qtyPerSale: 1,
+          },
+        ],
+      });
+      const parsed = await codec.parse(bytes);
+      expect(parsed.products).toHaveLength(1);
+      expect(parsed.products[0]?.fulfillmentType).toBe("simple");
+      expect(parsed.products[0]?.inventoryCode).toBe("INV-B1");
+      expect(parsed.products[0]?.qtyPerSale).toBe(1);
+    });
+
+    it("parses a compound product", async () => {
+      const bytes = await codec.buildExport({
+        ...emptyDto,
+        products: [
+          {
+            code: "PROD-C1",
+            name: "Granizado",
+            categoryCode: "CAT-A1",
+            fulfillmentType: "compound",
+            pricePesos: 8000,
+            active: true,
+            inventoryCode: null,
+            qtyPerSale: null,
+          },
+        ],
+      });
+      const parsed = await codec.parse(bytes);
+      expect(parsed.products[0]?.fulfillmentType).toBe("compound");
+      expect(parsed.products[0]?.inventoryCode).toBeNull();
+      expect(parsed.products[0]?.qtyPerSale).toBeNull();
+    });
+
+    it("parses multiple recipe rows", async () => {
+      const bytes = await codec.buildExport({
+        ...emptyDto,
+        recipes: [
+          { productCode: "PROD-C1", inventoryCode: "INV-B1", quantity: 250 },
+          { productCode: "PROD-C1", inventoryCode: "INV-B2", quantity: 1 },
+        ],
+      });
+      const parsed = await codec.parse(bytes);
+      expect(parsed.recipes).toEqual([
+        { productCode: "PROD-C1", inventoryCode: "INV-B1", quantity: 250 },
+        { productCode: "PROD-C1", inventoryCode: "INV-B2", quantity: 1 },
+      ]);
+    });
+
+    it("preserves tildes and special characters", async () => {
+      const bytes = await codec.buildExport({
+        ...emptyDto,
+        categories: [
+          { code: "CAT-Ñ", name: "Bebidas no alcohólicas", active: true, sortOrder: 0 },
+        ],
+        inventory: [
+          {
+            code: "INV-1",
+            name: "Base limón — ñoño",
+            unit: "ml",
+            stockQuantity: 10,
+            minStock: 1,
+            active: true,
+            updateStock: true,
+          },
+        ],
+      });
+      const parsed = await codec.parse(bytes);
+      expect(parsed.categories[0]?.name).toBe("Bebidas no alcohólicas");
+      expect(parsed.inventory[0]?.name).toBe("Base limón — ñoño");
+      expect(parsed.inventory[0]?.updateStock).toBe(true);
+    });
+
+    it("reads unknown product tipo without validating it", async () => {
+      const workbook = new ExcelJS.Workbook();
+      addRequiredSheets(workbook);
+      workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products)!.addRow([
+        "PROD-X",
+        "Raro",
+        "CAT-A",
+        "desconocido",
+        "",
+        "",
+        -100,
+        "si",
+      ]);
+
+      const parsed = await codec.parse(await workbookToBytes(workbook));
+      expect(parsed.products[0]?.fulfillmentType).toBe("desconocido");
+      expect(parsed.products[0]?.pricePesos).toBe(-100);
+    });
   });
 });

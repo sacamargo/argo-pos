@@ -5,6 +5,7 @@ import {
   type CatalogWorkbookDto,
 } from "@/domain/catalog/catalog-workbook-dto";
 import { CATALOG_WORKBOOK_HEADERS } from "@/infrastructure/excel/catalog-workbook-headers";
+import { parseCatalogWorkbook } from "@/infrastructure/excel/catalog-workbook-parse";
 
 type ExcelJsApi = {
   Workbook: new () => Workbook;
@@ -78,8 +79,14 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
   }
 
   async parse(bytes: Uint8Array): Promise<CatalogWorkbookDto> {
-    void bytes;
-    throw new Error("CatalogWorkbookCodec.parse is not implemented yet");
+    const ExcelJS = await this.loadExcelJS();
+    const workbook = new ExcelJS.Workbook();
+    const arrayBuffer = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    );
+    await workbook.xlsx.load(arrayBuffer);
+    return parseCatalogWorkbook(workbook);
   }
 
   private async createBaseWorkbook(): Promise<Workbook> {
