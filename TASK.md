@@ -470,20 +470,20 @@ Sin internet en ningún paso.
 
 **Criterio de hecho:** admin puede corregir y ocultar ítems de bodega sin tocar stock a mano. ✅
 
-## Fase 3 — Alta única Producto Simple `[P0]` `todo`
+## Fase 3 — Alta única Producto Simple `[P0]` `done`
 
-- [ ] En Catálogo, Simple crea o reutiliza inventario en el mismo flujo
-- [ ] Cero doble proceso obligatorio (Inventario + Catálogo) para vender empaquetados
-- [ ] Copy dummy: Simple = se vende tal cual
-- [ ] Tests service + checklist
+- [x] En Catálogo, Simple crea o reutiliza inventario en el mismo flujo
+- [x] Cero doble proceso obligatorio (Inventario + Catálogo) para vender empaquetados
+- [x] Copy dummy: Simple = se vende tal cual
+- [x] Tests service + checklist
 
-**Criterio de hecho:** crear Doritos/Cerveza solo desde Catálogo deja el producto vendible y con stock.
+**Criterio de hecho:** crear Doritos/Cerveza solo desde Catálogo deja el producto vendible y con stock. ✅
 
-## Fase 4 — Pulido UX de productos compuestos `[P1]` `todo`
+## Fase 4 — Pulido UX de productos compuestos `[P1]` `done`
 
-- [ ] Copy/wizard Compuesto (granizado) guiado
-- [ ] Validación: insumos deben existir en Inventario
-- [ ] Receta clara en UI
-- [ ] Checklist manual granizado
+- [x] Copy/wizard Compuesto (granizado) guiado
+- [x] Validación: insumos deben existir en Inventario
+- [x] Receta clara en UI
+- [x] Checklist manual granizado (quality gates)
 
-**Criterio de hecho:** un admin dummy arma un granizado sin confusión con el flujo Simple.
+**Criterio de hecho:** un admin dummy arma un granizado sin confusión con el flujo Simple. ✅

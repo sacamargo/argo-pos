@@ -37,7 +37,8 @@ export function CatalogScreen() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Catálogo</h1>
         <p className="text-sm text-muted-foreground">
-          Productos, categorías, recetas e importación/exportación Excel.
+          Lo que se vende en el POS. Simple = empaquetado (crea stock aquí). Compuesto =
+          granizado u otro armado (insumos en Inventario + receta aquí).
         </p>
       </div>
 

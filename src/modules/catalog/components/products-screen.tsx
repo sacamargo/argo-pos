@@ -96,8 +96,12 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
         imagePath: detail.imagePath ?? "",
         pricePesos: String(centsToPesos(detail.priceCents)),
         fulfillmentType: detail.fulfillmentType,
+        inventoryLinkMode: "existing",
         stockItemId: detail.stockItemId ?? "",
         qtyPerSale: String(detail.qtyPerSale ?? 1),
+        newInventoryUnit: "und",
+        newInventoryMin: "0",
+        newInventoryInitial: "0",
         recipe: detail.recipe.map((item) => ({
           ingredientId: item.ingredientId,
           quantity: String(item.quantity),
@@ -144,15 +148,38 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
         priceCents: pesosToCents(price),
       };
 
+      if (form.fulfillmentType === "compound") {
+        if (ingredients.length === 0) {
+          throw new Error(
+            "Para un producto Compuesto primero crea los insumos en Inventario (vaso, base, etc.).",
+          );
+        }
+        if (form.recipe.length === 0) {
+          throw new Error("Agrega al menos un ítem a la receta (ej. vaso + base).");
+        }
+      }
+
       const payload =
         form.fulfillmentType === "simple"
-          ? {
-              ...base,
-              fulfillmentType: "simple" as const,
-              stockItemId: form.stockItemId,
-              qtyPerSale: Number(form.qtyPerSale),
-              recipe: [],
-            }
+          ? form.id || form.inventoryLinkMode === "existing"
+            ? {
+                ...base,
+                fulfillmentType: "simple" as const,
+                stockItemId: form.stockItemId,
+                qtyPerSale: Number(form.qtyPerSale),
+                recipe: [],
+              }
+            : {
+                ...base,
+                fulfillmentType: "simple" as const,
+                qtyPerSale: Number(form.qtyPerSale),
+                recipe: [],
+                createInventory: {
+                  unit: form.newInventoryUnit,
+                  minStock: Number(form.newInventoryMin) || 0,
+                  initialStock: Number(form.newInventoryInitial) || 0,
+                },
+              }
           : {
               ...base,
               fulfillmentType: "compound" as const,
@@ -233,7 +260,8 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {product.fulfillmentType} · {categoryName(product.categoryId)}
+                        {product.fulfillmentType === "simple" ? "Simple" : "Compuesto"} ·{" "}
+                        {categoryName(product.categoryId)}
                         {product.imagePath ? " · Con imagen" : ""}
                       </div>
                     </TableCell>
