@@ -133,10 +133,16 @@ export function useInventoryScreen() {
   const startEdit = (item: Ingredient) => {
     setError(null);
     setCreateOpen(false);
+    setMoveOpen(false);
     setEditingId(item.id);
+    setSelectedId(item.id);
     setNewName(item.name);
     setNewUnit(item.unit);
     setNewMin(String(item.minStock));
+    setEntryQty("");
+    setEntryNote("");
+    setAdjustQty("");
+    setAdjustNote("");
     setEditOpen(true);
   };
 
@@ -157,13 +163,16 @@ export function useInventoryScreen() {
     }
   };
 
+  const targetIngredientId = () =>
+    editOpen && editingId ? editingId : selectedId;
+
   const registerEntry = async () => {
     setBusy(true);
     setError(null);
     try {
       const { inventory } = await getAppServices();
       await inventory.recordPurchaseIn({
-        ingredientId: selectedId,
+        ingredientId: targetIngredientId(),
         quantity: Number(entryQty),
         note: entryNote || undefined,
         userId: user?.id,
@@ -184,7 +193,7 @@ export function useInventoryScreen() {
     try {
       const { inventory } = await getAppServices();
       await inventory.recordAdjustment({
-        ingredientId: selectedId,
+        ingredientId: targetIngredientId(),
         quantity: Number(adjustQty),
         note: adjustNote,
         userId: user?.id,
