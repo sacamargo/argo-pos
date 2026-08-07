@@ -1,6 +1,7 @@
 import { AuthService } from "@/application/services/auth-service";
 import { BackupService } from "@/application/services/backup-service";
 import { CashSessionService } from "@/application/services/cash-session-service";
+import { CatalogImportService } from "@/application/services/catalog-import-service";
 import { CatalogService } from "@/application/services/catalog-service";
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
@@ -12,6 +13,7 @@ import { SaleService } from "@/application/services/sale-service";
 import { UserService } from "@/application/services/user-service";
 import type { CatalogWorkbookCodec } from "@/domain/catalog/catalog-workbook-codec";
 import { TauriBackupFileStore } from "@/infrastructure/backup/tauri-backup-file-store";
+import { CatalogWorkbookValidator } from "@/infrastructure/excel/catalog-workbook-validator";
 import { TauriProductImageStore } from "@/infrastructure/images/tauri-product-image-store";
 import { DrizzleBackupRepository } from "@/infrastructure/repositories/drizzle-backup-repository";
 import { DrizzleCashSessionRepository } from "@/infrastructure/repositories/drizzle-cash-session-repository";
@@ -51,8 +53,10 @@ export type AppServices = {
   inventory: InventoryService;
   /** Facade for catalog-wide ops (future Excel import/export). */
   catalog: CatalogService;
-  /** Excel workbook codec (port); CatalogService will consume it in later branches. */
+  /** Excel workbook codec (port). */
   catalogWorkbook: CatalogWorkbookCodec;
+  /** Persist validated workbook DTOs (upsert by code). */
+  catalogImport: CatalogImportService;
   cashSessions: CashSessionService;
   sales: SaleService;
   saleQueries: SaleQueryService;
@@ -93,6 +97,13 @@ export async function getAppServices(): Promise<AppServices> {
     inventory: inventoryService,
     catalog: new CatalogService(categoryService, inventoryService, productService),
     catalogWorkbook: createLazyCatalogWorkbookCodec(),
+    catalogImport: new CatalogImportService(
+      categoryService,
+      inventoryService,
+      productService,
+      new CatalogWorkbookValidator(),
+      runInTransaction,
+    ),
     cashSessions: new CashSessionService(cashSessions),
     sales: new SaleService(
       sales,
