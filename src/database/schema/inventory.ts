@@ -3,6 +3,7 @@ import { users } from "@/database/schema/users";
 
 export const ingredients = sqliteTable("ingredients", {
   id: text("id").primaryKey(),
+  code: text("code").notNull().unique(),
   name: text("name").notNull(),
   unit: text("unit").notNull(),
   stockQuantity: real("stock_quantity").notNull().default(0),

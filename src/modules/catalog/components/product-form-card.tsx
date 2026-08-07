@@ -40,6 +40,7 @@ export function ProductFormCard({
   onReset,
 }: ProductFormCardProps) {
   const activeCategories = categories.filter((category) => category.active);
+  const isSimple = form.fulfillmentType === "simple";
 
   const addRecipeRow = () => {
     const first = ingredients[0];
@@ -57,10 +58,16 @@ export function ProductFormCard({
       <CardHeader>
         <CardTitle>{form.id ? "Editar producto" : "Nuevo producto"}</CardTitle>
         <CardDescription>
-          Precio en pesos. Receta opcional con cantidades por venta.
+          Simple = stock propio. Compound = receta de inventario.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        <Input
+          className="h-12"
+          placeholder="Código (PROD-GRAN-LIM12)"
+          value={form.code}
+          onChange={(event) => onChange({ ...form, code: event.target.value })}
+        />
         <Input
           className="h-12"
           placeholder="Nombre"
@@ -75,9 +82,23 @@ export function ProductFormCard({
           <option value="">Selecciona categoría</option>
           {activeCategories.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name}
+              {category.code} · {category.name}
             </option>
           ))}
+        </select>
+        <select
+          className="h-12 rounded-md border border-input bg-card px-3 text-sm"
+          value={form.fulfillmentType}
+          onChange={(event) =>
+            onChange({
+              ...form,
+              fulfillmentType: event.target.value === "simple" ? "simple" : "compound",
+              recipe: event.target.value === "simple" ? [] : form.recipe,
+            })
+          }
+        >
+          <option value="compound">Compound (receta)</option>
+          <option value="simple">Simple (inventario 1:1)</option>
         </select>
         <Input
           className="h-12"
@@ -88,6 +109,33 @@ export function ProductFormCard({
           value={form.pricePesos}
           onChange={(event) => onChange({ ...form, pricePesos: event.target.value })}
         />
+
+        {isSimple ? (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <p className="text-sm font-medium">Inventario vinculado</p>
+            <select
+              className="h-11 w-full rounded-md border border-input bg-card px-3 text-sm"
+              value={form.stockItemId}
+              onChange={(event) => onChange({ ...form, stockItemId: event.target.value })}
+            >
+              <option value="">Selecciona ítem</option>
+              {ingredients.map((ingredient) => (
+                <option key={ingredient.id} value={ingredient.id}>
+                  {ingredient.code} · {ingredient.name} ({ingredient.unit})
+                </option>
+              ))}
+            </select>
+            <Input
+              className="h-11"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Cantidad por venta"
+              value={form.qtyPerSale}
+              onChange={(event) => onChange({ ...form, qtyPerSale: event.target.value })}
+            />
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <div className="h-28 overflow-hidden rounded-md border border-border">
@@ -119,89 +167,85 @@ export function ProductFormCard({
               </Button>
             ) : null}
             <p className="text-xs text-muted-foreground">
-              {uploadingImage
-                ? "Guardando imagen…"
-                : "Se copia a la carpeta de datos de la app (máx. 5 MB)."}
+              {uploadingImage ? "Guardando imagen…" : "Opcional · máx. 5 MB"}
             </p>
           </div>
         </div>
 
-        <div className="space-y-2 rounded-md border border-border p-3">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-medium">Receta</p>
-            <Button type="button" variant="outline" onClick={addRecipeRow}>
-              Agregar ítem
-            </Button>
+        {!isSimple ? (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-medium">Receta</p>
+              <Button type="button" variant="outline" onClick={addRecipeRow}>
+                Agregar ítem
+              </Button>
+            </div>
+            {form.recipe.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Agrega al menos un ítem.</p>
+            ) : (
+              form.recipe.map((item, index) => (
+                <div
+                  key={`${item.ingredientId}-${index}`}
+                  className="flex flex-col gap-2 sm:flex-row"
+                >
+                  <select
+                    className="h-11 flex-1 rounded-md border border-input bg-card px-3 text-sm"
+                    value={item.ingredientId}
+                    onChange={(event) => {
+                      const recipe = [...form.recipe];
+                      const currentItem = recipe[index];
+                      if (!currentItem) {
+                        return;
+                      }
+                      recipe[index] = {
+                        ingredientId: event.target.value,
+                        quantity: currentItem.quantity,
+                      };
+                      onChange({ ...form, recipe });
+                    }}
+                  >
+                    {ingredients.map((ingredient) => (
+                      <option key={ingredient.id} value={ingredient.id}>
+                        {ingredient.code} · {ingredient.name} ({ingredient.unit})
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    className="h-11 sm:w-28"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.quantity}
+                    onChange={(event) => {
+                      const recipe = [...form.recipe];
+                      const currentItem = recipe[index];
+                      if (!currentItem) {
+                        return;
+                      }
+                      recipe[index] = {
+                        ingredientId: currentItem.ingredientId,
+                        quantity: event.target.value,
+                      };
+                      onChange({ ...form, recipe });
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() =>
+                      onChange({
+                        ...form,
+                        recipe: form.recipe.filter((_, i) => i !== index),
+                      })
+                    }
+                  >
+                    Quitar
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
-          {form.recipe.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Sin ingredientes (válido para extras).
-            </p>
-          ) : (
-            form.recipe.map((item, index) => (
-              <div
-                key={`${item.ingredientId}-${index}`}
-                className="flex flex-col gap-2 sm:flex-row"
-              >
-                <select
-                  className="h-11 flex-1 rounded-md border border-input bg-card px-3 text-sm"
-                  value={item.ingredientId}
-                  onChange={(event) => {
-                    const recipe = [...form.recipe];
-                    const currentItem = recipe[index];
-                    if (!currentItem) {
-                      return;
-                    }
-                    recipe[index] = {
-                      ingredientId: event.target.value,
-                      quantity: currentItem.quantity,
-                    };
-                    onChange({ ...form, recipe });
-                  }}
-                >
-                  {ingredients.map((ingredient) => (
-                    <option key={ingredient.id} value={ingredient.id}>
-                      {ingredient.name} ({ingredient.unit})
-                    </option>
-                  ))}
-                </select>
-                <Input
-                  className="h-11 sm:w-28"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.quantity}
-                  onChange={(event) => {
-                    const recipe = [...form.recipe];
-                    const currentItem = recipe[index];
-                    if (!currentItem) {
-                      return;
-                    }
-                    recipe[index] = {
-                      ingredientId: currentItem.ingredientId,
-                      quantity: event.target.value,
-                    };
-                    onChange({ ...form, recipe });
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() =>
-                    onChange({
-                      ...form,
-                      recipe: form.recipe.filter(
-                        (_, recipeIndex) => recipeIndex !== index,
-                      ),
-                    })
-                  }
-                >
-                  Quitar
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
+        ) : null}
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

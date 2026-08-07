@@ -66,12 +66,14 @@ export async function seedBootstrapIfNeeded(): Promise<boolean> {
   await db.insert(categories).values([
     {
       id: crypto.randomUUID(),
+      code: "CAT-GRAN",
       name: "Granizados",
       active: true,
       sortOrder: 1,
     },
     {
       id: crypto.randomUUID(),
+      code: "CAT-EXTRAS",
       name: "Extras",
       active: true,
       sortOrder: 2,
@@ -149,6 +151,7 @@ export async function seedCoreIfNeeded(): Promise<boolean> {
   const ingredientId = crypto.randomUUID();
   await db.insert(ingredients).values({
     id: ingredientId,
+    code: "INV-BASE-LIMON",
     name: "Base limón",
     unit: "ml",
     stockQuantity: 5000,
@@ -160,10 +163,14 @@ export async function seedCoreIfNeeded(): Promise<boolean> {
   const productId = crypto.randomUUID();
   await db.insert(products).values({
     id: productId,
+    code: "PROD-GRAN-LIM",
     categoryId: granizados?.id ?? null,
     name: "Granizado limón",
     imagePath: null,
     priceCents: 5000,
+    fulfillmentType: "compound",
+    stockItemId: null,
+    qtyPerSale: null,
     active: true,
     createdAt: now,
     updatedAt: now,

@@ -11,10 +11,12 @@ import type { Ingredient } from "@/domain/entities/ingredient";
 
 type CreateIngredientFormProps = {
   busy: boolean;
+  code: string;
   name: string;
   unit: string;
   minStock: string;
   initialStock: string;
+  onCodeChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onUnitChange: (value: string) => void;
   onMinChange: (value: string) => void;
@@ -24,10 +26,12 @@ type CreateIngredientFormProps = {
 
 export function CreateIngredientForm({
   busy,
+  code,
   name,
   unit,
   minStock,
   initialStock,
+  onCodeChange,
   onNameChange,
   onUnitChange,
   onMinChange,
@@ -37,12 +41,18 @@ export function CreateIngredientForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nuevo ingrediente</CardTitle>
+        <CardTitle>Nuevo ítem de inventario</CardTitle>
         <CardDescription>
           Si pones stock inicial, se crea un movimiento de entrada.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        <Input
+          className="h-11"
+          placeholder="Código (INV-VASO-12)"
+          value={code}
+          onChange={(e) => onCodeChange(e.target.value)}
+        />
         <Input
           className="h-11"
           placeholder="Nombre"
@@ -124,7 +134,7 @@ export function MovementForms({
         >
           {ingredients.map((item) => (
             <option key={item.id} value={item.id}>
-              {item.name}
+              {item.code} · {item.name} ({item.unit}) — {item.stockQuantity}
             </option>
           ))}
         </select>

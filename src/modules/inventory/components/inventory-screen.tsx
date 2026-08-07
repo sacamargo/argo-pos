@@ -20,6 +20,7 @@ export function InventoryScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
+  const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newUnit, setNewUnit] = useState("ml");
   const [newMin, setNewMin] = useState("0");
@@ -68,11 +69,13 @@ export function InventoryScreen() {
     try {
       const { inventory } = await getAppServices();
       await inventory.createIngredient({
+        code: newCode,
         name: newName,
         unit: newUnit,
         minStock: Number(newMin),
         initialStock: Number(newInitial) || 0,
       });
+      setNewCode("");
       setNewName("");
       setNewUnit("ml");
       setNewMin("0");
@@ -145,10 +148,12 @@ export function InventoryScreen() {
       <div className="grid gap-6 lg:grid-cols-2">
         <CreateIngredientForm
           busy={busy}
+          code={newCode}
           name={newName}
           unit={newUnit}
           minStock={newMin}
           initialStock={newInitial}
+          onCodeChange={setNewCode}
           onNameChange={setNewName}
           onUnitChange={setNewUnit}
           onMinChange={setNewMin}

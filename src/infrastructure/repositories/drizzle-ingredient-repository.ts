@@ -7,9 +7,11 @@ import type {
 } from "@/domain/repositories/ingredient-repository";
 import { ingredients } from "@/database/schema";
 import type { AppDatabase } from "@/infrastructure/sqlite/client";
+import { normalizeBusinessCode } from "@/shared/utils/business-code";
 
 function mapRow(row: {
   id: string;
+  code: string;
   name: string;
   unit: string;
   stockQuantity: number;
@@ -19,6 +21,7 @@ function mapRow(row: {
 }): Ingredient {
   return {
     id: row.id,
+    code: row.code,
     name: row.name,
     unit: row.unit,
     stockQuantity: row.stockQuantity,
@@ -30,6 +33,7 @@ function mapRow(row: {
 
 const selectFields = {
   id: ingredients.id,
+  code: ingredients.code,
   name: ingredients.name,
   unit: ingredients.unit,
   stockQuantity: ingredients.stockQuantity,
@@ -67,11 +71,21 @@ export class DrizzleIngredientRepository implements IngredientRepository {
     return row ? mapRow(row) : null;
   }
 
+  async findByCode(code: string): Promise<Ingredient | null> {
+    const [row] = await this.db
+      .select(selectFields)
+      .from(ingredients)
+      .where(eq(ingredients.code, normalizeBusinessCode(code)))
+      .limit(1);
+    return row ? mapRow(row) : null;
+  }
+
   async create(
     input: CreateIngredientInput & { id: string; createdAt: string },
   ): Promise<Ingredient> {
     const ingredient: Ingredient = {
       id: input.id,
+      code: normalizeBusinessCode(input.code),
       name: input.name,
       unit: input.unit,
       stockQuantity: input.initialStock ?? 0,
@@ -87,6 +101,7 @@ export class DrizzleIngredientRepository implements IngredientRepository {
     await this.db
       .update(ingredients)
       .set({
+        code: normalizeBusinessCode(input.code),
         name: input.name,
         unit: input.unit,
         minStock: input.minStock,
