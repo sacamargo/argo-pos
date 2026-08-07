@@ -1,9 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getAppServices } from "@/application/container";
 import type { Ingredient } from "@/domain/entities/ingredient";
 import type { InventoryMovementView } from "@/domain/entities/inventory";
 import { DEFAULT_INVENTORY_UNIT } from "@/modules/inventory/constants/units";
+import { notify } from "@/shared/hooks/use-toast";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import {
+  notifyLowStockItem,
+  notifyLowStockSummary,
+} from "@/shared/utils/notify-low-stock";
 
 export function useInventoryScreen() {
   const user = useSessionStore((state) => state.user);
@@ -24,6 +29,7 @@ export function useInventoryScreen() {
   const [entryNote, setEntryNote] = useState("");
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustNote, setAdjustNote] = useState("");
+  const lowStockNotified = useRef(false);
 
   const editingItem = ingredients.find((item) => item.id === editingId) ?? null;
 
@@ -35,6 +41,7 @@ export function useInventoryScreen() {
     ]);
     setIngredients(ingredientRows);
     setMovements(movementRows);
+    return ingredientRows;
   }, []);
 
   useEffect(() => {
@@ -44,7 +51,9 @@ export function useInventoryScreen() {
         await reload();
       } catch {
         if (!cancelled) {
-          setError("No se pudo cargar el inventario.");
+          const message = "No se pudo cargar el inventario.";
+          setError(message);
+          notify({ tone: "error", title: "Inventario", description: message });
         }
       } finally {
         if (!cancelled) {
@@ -56,6 +65,21 @@ export function useInventoryScreen() {
       cancelled = true;
     };
   }, [reload]);
+
+  const lowCount = ingredients.filter(
+    (item) => item.active && item.stockQuantity <= item.minStock,
+  ).length;
+
+  useEffect(() => {
+    if (loading || lowStockNotified.current || lowCount === 0) {
+      return;
+    }
+    lowStockNotified.current = true;
+    notifyLowStockSummary(lowCount, {
+      id: "inventory-low-stock",
+      title: "Stock bajo en bodega",
+    });
+  }, [loading, lowCount]);
 
   const resetCreateFields = () => {
     setEditingId(null);
@@ -87,7 +111,7 @@ export function useInventoryScreen() {
     setError(null);
     try {
       const { inventory } = await getAppServices();
-      await inventory.createIngredient({
+      const created = await inventory.createIngredient({
         name: newName,
         unit: newUnit,
         minStock: Number(newMin),
@@ -95,8 +119,12 @@ export function useInventoryScreen() {
       });
       resetCreateFields();
       await reload();
+      notify({ tone: "success", title: "Ítem creado", description: created.name });
+      notifyLowStockItem(created);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear el ítem");
+      const message = err instanceof Error ? err.message : "No se pudo crear el ítem";
+      setError(message);
+      notify({ tone: "error", title: "No se pudo crear", description: message });
     } finally {
       setBusy(false);
     }
@@ -110,7 +138,7 @@ export function useInventoryScreen() {
     setError(null);
     try {
       const { inventory } = await getAppServices();
-      await inventory.updateIngredient({
+      const updated = await inventory.updateIngredient({
         id: editingId,
         name: newName,
         unit: newUnit,
@@ -118,8 +146,13 @@ export function useInventoryScreen() {
       });
       resetCreateFields();
       await reload();
+      notify({ tone: "success", title: "Ítem actualizado", description: updated.name });
+      notifyLowStockItem(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo actualizar el ítem");
+      const message =
+        err instanceof Error ? err.message : "No se pudo actualizar el ítem";
+      setError(message);
+      notify({ tone: "error", title: "No se pudo guardar", description: message });
     } finally {
       setBusy(false);
     }
@@ -149,8 +182,16 @@ export function useInventoryScreen() {
         resetCreateFields();
       }
       await reload();
+      notify({
+        tone: "success",
+        title: item.active ? "Ítem oculto" : "Ítem visible",
+        description: item.name,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cambiar el estado");
+      const message =
+        err instanceof Error ? err.message : "No se pudo cambiar el estado";
+      setError(message);
+      notify({ tone: "error", title: "Inventario", description: message });
     } finally {
       setBusyId(null);
     }
@@ -164,7 +205,7 @@ export function useInventoryScreen() {
     setError(null);
     try {
       const { inventory } = await getAppServices();
-      await inventory.recordPurchaseIn({
+      const updated = await inventory.recordPurchaseIn({
         ingredientId: editingId,
         quantity: Number(entryQty),
         note: entryNote || undefined,
@@ -173,8 +214,17 @@ export function useInventoryScreen() {
       setEntryQty("");
       setEntryNote("");
       await reload();
+      notify({
+        tone: "success",
+        title: "Stock sumado",
+        description: `${updated.name}: ${updated.stockQuantity} ${updated.unit}`,
+      });
+      notifyLowStockItem(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo registrar la entrada");
+      const message =
+        err instanceof Error ? err.message : "No se pudo registrar la entrada";
+      setError(message);
+      notify({ tone: "error", title: "Entrada de stock", description: message });
     } finally {
       setBusy(false);
     }
@@ -188,7 +238,7 @@ export function useInventoryScreen() {
     setError(null);
     try {
       const { inventory } = await getAppServices();
-      await inventory.recordAdjustment({
+      const updated = await inventory.recordAdjustment({
         ingredientId: editingId,
         quantity: Number(adjustQty),
         note: adjustNote,
@@ -197,16 +247,21 @@ export function useInventoryScreen() {
       setAdjustQty("");
       setAdjustNote("");
       await reload();
+      notify({
+        tone: "success",
+        title: "Corrección registrada",
+        description: `${updated.name}: ${updated.stockQuantity} ${updated.unit}`,
+      });
+      notifyLowStockItem(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo registrar el ajuste");
+      const message =
+        err instanceof Error ? err.message : "No se pudo registrar el ajuste";
+      setError(message);
+      notify({ tone: "error", title: "Corrección de stock", description: message });
     } finally {
       setBusy(false);
     }
   };
-
-  const lowCount = ingredients.filter(
-    (item) => item.active && item.stockQuantity <= item.minStock,
-  ).length;
 
   return {
     ingredients,

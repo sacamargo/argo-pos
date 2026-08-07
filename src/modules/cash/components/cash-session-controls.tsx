@@ -5,6 +5,7 @@ import { Badge, Button } from "@/components";
 import { CloseCashModal } from "@/modules/cash/components/close-cash-modal";
 import { OpenCashModal } from "@/modules/cash/components/open-cash-modal";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import { notify } from "@/shared/hooks/use-toast";
 import { formatPesos } from "@/shared/utils/money";
 
 type CashSessionControlsProps = {
@@ -61,8 +62,11 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
       });
       setOpenModal(false);
       await reload();
+      notify({ tone: "success", title: "Caja abierta" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo abrir la caja");
+      const message = err instanceof Error ? err.message : "No se pudo abrir la caja";
+      setError(message);
+      notify({ tone: "error", title: "Abrir caja", description: message });
     } finally {
       setBusy(false);
     }
@@ -88,8 +92,11 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
       }
       setCloseModal(false);
       await reload();
+      notify({ tone: "success", title: "Caja cerrada" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cerrar la caja");
+      const message = err instanceof Error ? err.message : "No se pudo cerrar la caja";
+      setError(message);
+      notify({ tone: "error", title: "Cerrar caja", description: message });
     } finally {
       setBusy(false);
     }

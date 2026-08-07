@@ -7,6 +7,7 @@ import {
   emptyProductForm,
   type ProductFormState,
 } from "@/modules/catalog/components/product-form-state";
+import { notify } from "@/shared/hooks/use-toast";
 import { centsToPesos, pesosToCents } from "@/shared/utils/money";
 
 export function useProductsScreen(categories: Category[]) {
@@ -176,13 +177,18 @@ export function useProductsScreen(categories: Category[]) {
       const { products: productService } = await getAppServices();
       if (form.id) {
         await productService.update({ id: form.id, ...payload });
+        notify({ tone: "success", title: "Producto actualizado", description: form.name });
       } else {
         await productService.create(payload);
+        notify({ tone: "success", title: "Producto creado", description: form.name });
       }
       await reload();
       closeForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo guardar el producto");
+      const message =
+        err instanceof Error ? err.message : "No se pudo guardar el producto";
+      setError(message);
+      notify({ tone: "error", title: "Producto", description: message });
     } finally {
       setSaving(false);
     }
@@ -195,8 +201,16 @@ export function useProductsScreen(categories: Category[]) {
       const { products: productService } = await getAppServices();
       await productService.setActive({ id: product.id, active: !product.active });
       await reload();
+      notify({
+        tone: "success",
+        title: product.active ? "Producto desactivado" : "Producto activado",
+        description: product.name,
+      });
     } catch (err) {
-      setListError(err instanceof Error ? err.message : "No se pudo cambiar el estado");
+      const message =
+        err instanceof Error ? err.message : "No se pudo cambiar el estado";
+      setListError(message);
+      notify({ tone: "error", title: "Producto", description: message });
     } finally {
       setBusyId(null);
     }

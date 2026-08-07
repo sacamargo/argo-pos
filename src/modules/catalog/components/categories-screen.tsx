@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components";
 import { ListSearchInput } from "@/modules/shared/components/list-search-input";
+import { notify } from "@/shared/hooks/use-toast";
 import { matchesNameSearch } from "@/shared/utils/name-search";
 
 type CreateFormValues = z.infer<typeof createCategoryInputSchema>;
@@ -91,8 +92,12 @@ export function CategoriesScreen() {
       });
       closeForm();
       await reload();
+      notify({ tone: "success", title: "Categoría creada", description: values.name });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear la categoría");
+      const message =
+        err instanceof Error ? err.message : "No se pudo crear la categoría";
+      setError(message);
+      notify({ tone: "error", title: "Categoría", description: message });
     }
   });
 
@@ -103,8 +108,16 @@ export function CategoriesScreen() {
       const { categories } = await getAppServices();
       await categories.setActive({ id: category.id, active: !category.active });
       await reload();
+      notify({
+        tone: "success",
+        title: category.active ? "Categoría desactivada" : "Categoría activada",
+        description: category.name,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo actualizar el estado");
+      const message =
+        err instanceof Error ? err.message : "No se pudo actualizar el estado";
+      setError(message);
+      notify({ tone: "error", title: "Categoría", description: message });
     } finally {
       setBusyId(null);
     }

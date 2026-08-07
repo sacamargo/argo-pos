@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAppServices } from "@/application/container";
 import type { DashboardSnapshot } from "@/domain/entities/dashboard";
 import {
@@ -17,8 +17,11 @@ import {
 } from "@/components";
 import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
 import { DashboardMetricCards } from "@/modules/dashboard/components/dashboard-metric-cards";
+import { LowStockPanel } from "@/modules/dashboard/components/low-stock-panel";
+import { notify } from "@/shared/hooks/use-toast";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import { getErrorMessage } from "@/shared/utils/error-message";
+import { notifyLowStockSummary } from "@/shared/utils/notify-low-stock";
 import { formatPesos } from "@/shared/utils/money";
 
 export function DashboardScreen() {
@@ -26,6 +29,7 @@ export function DashboardScreen() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const lowStockNotified = useRef(false);
 
   useEffect(() => {
     if (!user) {
@@ -42,7 +46,9 @@ export function DashboardScreen() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(getErrorMessage(err, "No se pudo cargar el dashboard"));
+          const message = getErrorMessage(err, "No se pudo cargar el dashboard");
+          setError(message);
+          notify({ tone: "error", title: "Dashboard", description: message });
         }
       } finally {
         if (!cancelled) {
@@ -55,6 +61,20 @@ export function DashboardScreen() {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!snapshot || user?.role !== "admin" || lowStockNotified.current) {
+      return;
+    }
+    if (snapshot.lowStock.length === 0) {
+      return;
+    }
+    lowStockNotified.current = true;
+    notifyLowStockSummary(snapshot.lowStock.length, {
+      id: "dashboard-low-stock",
+      title: "Stock crítico",
+    });
+  }, [snapshot, user?.role]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -74,6 +94,10 @@ export function DashboardScreen() {
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {snapshot ? <DashboardMetricCards snapshot={snapshot} /> : null}
+
+      {user?.role === "admin" && snapshot ? (
+        <LowStockPanel items={snapshot.lowStock} />
+      ) : null}
 
       {snapshot && snapshot.topProducts.length > 0 ? (
         <Card>
@@ -100,43 +124,6 @@ export function DashboardScreen() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {user?.role === "admin" && snapshot ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Stock crítico</CardTitle>
-            <CardDescription>Solo visible para admin</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {snapshot.lowStock.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin alertas de stock bajo.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Ingrediente</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Mínimo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {snapshot.lowStock.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>
-                        {item.stockQuantity} {item.unit}
-                      </TableCell>
-                      <TableCell>
-                        {item.minStock} {item.unit}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
           </CardContent>
         </Card>
       ) : null}
