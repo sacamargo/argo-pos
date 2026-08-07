@@ -31,23 +31,12 @@ export function InventoryScreen() {
             Bodega: insumos y stock. Lo vendible empaquetado se crea en Catálogo.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button className="h-11" onClick={s.openCreate}>
-            Agregar ítem
-          </Button>
-          <Button
-            className="h-11"
-            variant="outline"
-            onClick={() => {
-              s.setMoveOpen(true);
-            }}
-          >
-            Mover stock
-          </Button>
-        </div>
+        <Button className="h-11" onClick={s.openCreate}>
+          Agregar ítem
+        </Button>
       </div>
 
-      {s.error && !s.createOpen && !s.editOpen && !s.moveOpen ? (
+      {s.error && !s.createOpen && !s.editOpen ? (
         <p className="text-sm text-destructive">{s.error}</p>
       ) : null}
 
@@ -114,14 +103,11 @@ export function InventoryScreen() {
             stockSection={
               <MovementForms
                 busy={s.busy}
-                ingredients={s.ingredients}
-                selectedId={s.editingItem.id}
-                itemSelectMode="locked"
+                item={s.editingItem}
                 entryQty={s.entryQty}
                 entryNote={s.entryNote}
                 adjustQty={s.adjustQty}
                 adjustNote={s.adjustNote}
-                onSelect={s.setSelectedId}
                 onEntryQty={s.setEntryQty}
                 onEntryNote={s.setEntryNote}
                 onAdjustQty={s.setAdjustQty}
@@ -132,32 +118,6 @@ export function InventoryScreen() {
             }
           />
         ) : null}
-      </Modal>
-
-      <Modal
-        open={s.moveOpen}
-        title="Mover stock"
-        description="Compra/llegada o corrección con nota."
-        onClose={() => s.setMoveOpen(false)}
-        className="max-w-xl"
-      >
-        {s.error ? <p className="mb-3 text-sm text-destructive">{s.error}</p> : null}
-        <MovementForms
-          busy={s.busy}
-          ingredients={s.ingredients}
-          selectedId={s.selectedId}
-          entryQty={s.entryQty}
-          entryNote={s.entryNote}
-          adjustQty={s.adjustQty}
-          adjustNote={s.adjustNote}
-          onSelect={s.setSelectedId}
-          onEntryQty={s.setEntryQty}
-          onEntryNote={s.setEntryNote}
-          onAdjustQty={s.setAdjustQty}
-          onAdjustNote={s.setAdjustNote}
-          onEntry={() => void s.registerEntry()}
-          onAdjust={() => void s.registerAdjustment()}
-        />
       </Modal>
     </div>
   );

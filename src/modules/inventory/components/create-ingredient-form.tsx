@@ -34,7 +34,7 @@ export function CreateIngredientForm({
   return (
     <div className="flex flex-col gap-4">
       <div className="space-y-2">
-        <FieldLabel htmlFor="inv-name" hint="Nombre que verás al mover stock.">
+        <FieldLabel htmlFor="inv-name" hint="Nombre que verás al editar y en el historial.">
           Nombre
         </FieldLabel>
         <Input
