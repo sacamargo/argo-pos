@@ -287,7 +287,7 @@ Todo debe pasar por servicios.
 
 Los `code` de categoría / inventario / producto son **identificadores internos** (formato `CAT-|INV-|PROD-` + 6 hex aleatorios). Se generan en create (`generateBusinessCode`), son inmutables en update y **no forman parte de la experiencia del usuario**. La UI no los muestra ni los envía. Excel los usará para upsert.
 
-Excel (offline): el formato `.xlsx` vive detrás del port `CatalogWorkbookCodec` (adapter `ExcelJsCatalogWorkbookCodec`). Application/UI nunca importan `exceljs`. DTOs de workbook (`CatalogWorkbookDto`) son independientes de las entidades de dominio. `exceljs` se carga con `import()` dinámico solo al usar Excel.
+Excel (offline): el formato `.xlsx` vive detrás del port `CatalogWorkbookCodec` (adapter `ExcelJsCatalogWorkbookCodec`). Application/UI nunca importan `exceljs`. DTOs de workbook (`CatalogWorkbookDto`) son independientes de las entidades de dominio. `exceljs` se carga con `import()` dinámico solo al usar Excel. La UI admin (tab **Excel** en Catálogo) solo llama a `CatalogService` (`buildTemplateWorkbook` / `exportCatalogWorkbook` / `previewImport` / `importCatalogWorkbook`).
 
 ---
 

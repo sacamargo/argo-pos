@@ -19,6 +19,12 @@ export type CatalogImportValidator = {
       code: string;
       message: string;
     }>;
+    summary?: {
+      categories: number;
+      inventory: number;
+      products: number;
+      recipes: number;
+    };
   };
 };
 
