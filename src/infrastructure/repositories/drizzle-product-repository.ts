@@ -227,4 +227,17 @@ export class DrizzleProductRepository implements ProductRepository {
 
     return mapProduct(row);
   }
+
+  async deleteAllRecipeItems(): Promise<number> {
+    const existing = await this.db.select({ id: productRecipeItems.id }).from(productRecipeItems);
+    if (existing.length === 0) {
+      return 0;
+    }
+    await this.db.delete(productRecipeItems);
+    return existing.length;
+  }
+
+  async deleteById(id: string): Promise<void> {
+    await this.db.delete(products).where(eq(products.id, id));
+  }
 }

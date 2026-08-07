@@ -451,13 +451,13 @@ Sin internet en ningún paso.
 >
 > Excel con filas de ejemplo `EJ-…` se **conserva** (guía de importación); no forma parte del wipe de la app.
 
-## Fase 1 — Limpiar demos `[P0]` `todo`
+## Fase 1 — Limpiar demos `[P0]` `doing`
 
-- [ ] Quitar demos del seed (categorías / productos / inventario de ejemplo)
-- [ ] Operación admin “Vaciar Catálogo e Inventario” (recetas, productos, inventario, categorías)
-- [ ] Wipe no toca usuarios, ventas, caja, settings ni métodos de pago
+- [x] Quitar demos del seed (categorías / productos / inventario de ejemplo)
+- [x] Operación admin `CatalogMaintenanceService.wipeCatalogAndInventory` (recetas, productos, inventario, categorías)
+- [x] Wipe no toca usuarios, ventas, caja, settings ni métodos de pago
 - [ ] UI con doble confirmación
-- [ ] Tests del wipe
+- [x] Tests del wipe
 
 **Criterio de hecho:** app nueva y DB wipeada muestran Catálogo/Inventario/Categorías vacíos.
 

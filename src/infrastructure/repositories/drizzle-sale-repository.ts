@@ -285,6 +285,15 @@ export class DrizzleSaleRepository implements SaleRepository {
     return row ? mapReversal(row) : null;
   }
 
+  async isProductReferenced(productId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: saleItems.id })
+      .from(saleItems)
+      .where(eq(saleItems.productId, productId))
+      .limit(1);
+    return Boolean(row);
+  }
+
   private async findSale(id: string): Promise<Sale | null> {
     const [row] = await this.db.select().from(sales).where(eq(sales.id, id)).limit(1);
     return row ? mapSale(row) : null;

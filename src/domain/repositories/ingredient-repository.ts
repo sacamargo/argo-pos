@@ -27,4 +27,6 @@ export interface IngredientRepository {
   setActive(id: string, active: boolean): Promise<Ingredient>;
   /** Only for applying a movement delta. Never call from UI. */
   applyStockDelta(id: string, delta: number): Promise<Ingredient>;
+  /** Maintenance wipe: hard-delete when no blocking FKs remain. */
+  deleteById(id: string): Promise<void>;
 }
