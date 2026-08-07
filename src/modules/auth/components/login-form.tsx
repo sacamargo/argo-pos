@@ -12,6 +12,12 @@ import {
   CardTitle,
   Input,
 } from "@/components";
+import { BrandAvatar } from "@/modules/shared/components/brand-avatar";
+import {
+  APP_PRODUCT_NAME,
+  BUSINESS_NAME,
+  formatAppTitle,
+} from "@/shared/constants/branding";
 import { useSessionStore } from "@/shared/hooks/use-session";
 
 type LoginFormProps = {
@@ -58,16 +64,23 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   });
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-background p-6">
+    <div className="flex min-h-full flex-col items-center justify-center gap-6 bg-background p-6">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <BrandAvatar size="xl" className="ring-4 ring-primary/25 shadow-lg" />
+        <div className="space-y-1">
+          <p className="text-2xl font-semibold tracking-tight">{BUSINESS_NAME}</p>
+          <p className="text-sm text-muted-foreground">{formatAppTitle()}</p>
+        </div>
+      </div>
+
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Argo POS</CardTitle>
-          <CardDescription>Ingresa para vender u operar el negocio.</CardDescription>
+          <CardTitle className="text-xl">Iniciar sesión</CardTitle>
+          <CardDescription>
+            {APP_PRODUCT_NAME} · {BUSINESS_NAME}. Caja local, sin internet.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="mb-4 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-            Caja local · sin internet requerido. Los datos viven en este computador.
-          </p>
           <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="username">

@@ -119,7 +119,7 @@ export async function seedCoreIfNeeded(): Promise<boolean> {
   await db.insert(settings).values([
     {
       key: "business_name",
-      value: "Argo POS",
+      value: "Zúmbalo",
       updatedAt: now,
     },
     {

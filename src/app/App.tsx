@@ -13,6 +13,7 @@ import { PosScreen } from "@/modules/pos/components/pos-screen";
 import { SalesHistoryScreen } from "@/modules/sales/components/sales-history-screen";
 import { UsersScreen } from "@/modules/users/components/users-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
+import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useSessionStore } from "@/shared/hooks/use-session";
 
@@ -71,7 +72,7 @@ export function App() {
   if (!hydrated || !dbStatus) {
     return (
       <div className="flex h-full items-center justify-center bg-background text-sm text-muted-foreground">
-        Inicializando Argo POS…
+        Inicializando {formatAppTitle()}…
       </div>
     );
   }
