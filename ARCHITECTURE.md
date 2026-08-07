@@ -592,9 +592,16 @@ Stock bajo
 
 Cada producto tendrá:
 
+Código único (ej. `PROD-GRAN-LIM12`)
+
 Nombre
 
 Categoría
+
+Tipo de cumplimiento:
+
+- `simple` — compra = almacena = vende (apunta a un ítem de inventario + cantidad por venta)
+- `compound` — se arma con receta (BOM) de ítems de inventario; no tiene stock propio
 
 Imagen
 
@@ -602,7 +609,11 @@ Precio
 
 Estado
 
-Receta
+Receta (solo `compound`)
+
+Vínculo a inventario (solo `simple`)
+
+Toda venta resuelve a consumo de inventario con un único motor (`resolveConsumption`).
 
 ---
 
@@ -611,6 +622,16 @@ Receta
 Solo un nivel.
 
 Nada de árboles infinitos.
+
+Cada categoría tiene código único (ej. `CAT-GRAN`).
+
+---
+
+# Inventario
+
+Todo lo físico es un ítem de inventario (`ingredients` en schema): código único, unidad, stock, mínimo.
+
+Da igual si luego se vende como producto simple o se usa en una receta compound.
 
 ---
 

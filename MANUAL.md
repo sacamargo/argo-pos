@@ -219,7 +219,9 @@ docs/task-and-manual
 ### Inventario
 
 - Stock solo cambia por `inventory_movements`.
-- Venta descuenta según receta del producto.
+- Producto `simple`: descuenta su ítem de inventario vinculado.
+- Producto `compound`: descuenta según receta.
+- Toda venta pasa por `resolveConsumption` (un solo motor).
 - Anulación reintegra.
 
 ### Caja

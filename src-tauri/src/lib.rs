@@ -214,6 +214,12 @@ pub fn run() {
             sql: include_str!("../migrations/0001_schema_core_mvp.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "catalog_codes_fulfillment",
+            sql: include_str!("../migrations/0002_catalog_codes_fulfillment.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

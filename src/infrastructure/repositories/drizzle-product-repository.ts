@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import type {
   Product,
+  ProductFulfillmentType,
   ProductRecipeItem,
   ProductWithRecipe,
 } from "@/domain/entities/product";
@@ -11,66 +12,70 @@ import type {
 } from "@/domain/repositories/product-repository";
 import { productRecipeItems, products } from "@/database/schema";
 import type { AppDatabase } from "@/infrastructure/sqlite/client";
+import { normalizeBusinessCode } from "@/shared/utils/business-code";
 
 function mapProduct(row: {
   id: string;
+  code: string;
   categoryId: string | null;
   name: string;
   imagePath: string | null;
   priceCents: number;
+  fulfillmentType: ProductFulfillmentType;
+  stockItemId: string | null;
+  qtyPerSale: number | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;
 }): Product {
   return {
     id: row.id,
+    code: row.code,
     categoryId: row.categoryId,
     name: row.name,
     imagePath: row.imagePath,
     priceCents: row.priceCents,
+    fulfillmentType: row.fulfillmentType,
+    stockItemId: row.stockItemId,
+    qtyPerSale: row.qtyPerSale,
     active: row.active,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
 }
 
+const selectFields = {
+  id: products.id,
+  code: products.code,
+  categoryId: products.categoryId,
+  name: products.name,
+  imagePath: products.imagePath,
+  priceCents: products.priceCents,
+  fulfillmentType: products.fulfillmentType,
+  stockItemId: products.stockItemId,
+  qtyPerSale: products.qtyPerSale,
+  active: products.active,
+  createdAt: products.createdAt,
+  updatedAt: products.updatedAt,
+};
+
 export class DrizzleProductRepository implements ProductRepository {
   constructor(private readonly db: AppDatabase) {}
 
   async listAll(): Promise<Product[]> {
     const rows = await this.db
-      .select({
-        id: products.id,
-        categoryId: products.categoryId,
-        name: products.name,
-        imagePath: products.imagePath,
-        priceCents: products.priceCents,
-        active: products.active,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-      })
+      .select(selectFields)
       .from(products)
       .orderBy(asc(products.name));
-
     return rows.map(mapProduct);
   }
 
   async listActive(): Promise<Product[]> {
     const rows = await this.db
-      .select({
-        id: products.id,
-        categoryId: products.categoryId,
-        name: products.name,
-        imagePath: products.imagePath,
-        priceCents: products.priceCents,
-        active: products.active,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-      })
+      .select(selectFields)
       .from(products)
       .where(eq(products.active, true))
       .orderBy(asc(products.name));
-
     return rows.map(mapProduct);
   }
 
@@ -95,16 +100,7 @@ export class DrizzleProductRepository implements ProductRepository {
 
   async findByIdWithRecipe(id: string): Promise<ProductWithRecipe | null> {
     const [row] = await this.db
-      .select({
-        id: products.id,
-        categoryId: products.categoryId,
-        name: products.name,
-        imagePath: products.imagePath,
-        priceCents: products.priceCents,
-        active: products.active,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-      })
+      .select(selectFields)
       .from(products)
       .where(eq(products.id, id))
       .limit(1);
@@ -117,14 +113,34 @@ export class DrizzleProductRepository implements ProductRepository {
     return { ...mapProduct(row), recipe };
   }
 
+  async findByCode(code: string): Promise<ProductWithRecipe | null> {
+    const [row] = await this.db
+      .select(selectFields)
+      .from(products)
+      .where(eq(products.code, normalizeBusinessCode(code)))
+      .limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    const recipe = await this.listRecipeByProductId(row.id);
+    return { ...mapProduct(row), recipe };
+  }
+
   async create(input: CreateProductInput): Promise<ProductWithRecipe> {
     const now = new Date().toISOString();
     const product: Product = {
       id: crypto.randomUUID(),
+      code: normalizeBusinessCode(input.code),
       categoryId: input.categoryId,
       name: input.name,
       imagePath: input.imagePath ?? null,
       priceCents: input.priceCents,
+      fulfillmentType: input.fulfillmentType,
+      stockItemId:
+        input.fulfillmentType === "simple" ? (input.stockItemId ?? null) : null,
+      qtyPerSale: input.fulfillmentType === "simple" ? (input.qtyPerSale ?? 1) : null,
       active: true,
       createdAt: now,
       updatedAt: now,
@@ -132,12 +148,15 @@ export class DrizzleProductRepository implements ProductRepository {
 
     await this.db.insert(products).values(product);
 
-    const recipe: ProductRecipeItem[] = input.recipe.map((item) => ({
-      id: crypto.randomUUID(),
-      productId: product.id,
-      ingredientId: item.ingredientId,
-      quantity: item.quantity,
-    }));
+    const recipe: ProductRecipeItem[] =
+      input.fulfillmentType === "compound"
+        ? input.recipe.map((item) => ({
+            id: crypto.randomUUID(),
+            productId: product.id,
+            ingredientId: item.ingredientId,
+            quantity: item.quantity,
+          }))
+        : [];
 
     if (recipe.length > 0) {
       await this.db.insert(productRecipeItems).values(recipe);
@@ -152,10 +171,15 @@ export class DrizzleProductRepository implements ProductRepository {
     await this.db
       .update(products)
       .set({
+        code: normalizeBusinessCode(input.code),
         name: input.name,
         categoryId: input.categoryId,
         imagePath: input.imagePath ?? null,
         priceCents: input.priceCents,
+        fulfillmentType: input.fulfillmentType,
+        stockItemId:
+          input.fulfillmentType === "simple" ? (input.stockItemId ?? null) : null,
+        qtyPerSale: input.fulfillmentType === "simple" ? (input.qtyPerSale ?? 1) : null,
         updatedAt: now,
       })
       .where(eq(products.id, input.id));
@@ -164,12 +188,15 @@ export class DrizzleProductRepository implements ProductRepository {
       .delete(productRecipeItems)
       .where(eq(productRecipeItems.productId, input.id));
 
-    const recipe: ProductRecipeItem[] = input.recipe.map((item) => ({
-      id: crypto.randomUUID(),
-      productId: input.id,
-      ingredientId: item.ingredientId,
-      quantity: item.quantity,
-    }));
+    const recipe: ProductRecipeItem[] =
+      input.fulfillmentType === "compound"
+        ? input.recipe.map((item) => ({
+            id: crypto.randomUUID(),
+            productId: input.id,
+            ingredientId: item.ingredientId,
+            quantity: item.quantity,
+          }))
+        : [];
 
     if (recipe.length > 0) {
       await this.db.insert(productRecipeItems).values(recipe);
@@ -190,16 +217,7 @@ export class DrizzleProductRepository implements ProductRepository {
       .where(eq(products.id, id));
 
     const [row] = await this.db
-      .select({
-        id: products.id,
-        categoryId: products.categoryId,
-        name: products.name,
-        imagePath: products.imagePath,
-        priceCents: products.priceCents,
-        active: products.active,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-      })
+      .select(selectFields)
       .from(products)
       .where(eq(products.id, id))
       .limit(1);

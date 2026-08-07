@@ -16,6 +16,10 @@ import {
   type Cart,
 } from "@/domain/services/cart";
 import { canReverseSale } from "@/domain/services/permissions";
+import {
+  aggregateConsumption,
+  resolveConsumption,
+} from "@/domain/services/resolve-consumption";
 
 const cartLineSchema = z.object({
   productId: z.string().min(1),
@@ -93,8 +97,6 @@ export class SaleService {
       throw new Error("Motivo de salida por venta no configurado");
     }
 
-    type Needed = { ingredientId: string; name: string; quantity: number };
-    const needs = new Map<string, Needed>();
     const resolvedItems: Array<{
       productId: string;
       productNameSnapshot: string;
@@ -102,6 +104,7 @@ export class SaleService {
       quantity: number;
       lineTotalCents: number;
     }> = [];
+    const rawConsumptions = [];
 
     for (const line of cart.lines) {
       const product = await this.products.findByIdWithRecipe(line.productId);
@@ -121,26 +124,15 @@ export class SaleService {
         }),
       });
 
-      for (const recipeItem of product.recipe) {
-        const required = recipeItem.quantity * line.quantity;
-        const current = needs.get(recipeItem.ingredientId);
-        if (current) {
-          current.quantity += required;
-        } else {
-          const ingredient = await this.ingredients.findById(recipeItem.ingredientId);
-          needs.set(recipeItem.ingredientId, {
-            ingredientId: recipeItem.ingredientId,
-            name: ingredient?.name ?? recipeItem.ingredientId,
-            quantity: required,
-          });
-        }
-      }
+      rawConsumptions.push(...resolveConsumption(product, line.quantity));
     }
 
-    for (const need of needs.values()) {
+    const needs = aggregateConsumption(rawConsumptions);
+
+    for (const need of needs) {
       const ingredient = await this.ingredients.findById(need.ingredientId);
       if (!ingredient || !ingredient.active) {
-        throw new Error(`Ingrediente no disponible: ${need.name}`);
+        throw new Error(`Ítem de inventario no disponible (${need.ingredientId})`);
       }
       if (ingredient.stockQuantity < need.quantity) {
         throw new Error(
@@ -169,7 +161,7 @@ export class SaleService {
         })),
       });
 
-      for (const need of needs.values()) {
+      for (const need of needs) {
         await this.movements.create({
           ingredientId: need.ingredientId,
           reasonId: saleOutReason.id,

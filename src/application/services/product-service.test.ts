@@ -12,31 +12,64 @@ describe("money helpers", () => {
 describe("productWriteSchema", () => {
   it("rejects non-positive price", () => {
     const result = productWriteSchema.safeParse({
+      code: "PROD-X",
       name: "Granizado",
       categoryId: "cat-1",
+      fulfillmentType: "compound",
       priceCents: 0,
-      recipe: [],
+      recipe: [{ ingredientId: "ing-1", quantity: 1 }],
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects recipe quantity <= 0", () => {
+  it("rejects recipe quantity <= 0 for compound", () => {
     const result = productWriteSchema.safeParse({
+      code: "PROD-X",
       name: "Granizado",
       categoryId: "cat-1",
+      fulfillmentType: "compound",
       priceCents: 5000,
       recipe: [{ ingredientId: "ing-1", quantity: 0 }],
     });
     expect(result.success).toBe(false);
   });
 
-  it("accepts a valid product payload", () => {
+  it("accepts a valid compound product", () => {
     const result = productWriteSchema.safeParse({
+      code: "PROD-GRAN-LIM",
       name: "Granizado limón",
       categoryId: "cat-1",
+      fulfillmentType: "compound",
       priceCents: 5000,
       recipe: [{ ingredientId: "ing-1", quantity: 250 }],
     });
     expect(result.success).toBe(true);
+  });
+
+  it("accepts a valid simple product", () => {
+    const result = productWriteSchema.safeParse({
+      code: "PROD-AGUA",
+      name: "Agua 600ml",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 2000,
+      stockItemId: "inv-agua",
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects simple without stock item", () => {
+    const result = productWriteSchema.safeParse({
+      code: "PROD-AGUA",
+      name: "Agua",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 2000,
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(result.success).toBe(false);
   });
 });

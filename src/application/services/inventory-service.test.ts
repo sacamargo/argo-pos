@@ -34,6 +34,7 @@ describe("inventory schemas", () => {
 
   it("accepts ingredient create payload", () => {
     const result = createIngredientSchema.safeParse({
+      code: "INV-JARABE",
       name: "Jarabe",
       unit: "ml",
       minStock: 200,

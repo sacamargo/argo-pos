@@ -4,23 +4,55 @@ import type { IngredientRepository } from "@/domain/repositories/ingredient-repo
 import type { ProductRepository } from "@/domain/repositories/product-repository";
 import type { Product, ProductWithRecipe } from "@/domain/entities/product";
 import type { Ingredient } from "@/domain/entities/ingredient";
+import {
+  businessCodeSchema,
+  normalizeBusinessCode,
+} from "@/shared/utils/business-code";
 
 const recipeItemSchema = z.object({
   ingredientId: z.string().min(1, "Ingrediente obligatorio"),
   quantity: z.number().positive("La cantidad debe ser mayor a 0"),
 });
 
-export const productWriteSchema = z.object({
+const productBaseSchema = z.object({
+  code: businessCodeSchema,
   name: z.string().trim().min(1, "El nombre es obligatorio").max(120),
   categoryId: z.string().min(1, "La categoría es obligatoria"),
   imagePath: z.string().trim().nullable().optional(),
   priceCents: z.number().int().positive("El precio debe ser mayor a 0"),
-  recipe: z.array(recipeItemSchema),
 });
 
-export const updateProductSchema = productWriteSchema.extend({
-  id: z.string().min(1),
-});
+export const productWriteSchema = z.discriminatedUnion("fulfillmentType", [
+  productBaseSchema.extend({
+    fulfillmentType: z.literal("simple"),
+    stockItemId: z.string().min(1, "El inventario es obligatorio"),
+    qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
+    recipe: z.array(recipeItemSchema).max(0).optional().default([]),
+  }),
+  productBaseSchema.extend({
+    fulfillmentType: z.literal("compound"),
+    stockItemId: z.null().optional(),
+    qtyPerSale: z.null().optional(),
+    recipe: z.array(recipeItemSchema).min(1, "La receta necesita al menos un ítem"),
+  }),
+]);
+
+export const updateProductSchema = z.discriminatedUnion("fulfillmentType", [
+  productBaseSchema.extend({
+    id: z.string().min(1),
+    fulfillmentType: z.literal("simple"),
+    stockItemId: z.string().min(1, "El inventario es obligatorio"),
+    qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
+    recipe: z.array(recipeItemSchema).max(0).optional().default([]),
+  }),
+  productBaseSchema.extend({
+    id: z.string().min(1),
+    fulfillmentType: z.literal("compound"),
+    stockItemId: z.null().optional(),
+    qtyPerSale: z.null().optional(),
+    recipe: z.array(recipeItemSchema).min(1, "La receta necesita al menos un ítem"),
+  }),
+]);
 
 export const setProductActiveSchema = z.object({
   id: z.string().min(1),
@@ -46,36 +78,61 @@ export class ProductService {
     return this.products.findByIdWithRecipe(id);
   }
 
+  async findByCode(code: string): Promise<ProductWithRecipe | null> {
+    return this.products.findByCode(code);
+  }
+
   async listActiveIngredients(): Promise<Ingredient[]> {
     return this.ingredients.listActive();
   }
 
-  private async assertWritable(input: z.infer<typeof productWriteSchema>) {
+  private async assertUniqueCode(code: string, excludeId?: string) {
+    const existing = await this.products.findByCode(code);
+    if (existing && existing.id !== excludeId) {
+      throw new Error(`Ya existe un producto con código ${normalizeBusinessCode(code)}`);
+    }
+  }
+
+  private async assertWritable(
+    input: z.infer<typeof productWriteSchema> | z.infer<typeof updateProductSchema>,
+  ) {
     const category = await this.categories.findById(input.categoryId);
     if (!category || !category.active) {
       throw new Error("La categoría no existe o está inactiva");
     }
 
+    if (input.fulfillmentType === "simple") {
+      const stockItem = await this.ingredients.findById(input.stockItemId);
+      if (!stockItem || !stockItem.active) {
+        throw new Error("El ítem de inventario no existe o está inactivo");
+      }
+      return;
+    }
+
     const seen = new Set<string>();
     for (const item of input.recipe) {
       if (seen.has(item.ingredientId)) {
-        throw new Error("La receta no puede repetir el mismo ingrediente");
+        throw new Error("La receta no puede repetir el mismo ítem de inventario");
       }
       seen.add(item.ingredientId);
 
       const ingredient = await this.ingredients.findById(item.ingredientId);
       if (!ingredient || !ingredient.active) {
-        throw new Error("Hay un ingrediente inválido o inactivo en la receta");
+        throw new Error("Hay un ítem de inventario inválido o inactivo en la receta");
       }
     }
   }
 
   async create(raw: unknown): Promise<ProductWithRecipe> {
     const input = productWriteSchema.parse(raw);
+    await this.assertUniqueCode(input.code);
     await this.assertWritable(input);
     return this.products.create({
       ...input,
       imagePath: input.imagePath?.trim() ? input.imagePath.trim() : null,
+      recipe: input.fulfillmentType === "compound" ? input.recipe : [],
+      stockItemId: input.fulfillmentType === "simple" ? input.stockItemId : null,
+      qtyPerSale: input.fulfillmentType === "simple" ? input.qtyPerSale : null,
     });
   }
 
@@ -85,10 +142,14 @@ export class ProductService {
     if (!existing) {
       throw new Error("Producto no encontrado");
     }
+    await this.assertUniqueCode(input.code, input.id);
     await this.assertWritable(input);
     return this.products.update({
       ...input,
       imagePath: input.imagePath?.trim() ? input.imagePath.trim() : null,
+      recipe: input.fulfillmentType === "compound" ? input.recipe : [],
+      stockItemId: input.fulfillmentType === "simple" ? input.stockItemId : null,
+      qtyPerSale: input.fulfillmentType === "simple" ? input.qtyPerSale : null,
     });
   }
 

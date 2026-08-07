@@ -91,10 +91,14 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
       }
       setForm({
         id: detail.id,
+        code: detail.code,
         name: detail.name,
         categoryId: detail.categoryId ?? activeCategories[0]?.id ?? "",
         imagePath: detail.imagePath ?? "",
         pricePesos: String(centsToPesos(detail.priceCents)),
+        fulfillmentType: detail.fulfillmentType,
+        stockItemId: detail.stockItemId ?? "",
+        qtyPerSale: String(detail.qtyPerSale ?? 1),
         recipe: detail.recipe.map((item) => ({
           ingredientId: item.ingredientId,
           quantity: String(item.quantity),
@@ -134,16 +138,31 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
         throw new Error("El precio debe ser mayor a 0");
       }
 
-      const payload = {
+      const base = {
+        code: form.code,
         name: form.name,
         categoryId: form.categoryId,
         imagePath: form.imagePath.trim() ? form.imagePath.trim() : null,
         priceCents: pesosToCents(price),
-        recipe: form.recipe.map((item) => ({
-          ingredientId: item.ingredientId,
-          quantity: Number(item.quantity),
-        })),
       };
+
+      const payload =
+        form.fulfillmentType === "simple"
+          ? {
+              ...base,
+              fulfillmentType: "simple" as const,
+              stockItemId: form.stockItemId,
+              qtyPerSale: Number(form.qtyPerSale),
+              recipe: [],
+            }
+          : {
+              ...base,
+              fulfillmentType: "compound" as const,
+              recipe: form.recipe.map((item) => ({
+                ingredientId: item.ingredientId,
+                quantity: Number(item.quantity),
+              })),
+            };
 
       const { products: productService } = await getAppServices();
       if (form.id) {
@@ -216,6 +235,7 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
+                        {product.code} · {product.fulfillmentType} ·{" "}
                         {categoryName(product.categoryId)}
                         {product.imagePath ? " · Con imagen" : ""}
                       </div>

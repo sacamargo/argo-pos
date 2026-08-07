@@ -1,6 +1,7 @@
 import type { Ingredient } from "@/domain/entities/ingredient";
 
 export type CreateIngredientInput = {
+  code: string;
   name: string;
   unit: string;
   minStock: number;
@@ -9,6 +10,7 @@ export type CreateIngredientInput = {
 
 export type UpdateIngredientInput = {
   id: string;
+  code: string;
   name: string;
   unit: string;
   minStock: number;
@@ -18,6 +20,7 @@ export interface IngredientRepository {
   listActive(): Promise<Ingredient[]>;
   listAll(): Promise<Ingredient[]>;
   findById(id: string): Promise<Ingredient | null>;
+  findByCode(code: string): Promise<Ingredient | null>;
   create(
     input: CreateIngredientInput & { id: string; createdAt: string },
   ): Promise<Ingredient>;
