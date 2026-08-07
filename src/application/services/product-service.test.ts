@@ -70,7 +70,7 @@ describe("productWriteSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects simple without stock item", () => {
+  it("rejects simple without stock item or createInventory", () => {
     const result = productWriteSchema.safeParse({
       code: "PROD-AGUA",
       name: "Agua",
@@ -78,6 +78,33 @@ describe("productWriteSchema", () => {
       fulfillmentType: "simple",
       priceCents: 2000,
       qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts simple with createInventory in one shot", () => {
+    const result = productWriteSchema.safeParse({
+      name: "Doritos",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 3500,
+      qtyPerSale: 1,
+      createInventory: { unit: "und", minStock: 12, initialStock: 48 },
+      recipe: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects simple with both stockItemId and createInventory", () => {
+    const result = productWriteSchema.safeParse({
+      name: "Doritos",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 3500,
+      qtyPerSale: 1,
+      stockItemId: "inv-1",
+      createInventory: { unit: "und", minStock: 0 },
       recipe: [],
     });
     expect(result.success).toBe(false);

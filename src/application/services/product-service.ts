@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { InventoryService } from "@/application/services/inventory-service";
 import type { CategoryRepository } from "@/domain/repositories/category-repository";
 import type { IngredientRepository } from "@/domain/repositories/ingredient-repository";
 import type { ProductRepository } from "@/domain/repositories/product-repository";
@@ -25,13 +26,40 @@ const productCreateFieldsSchema = productFieldsSchema.extend({
   code: businessCodeSchema.optional(),
 });
 
+const createInventorySchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  unit: z.string().trim().min(1, "La unidad es obligatoria").max(20),
+  minStock: z.number().min(0, "Mínimo no puede ser negativo"),
+  initialStock: z.number().min(0).optional(),
+});
+
 export const productWriteSchema = z.discriminatedUnion("fulfillmentType", [
-  productCreateFieldsSchema.extend({
-    fulfillmentType: z.literal("simple"),
-    stockItemId: z.string().min(1, "El inventario es obligatorio"),
-    qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
-    recipe: z.array(recipeItemSchema).max(0).optional().default([]),
-  }),
+  productCreateFieldsSchema
+    .extend({
+      fulfillmentType: z.literal("simple"),
+      stockItemId: z.string().min(1).optional(),
+      qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
+      createInventory: createInventorySchema.optional(),
+      recipe: z.array(recipeItemSchema).max(0).optional().default([]),
+    })
+    .superRefine((data, ctx) => {
+      const hasExisting = Boolean(data.stockItemId?.trim());
+      const hasNew = Boolean(data.createInventory);
+      if (!hasExisting && !hasNew) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Elige un ítem de inventario o crea uno nuevo en este mismo paso",
+          path: ["stockItemId"],
+        });
+      }
+      if (hasExisting && hasNew) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "No combines ítem existente y crear inventario a la vez",
+          path: ["createInventory"],
+        });
+      }
+    }),
   productCreateFieldsSchema.extend({
     fulfillmentType: z.literal("compound"),
     stockItemId: z.null().optional(),
@@ -67,6 +95,8 @@ export class ProductService {
     private readonly products: ProductRepository,
     private readonly categories: CategoryRepository,
     private readonly ingredients: IngredientRepository,
+    /** Used when Simple creates its warehouse item in the same flow. */
+    private readonly inventory: InventoryService,
   ) {}
 
   async listAll(): Promise<Product[]> {
@@ -98,7 +128,14 @@ export class ProductService {
     }
 
     if (input.fulfillmentType === "simple") {
-      const stockItem = await this.ingredients.findById(input.stockItemId);
+      if ("createInventory" in input && input.createInventory && !input.stockItemId) {
+        return;
+      }
+      const stockItemId =
+        "stockItemId" in input && typeof input.stockItemId === "string"
+          ? input.stockItemId
+          : "";
+      const stockItem = await this.ingredients.findById(stockItemId);
       if (!stockItem || !stockItem.active) {
         throw new Error("El ítem de inventario no existe o está inactivo");
       }
@@ -126,13 +163,35 @@ export class ProductService {
       return existing !== null;
     });
     await this.assertWritable(input);
+
+    let stockItemId: string | null = null;
+    let qtyPerSale: number | null = null;
+
+    if (input.fulfillmentType === "simple") {
+      qtyPerSale = input.qtyPerSale;
+      if (input.createInventory && !input.stockItemId) {
+        const created = await this.inventory.createIngredient({
+          name: input.createInventory.name?.trim() || input.name,
+          unit: input.createInventory.unit,
+          minStock: input.createInventory.minStock,
+          initialStock: input.createInventory.initialStock ?? 0,
+        });
+        stockItemId = created.id;
+      } else {
+        stockItemId = input.stockItemId ?? null;
+      }
+    }
+
     return this.products.create({
-      ...input,
       code,
+      name: input.name,
+      categoryId: input.categoryId,
       imagePath: input.imagePath?.trim() ? input.imagePath.trim() : null,
+      priceCents: input.priceCents,
+      fulfillmentType: input.fulfillmentType,
       recipe: input.fulfillmentType === "compound" ? input.recipe : [],
-      stockItemId: input.fulfillmentType === "simple" ? input.stockItemId : null,
-      qtyPerSale: input.fulfillmentType === "simple" ? input.qtyPerSale : null,
+      stockItemId,
+      qtyPerSale,
     });
   }
 
