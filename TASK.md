@@ -461,14 +461,14 @@ Sin internet en ningún paso.
 
 **Criterio de hecho:** app nueva y DB wipeada muestran Catálogo/Inventario/Categorías vacíos.
 
-## Fase 2 — CRUD Inventario `[P0]` `todo`
+## Fase 2 — CRUD Inventario `[P0]` `done`
 
-- [ ] UI Editar ítem (nombre, unidad, mínimo)
-- [ ] UI Desactivar / reactivar (soft delete; copy claro)
-- [ ] Reglas al desactivar si está ligado a producto/receta activos
-- [ ] Tests / checklist manual
+- [x] UI Editar ítem (nombre, unidad, mínimo)
+- [x] UI Desactivar / reactivar (soft delete; copy claro)
+- [x] Reglas al desactivar si está ligado a producto/receta activos
+- [x] Tests / checklist manual (quality gates verdes)
 
-**Criterio de hecho:** admin puede corregir y ocultar ítems de bodega sin tocar stock a mano.
+**Criterio de hecho:** admin puede corregir y ocultar ítems de bodega sin tocar stock a mano. ✅
 
 ## Fase 3 — Alta única Producto Simple `[P0]` `todo`
 

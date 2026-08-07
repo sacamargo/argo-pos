@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import type {
   Product,
   ProductFulfillmentType,
@@ -239,5 +239,28 @@ export class DrizzleProductRepository implements ProductRepository {
 
   async deleteById(id: string): Promise<void> {
     await this.db.delete(products).where(eq(products.id, id));
+  }
+
+  async findActiveLinksToIngredient(ingredientId: string): Promise<{
+    asStock: boolean;
+    inRecipe: boolean;
+  }> {
+    const [asStockRow] = await this.db
+      .select({ id: products.id })
+      .from(products)
+      .where(and(eq(products.active, true), eq(products.stockItemId, ingredientId)))
+      .limit(1);
+
+    const [recipeRow] = await this.db
+      .select({ id: productRecipeItems.id })
+      .from(productRecipeItems)
+      .innerJoin(products, eq(productRecipeItems.productId, products.id))
+      .where(and(eq(products.active, true), eq(productRecipeItems.ingredientId, ingredientId)))
+      .limit(1);
+
+    return {
+      asStock: Boolean(asStockRow),
+      inRecipe: Boolean(recipeRow),
+    };
   }
 }

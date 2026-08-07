@@ -3,6 +3,7 @@ import type { Ingredient } from "@/domain/entities/ingredient";
 import type { InventoryMovementView } from "@/domain/entities/inventory";
 import type { IngredientRepository } from "@/domain/repositories/ingredient-repository";
 import type { InventoryMovementRepository } from "@/domain/repositories/inventory-movement-repository";
+import type { ProductRepository } from "@/domain/repositories/product-repository";
 import {
   businessCodeSchema,
   resolveCreateBusinessCode,
@@ -21,6 +22,11 @@ export const updateIngredientSchema = z.object({
   name: z.string().trim().min(1, "Nombre obligatorio").max(120),
   unit: z.string().trim().min(1, "Unidad obligatoria").max(20),
   minStock: z.number().min(0, "Mínimo no puede ser negativo"),
+});
+
+export const setIngredientActiveSchema = z.object({
+  id: z.string().min(1),
+  active: z.boolean(),
 });
 
 export const purchaseInSchema = z.object({
@@ -42,6 +48,8 @@ export class InventoryService {
   constructor(
     private readonly ingredients: IngredientRepository,
     private readonly movements: InventoryMovementRepository,
+    /** Blocks deactivating items still linked to active POS products. */
+    private readonly products: ProductRepository,
   ) {}
 
   async listIngredients(): Promise<Ingredient[]> {
@@ -93,7 +101,7 @@ export class InventoryService {
     const input = updateIngredientSchema.parse(raw);
     const existing = await this.ingredients.findById(input.id);
     if (!existing) {
-      throw new Error("Ingrediente no encontrado");
+      throw new Error("Ítem de inventario no encontrado");
     }
     return this.ingredients.update({
       id: input.id,
@@ -103,11 +111,30 @@ export class InventoryService {
     });
   }
 
+  async setIngredientActive(raw: unknown): Promise<Ingredient> {
+    const input = setIngredientActiveSchema.parse(raw);
+    const existing = await this.ingredients.findById(input.id);
+    if (!existing) {
+      throw new Error("Ítem de inventario no encontrado");
+    }
+
+    if (!input.active) {
+      const links = await this.products.findActiveLinksToIngredient(input.id);
+      if (links.asStock || links.inRecipe) {
+        throw new Error(
+          "No puedes ocultar este ítem: está ligado a un producto activo en Catálogo. Desactiva o edita ese producto primero.",
+        );
+      }
+    }
+
+    return this.ingredients.setActive(input.id, input.active);
+  }
+
   async recordPurchaseIn(raw: unknown): Promise<Ingredient> {
     const input = purchaseInSchema.parse(raw);
     const ingredient = await this.ingredients.findById(input.ingredientId);
     if (!ingredient || !ingredient.active) {
-      throw new Error("Ingrediente no encontrado o inactivo");
+      throw new Error("Ítem de inventario no encontrado o inactivo");
     }
 
     const reason = await this.movements.findReasonByCode("purchase_in");
@@ -131,7 +158,7 @@ export class InventoryService {
     const input = adjustmentSchema.parse(raw);
     const ingredient = await this.ingredients.findById(input.ingredientId);
     if (!ingredient || !ingredient.active) {
-      throw new Error("Ingrediente no encontrado o inactivo");
+      throw new Error("Ítem de inventario no encontrado o inactivo");
     }
 
     const reason = await this.movements.findReasonByCode("adjustment");

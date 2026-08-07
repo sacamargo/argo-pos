@@ -90,7 +90,7 @@ export async function getAppServices(): Promise<AppServices> {
 
   const categoryService = new CategoryService(categories);
   const productService = new ProductService(products, categories, ingredients);
-  const inventoryService = new InventoryService(ingredients, movements);
+  const inventoryService = new InventoryService(ingredients, movements, products);
   const catalogWorkbook = createLazyCatalogWorkbookCodec();
   const workbookValidator = new CatalogWorkbookValidator();
   const catalogImport = new CatalogImportService(
