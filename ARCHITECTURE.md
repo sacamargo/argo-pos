@@ -576,50 +576,52 @@ Caja abierta.
 
 ---
 
-# Inventario
+# Inventario (resumen UI)
 
-No construir un ERP.
+Pantalla de bodega. No es un ERP.
 
 Solo:
 
-Ingredientes
+- Ítems de stock (insumos y productos simples ya creados desde Catálogo)
+- Entradas / ajustes
+- Movimientos
+- Stock bajo
 
-Entradas
-
-Ajustes
-
-Movimientos
-
-Stock bajo
+Detalle de responsabilidades: sección **Inventario (Bodega)** más abajo.
 
 ---
 
-# Productos
+# Catálogo
 
-Cada producto tendrá:
+Responsable de **todo lo que puede venderse** en el POS.
 
-`code` interno único (ej. `PROD-7BC221`) — auto-generado; no visible en UI; base del upsert Excel
+Cada producto tiene:
 
-Nombre
+- Nombre
+- Precio
+- Categoría
+- Imagen
+- Tipo: **Simple** o **Compuesto** (en dominio: `simple` / `compound`)
+- Estado (activo / inactivo)
+- `code` interno único (ej. `PROD-7BC221`) — auto-generado; no visible en UI; base del upsert Excel
 
-Categoría
+## Producto Simple
 
-Tipo de cumplimiento:
+Compra = almacena = vende.
 
-- `simple` — compra = almacena = vende (apunta a un ítem de inventario + cantidad por venta)
-- `compound` — se arma con receta (BOM) de ítems de inventario; no tiene stock propio
+- Apunta a un ítem de inventario + cantidad por venta.
+- En el flujo de alta desde Catálogo puede **crear su ítem de inventario en el mismo paso** o **reutilizar** uno existente.
+- No debe obligar al cliente a un doble proceso (Inventario + Catálogo) para vender algo empaquetado (Doritos, cerveza, etc.).
 
-Imagen
+## Producto Compuesto
 
-Precio
+Se arma; no tiene stock propio.
 
-Estado
+- **Nunca crea inventario** al darse de alta.
+- Usa **receta** (BOM) de ítems de inventario existentes (insumos).
+- Cada venta consume esos ingredientes vía `resolveConsumption`.
 
-Receta (solo `compound`)
-
-Vínculo a inventario (solo `simple`)
-
-Toda venta resuelve a consumo de inventario con un único motor (`resolveConsumption`).
+Toda venta (Simple o Compuesto) resuelve a consumo de inventario con un único motor (`resolveConsumption`).
 
 ---
 
@@ -633,13 +635,64 @@ Cada categoría tiene un `code` interno único (ej. `CAT-9F4A8C`), auto-generado
 
 ---
 
-# Inventario
+# Inventario (Bodega)
 
-Todo lo físico es un ítem de inventario (`ingredients` en schema): `code` interno único, unidad, stock, mínimo.
+```text
+Inventario = Bodega
+Catálogo   = Venta
+```
 
-El `code` (`INV-XXXXXX`) se genera en create y es inmutable. La UI solo opera por nombre / id.
+Inventario **deja de ser** el lugar donde el usuario crea productos para vender.
 
-Da igual si luego se vende como producto simple o se usa en una receta compound.
+Su responsabilidad es:
+
+- Stock
+- Movimientos (entradas, ajustes, venta, anulación)
+- Mínimos / alertas
+- Unidades
+- Insumos (vaso, pajita, base de sabor, etc.)
+- Ítems físicos de productos Simple ya creados desde Catálogo
+
+Todo lo físico es un ítem de inventario (`ingredients` en schema): `code` interno único (`INV-XXXXXX`), unidad, stock, mínimo.
+
+El `code` se genera en create y es inmutable. La UI solo opera por nombre / id.
+
+Da igual si el ítem se vende vía producto Simple o se usa en una receta Compuesto: el stock vive aquí.
+
+---
+
+# Soft delete (desactivación)
+
+Operación normal del sistema:
+
+- Productos → se **desactivan** (no aparecen en POS).
+- Categorías → se **desactivan**.
+- Ítems de inventario (ingredientes) → se **desactivan**.
+
+**No existe delete físico como operación normal** de la UI. El historial de movimientos y las ventas inmutables deben preservarse.
+
+---
+
+# Wipe administrativo (entrega / reset de negocio)
+
+Existirá una operación administrativa **“Vaciar Catálogo e Inventario”** (solo admin, con confirmación fuerte) pensada para dejar la app lista para cargar el negocio del cliente sin demos.
+
+Efectos previstos:
+
+- Elimina recetas
+- Elimina o desactiva productos
+- Elimina o desactiva ítems de inventario
+- Elimina o desactiva categorías
+
+**No toca:**
+
+- Usuarios
+- Ventas (ni anulaciones)
+- Caja (`cash_sessions`)
+- Configuración / settings
+- Métodos de pago
+
+La plantilla Excel con filas de ejemplo (`EJ-…`) es documentación de importación y **no** se vacía con este wipe.
 
 ---
 
