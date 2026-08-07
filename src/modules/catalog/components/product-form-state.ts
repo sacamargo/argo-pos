@@ -7,7 +7,6 @@ export type RecipeDraft = {
 
 export type ProductFormState = {
   id?: string;
-  code: string;
   name: string;
   categoryId: string;
   imagePath: string;
@@ -20,7 +19,6 @@ export type ProductFormState = {
 
 export function emptyProductForm(categoryId = ""): ProductFormState {
   return {
-    code: "",
     name: "",
     categoryId,
     imagePath: "",

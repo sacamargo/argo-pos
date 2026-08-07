@@ -10,7 +10,6 @@ export type CreateIngredientInput = {
 
 export type UpdateIngredientInput = {
   id: string;
-  code: string;
   name: string;
   unit: string;
   minStock: number;

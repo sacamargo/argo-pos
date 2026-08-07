@@ -283,6 +283,10 @@ La UI nunca debe conocer Tauri.
 
 Todo debe pasar por servicios.
 
+`CatalogService` es la fachada de aplicación del catálogo completo (categorías + inventario + productos/recetas). El CRUD de pantallas puede seguir usando los services especializados; la importación/exportación masiva (Excel) debe orquestarse solo a través de `CatalogService`.
+
+Los `code` de categoría / inventario / producto son **identificadores internos** (formato `CAT-|INV-|PROD-` + 6 hex aleatorios). Se generan en create (`generateBusinessCode`), son inmutables en update y **no forman parte de la experiencia del usuario**. La UI no los muestra ni los envía. Excel los usará para upsert.
+
 ---
 
 # Estructura del proyecto
@@ -592,7 +596,7 @@ Stock bajo
 
 Cada producto tendrá:
 
-Código único (ej. `PROD-GRAN-LIM12`)
+`code` interno único (ej. `PROD-7BC221`) — auto-generado; no visible en UI; base del upsert Excel
 
 Nombre
 
@@ -623,13 +627,15 @@ Solo un nivel.
 
 Nada de árboles infinitos.
 
-Cada categoría tiene código único (ej. `CAT-GRAN`).
+Cada categoría tiene un `code` interno único (ej. `CAT-9F4A8C`), auto-generado al crear. **No forma parte de la UX** — la UI nunca lo muestra ni lo edita. Excel usará `code` para upsert.
 
 ---
 
 # Inventario
 
-Todo lo físico es un ítem de inventario (`ingredients` en schema): código único, unidad, stock, mínimo.
+Todo lo físico es un ítem de inventario (`ingredients` en schema): `code` interno único, unidad, stock, mínimo.
+
+El `code` (`INV-XXXXXX`) se genera en create y es inmutable. La UI solo opera por nombre / id.
 
 Da igual si luego se vende como producto simple o se usa en una receta compound.
 

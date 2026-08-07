@@ -24,7 +24,6 @@ export type CreateProductInput = {
 
 export type UpdateProductInput = {
   id: string;
-  code: string;
   name: string;
   categoryId: string;
   imagePath?: string | null;

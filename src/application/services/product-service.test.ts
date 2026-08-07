@@ -36,7 +36,6 @@ describe("productWriteSchema", () => {
 
   it("accepts a valid compound product", () => {
     const result = productWriteSchema.safeParse({
-      code: "PROD-GRAN-LIM",
       name: "Granizado limón",
       categoryId: "cat-1",
       fulfillmentType: "compound",
@@ -48,7 +47,6 @@ describe("productWriteSchema", () => {
 
   it("accepts a valid simple product", () => {
     const result = productWriteSchema.safeParse({
-      code: "PROD-AGUA",
       name: "Agua 600ml",
       categoryId: "cat-1",
       fulfillmentType: "simple",
@@ -56,6 +54,18 @@ describe("productWriteSchema", () => {
       stockItemId: "inv-agua",
       qtyPerSale: 1,
       recipe: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts optional provided code for Excel path", () => {
+    const result = productWriteSchema.safeParse({
+      code: "PROD-EXCEL",
+      name: "Desde Excel",
+      categoryId: "cat-1",
+      fulfillmentType: "compound",
+      priceCents: 5000,
+      recipe: [{ ingredientId: "ing-1", quantity: 1 }],
     });
     expect(result.success).toBe(true);
   });

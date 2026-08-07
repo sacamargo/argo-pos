@@ -34,7 +34,6 @@ export function IngredientsTable({ loading, ingredients, lowCount }: Ingredients
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Mínimo</TableHead>
@@ -46,7 +45,6 @@ export function IngredientsTable({ loading, ingredients, lowCount }: Ingredients
                 const low = item.stockQuantity <= item.minStock;
                 return (
                   <TableRow key={item.id}>
-                    <TableCell className="font-mono text-xs">{item.code}</TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>
                       {item.stockQuantity} {item.unit}

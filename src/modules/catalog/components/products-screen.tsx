@@ -91,7 +91,6 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
       }
       setForm({
         id: detail.id,
-        code: detail.code,
         name: detail.name,
         categoryId: detail.categoryId ?? activeCategories[0]?.id ?? "",
         imagePath: detail.imagePath ?? "",
@@ -139,7 +138,6 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
       }
 
       const base = {
-        code: form.code,
         name: form.name,
         categoryId: form.categoryId,
         imagePath: form.imagePath.trim() ? form.imagePath.trim() : null,
@@ -235,8 +233,7 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {product.code} · {product.fulfillmentType} ·{" "}
-                        {categoryName(product.categoryId)}
+                        {product.fulfillmentType} · {categoryName(product.categoryId)}
                         {product.imagePath ? " · Con imagen" : ""}
                       </div>
                     </TableCell>

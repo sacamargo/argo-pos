@@ -6,7 +6,7 @@ import type { Product, ProductWithRecipe } from "@/domain/entities/product";
 import type { Ingredient } from "@/domain/entities/ingredient";
 import {
   businessCodeSchema,
-  normalizeBusinessCode,
+  resolveCreateBusinessCode,
 } from "@/shared/utils/business-code";
 
 const recipeItemSchema = z.object({
@@ -14,22 +14,25 @@ const recipeItemSchema = z.object({
   quantity: z.number().positive("La cantidad debe ser mayor a 0"),
 });
 
-const productBaseSchema = z.object({
-  code: businessCodeSchema,
+const productFieldsSchema = z.object({
   name: z.string().trim().min(1, "El nombre es obligatorio").max(120),
   categoryId: z.string().min(1, "La categoría es obligatoria"),
   imagePath: z.string().trim().nullable().optional(),
   priceCents: z.number().int().positive("El precio debe ser mayor a 0"),
 });
 
+const productCreateFieldsSchema = productFieldsSchema.extend({
+  code: businessCodeSchema.optional(),
+});
+
 export const productWriteSchema = z.discriminatedUnion("fulfillmentType", [
-  productBaseSchema.extend({
+  productCreateFieldsSchema.extend({
     fulfillmentType: z.literal("simple"),
     stockItemId: z.string().min(1, "El inventario es obligatorio"),
     qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
     recipe: z.array(recipeItemSchema).max(0).optional().default([]),
   }),
-  productBaseSchema.extend({
+  productCreateFieldsSchema.extend({
     fulfillmentType: z.literal("compound"),
     stockItemId: z.null().optional(),
     qtyPerSale: z.null().optional(),
@@ -38,14 +41,14 @@ export const productWriteSchema = z.discriminatedUnion("fulfillmentType", [
 ]);
 
 export const updateProductSchema = z.discriminatedUnion("fulfillmentType", [
-  productBaseSchema.extend({
+  productFieldsSchema.extend({
     id: z.string().min(1),
     fulfillmentType: z.literal("simple"),
     stockItemId: z.string().min(1, "El inventario es obligatorio"),
     qtyPerSale: z.number().positive("La cantidad por venta debe ser mayor a 0"),
     recipe: z.array(recipeItemSchema).max(0).optional().default([]),
   }),
-  productBaseSchema.extend({
+  productFieldsSchema.extend({
     id: z.string().min(1),
     fulfillmentType: z.literal("compound"),
     stockItemId: z.null().optional(),
@@ -86,13 +89,6 @@ export class ProductService {
     return this.ingredients.listActive();
   }
 
-  private async assertUniqueCode(code: string, excludeId?: string) {
-    const existing = await this.products.findByCode(code);
-    if (existing && existing.id !== excludeId) {
-      throw new Error(`Ya existe un producto con código ${normalizeBusinessCode(code)}`);
-    }
-  }
-
   private async assertWritable(
     input: z.infer<typeof productWriteSchema> | z.infer<typeof updateProductSchema>,
   ) {
@@ -125,10 +121,14 @@ export class ProductService {
 
   async create(raw: unknown): Promise<ProductWithRecipe> {
     const input = productWriteSchema.parse(raw);
-    await this.assertUniqueCode(input.code);
+    const code = await resolveCreateBusinessCode("PROD", input.code, async (candidate) => {
+      const existing = await this.products.findByCode(candidate);
+      return existing !== null;
+    });
     await this.assertWritable(input);
     return this.products.create({
       ...input,
+      code,
       imagePath: input.imagePath?.trim() ? input.imagePath.trim() : null,
       recipe: input.fulfillmentType === "compound" ? input.recipe : [],
       stockItemId: input.fulfillmentType === "simple" ? input.stockItemId : null,
@@ -142,7 +142,6 @@ export class ProductService {
     if (!existing) {
       throw new Error("Producto no encontrado");
     }
-    await this.assertUniqueCode(input.code, input.id);
     await this.assertWritable(input);
     return this.products.update({
       ...input,

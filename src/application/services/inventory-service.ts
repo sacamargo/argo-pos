@@ -5,11 +5,11 @@ import type { IngredientRepository } from "@/domain/repositories/ingredient-repo
 import type { InventoryMovementRepository } from "@/domain/repositories/inventory-movement-repository";
 import {
   businessCodeSchema,
-  normalizeBusinessCode,
+  resolveCreateBusinessCode,
 } from "@/shared/utils/business-code";
 
 export const createIngredientSchema = z.object({
-  code: businessCodeSchema,
+  code: businessCodeSchema.optional(),
   name: z.string().trim().min(1, "Nombre obligatorio").max(120),
   unit: z.string().trim().min(1, "Unidad obligatoria").max(20),
   minStock: z.number().min(0, "Mínimo no puede ser negativo"),
@@ -18,7 +18,6 @@ export const createIngredientSchema = z.object({
 
 export const updateIngredientSchema = z.object({
   id: z.string().min(1),
-  code: businessCodeSchema,
   name: z.string().trim().min(1, "Nombre obligatorio").max(120),
   unit: z.string().trim().min(1, "Unidad obligatoria").max(20),
   minStock: z.number().min(0, "Mínimo no puede ser negativo"),
@@ -62,22 +61,16 @@ export class InventoryService {
     return this.ingredients.findByCode(code);
   }
 
-  private async assertUniqueCode(code: string, excludeId?: string) {
-    const existing = await this.ingredients.findByCode(code);
-    if (existing && existing.id !== excludeId) {
-      throw new Error(
-        `Ya existe un ítem de inventario con código ${normalizeBusinessCode(code)}`,
-      );
-    }
-  }
-
   async createIngredient(raw: unknown): Promise<Ingredient> {
     const input = createIngredientSchema.parse(raw);
-    await this.assertUniqueCode(input.code);
+    const code = await resolveCreateBusinessCode("INV", input.code, async (candidate) => {
+      const existing = await this.ingredients.findByCode(candidate);
+      return existing !== null;
+    });
     const now = new Date().toISOString();
     const created = await this.ingredients.create({
       id: crypto.randomUUID(),
-      code: input.code,
+      code,
       name: input.name,
       unit: input.unit,
       minStock: input.minStock,
@@ -102,8 +95,12 @@ export class InventoryService {
     if (!existing) {
       throw new Error("Ingrediente no encontrado");
     }
-    await this.assertUniqueCode(input.code, input.id);
-    return this.ingredients.update(input);
+    return this.ingredients.update({
+      id: input.id,
+      name: input.name,
+      unit: input.unit,
+      minStock: input.minStock,
+    });
   }
 
   async recordPurchaseIn(raw: unknown): Promise<Ingredient> {

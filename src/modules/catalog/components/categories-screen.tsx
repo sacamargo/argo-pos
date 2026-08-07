@@ -37,7 +37,7 @@ export function CategoriesScreen() {
     formState: { errors, isSubmitting },
   } = useForm<CreateFormValues>({
     resolver: zodResolver(createCategoryInputSchema),
-    defaultValues: { code: "", name: "" },
+    defaultValues: { name: "" },
   });
 
   const reload = useCallback(async () => {
@@ -73,11 +73,10 @@ export function CategoriesScreen() {
     try {
       const { categories } = await getAppServices();
       await categories.create({
-        code: values.code,
         name: values.name,
         sortOrder: rows.length + 1,
       });
-      reset({ code: "", name: "" });
+      reset({ name: "" });
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la categoría");
@@ -116,17 +115,6 @@ export function CategoriesScreen() {
           <form className="flex flex-col gap-3 sm:flex-row" onSubmit={onCreate}>
             <div className="flex-1 space-y-1">
               <Input
-                placeholder="Código (CAT-GRAN)"
-                className="h-12"
-                aria-label="Código de categoría"
-                {...register("code")}
-              />
-              {errors.code ? (
-                <p className="text-sm text-destructive">{errors.code.message}</p>
-              ) : null}
-            </div>
-            <div className="flex-[1.4] space-y-1">
-              <Input
                 placeholder="Ej. Granizados"
                 className="h-12"
                 aria-label="Nombre de categoría"
@@ -155,7 +143,6 @@ export function CategoriesScreen() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Código</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Orden</TableHead>
                   <TableHead>Estado</TableHead>
@@ -165,7 +152,6 @@ export function CategoriesScreen() {
               <TableBody>
                 {rows.map((category) => (
                   <TableRow key={category.id}>
-                    <TableCell className="font-mono text-xs">{category.code}</TableCell>
                     <TableCell className="font-medium">{category.name}</TableCell>
                     <TableCell>{category.sortOrder}</TableCell>
                     <TableCell>
