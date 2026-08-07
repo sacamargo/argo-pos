@@ -101,7 +101,6 @@ export class DrizzleIngredientRepository implements IngredientRepository {
     await this.db
       .update(ingredients)
       .set({
-        code: normalizeBusinessCode(input.code),
         name: input.name,
         unit: input.unit,
         minStock: input.minStock,

@@ -87,7 +87,6 @@ export class DrizzleCategoryRepository implements CategoryRepository {
     await this.db
       .update(categories)
       .set({
-        code: normalizeBusinessCode(input.code),
         name: input.name,
         sortOrder: input.sortOrder,
       })

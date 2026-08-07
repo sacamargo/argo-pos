@@ -137,9 +137,11 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Producto: nombre, categoría, imagen, precio, estado
 - [x] Receta: ingredientes + cantidades
 - [x] Validar precio > 0 y categoría existente
-- [x] Códigos únicos (`code`) en categorías / productos / inventario
+- [x] Códigos únicos internos (`code`) en categorías / productos / inventario
+- [x] Auto-generación `generateBusinessCode` (sin UI; inmutables en update)
 - [x] Tipo `simple` | `compound` + vínculo stock / receta
 - [x] `resolveConsumption` unificado en venta
+- [x] `CatalogService` fachada (snapshot + orquestación; Excel pendiente)
 
 ## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 
@@ -147,7 +149,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Formulario crear/editar
 - [x] Selector de imagen local
 - [x] Editor de receta simple
-- [x] Alta simple vs compound + códigos
+- [x] Alta simple vs compound (códigos internos, sin campos en UI)
 
 ## FE-004 · Carga de imágenes locales `[P1]` `done`
 

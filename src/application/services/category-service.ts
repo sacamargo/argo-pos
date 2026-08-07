@@ -3,7 +3,7 @@ import type { Category } from "@/domain/entities/category";
 import type { CategoryRepository } from "@/domain/repositories/category-repository";
 import {
   businessCodeSchema,
-  normalizeBusinessCode,
+  resolveCreateBusinessCode,
 } from "@/shared/utils/business-code";
 
 export const categorySchema = z.object({
@@ -17,7 +17,7 @@ export const categorySchema = z.object({
 export const listCategoriesOutputSchema = z.array(categorySchema);
 
 export const createCategoryInputSchema = z.object({
-  code: businessCodeSchema,
+  code: businessCodeSchema.optional(),
   name: z
     .string()
     .trim()
@@ -28,7 +28,6 @@ export const createCategoryInputSchema = z.object({
 
 export const updateCategoryInputSchema = z.object({
   id: z.string().min(1),
-  code: businessCodeSchema,
   name: z
     .string()
     .trim()
@@ -58,17 +57,19 @@ export class CategoryService {
     return row ? categorySchema.parse(row) : null;
   }
 
-  private async assertUniqueCode(code: string, excludeId?: string) {
-    const existing = await this.categories.findByCode(code);
-    if (existing && existing.id !== excludeId) {
-      throw new Error(`Ya existe una categoría con código ${normalizeBusinessCode(code)}`);
-    }
-  }
-
   async create(raw: unknown): Promise<Category> {
     const input = createCategoryInputSchema.parse(raw);
-    await this.assertUniqueCode(input.code);
-    return categorySchema.parse(await this.categories.create(input));
+    const code = await resolveCreateBusinessCode("CAT", input.code, async (candidate) => {
+      const existing = await this.categories.findByCode(candidate);
+      return existing !== null;
+    });
+    return categorySchema.parse(
+      await this.categories.create({
+        code,
+        name: input.name,
+        sortOrder: input.sortOrder,
+      }),
+    );
   }
 
   async update(raw: unknown): Promise<Category> {
@@ -77,8 +78,13 @@ export class CategoryService {
     if (!existing) {
       throw new Error("Categoría no encontrada");
     }
-    await this.assertUniqueCode(input.code, input.id);
-    return categorySchema.parse(await this.categories.update(input));
+    return categorySchema.parse(
+      await this.categories.update({
+        id: input.id,
+        name: input.name,
+        sortOrder: input.sortOrder,
+      }),
+    );
   }
 
   async setActive(raw: unknown): Promise<Category> {

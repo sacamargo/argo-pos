@@ -76,6 +76,7 @@ UI (modules/*/components, pages)
 - La **Infrastructure** implementa puertos del domain.
 - Toda mutación importante pasa por un **service** con validación Zod.
 - Operaciones de venta/inventario van en **transacción**.
+- Los `code` de catálogo (CAT/INV/PROD) son internos: auto-generados, inmutables, ausentes de la UI; Excel los usará para upsert vía `CatalogService`.
 
 ### Anti-patrones
 

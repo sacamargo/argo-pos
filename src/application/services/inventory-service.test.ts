@@ -32,13 +32,22 @@ describe("inventory schemas", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts ingredient create payload", () => {
+  it("accepts ingredient create payload without code", () => {
+    const result = createIngredientSchema.safeParse({
+      name: "Jarabe",
+      unit: "ml",
+      minStock: 200,
+      initialStock: 1000,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts optional provided code for Excel path", () => {
     const result = createIngredientSchema.safeParse({
       code: "INV-JARABE",
       name: "Jarabe",
       unit: "ml",
       minStock: 200,
-      initialStock: 1000,
     });
     expect(result.success).toBe(true);
   });

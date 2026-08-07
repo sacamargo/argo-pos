@@ -64,12 +64,6 @@ export function ProductFormCard({
       <CardContent className="flex flex-col gap-3">
         <Input
           className="h-12"
-          placeholder="Código (PROD-GRAN-LIM12)"
-          value={form.code}
-          onChange={(event) => onChange({ ...form, code: event.target.value })}
-        />
-        <Input
-          className="h-12"
           placeholder="Nombre"
           value={form.name}
           onChange={(event) => onChange({ ...form, name: event.target.value })}
@@ -82,7 +76,7 @@ export function ProductFormCard({
           <option value="">Selecciona categoría</option>
           {activeCategories.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.code} · {category.name}
+              {category.name}
             </option>
           ))}
         </select>
@@ -121,7 +115,7 @@ export function ProductFormCard({
               <option value="">Selecciona ítem</option>
               {ingredients.map((ingredient) => (
                 <option key={ingredient.id} value={ingredient.id}>
-                  {ingredient.code} · {ingredient.name} ({ingredient.unit})
+                  {ingredient.name} ({ingredient.unit})
                 </option>
               ))}
             </select>
@@ -206,7 +200,7 @@ export function ProductFormCard({
                   >
                     {ingredients.map((ingredient) => (
                       <option key={ingredient.id} value={ingredient.id}>
-                        {ingredient.code} · {ingredient.name} ({ingredient.unit})
+                        {ingredient.name} ({ingredient.unit})
                       </option>
                     ))}
                   </select>

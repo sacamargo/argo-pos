@@ -1,6 +1,7 @@
 import { AuthService } from "@/application/services/auth-service";
 import { BackupService } from "@/application/services/backup-service";
 import { CashSessionService } from "@/application/services/cash-session-service";
+import { CatalogService } from "@/application/services/catalog-service";
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
 import { InventoryService } from "@/application/services/inventory-service";
@@ -28,6 +29,8 @@ export type AppServices = {
   products: ProductService;
   productImages: ProductImageService;
   inventory: InventoryService;
+  /** Facade for catalog-wide ops (future Excel import/export). */
+  catalog: CatalogService;
   cashSessions: CashSessionService;
   sales: SaleService;
   saleQueries: SaleQueryService;
@@ -56,12 +59,17 @@ export async function getAppServices(): Promise<AppServices> {
   const runInTransaction = async <T>(work: () => Promise<T>) =>
     withTransaction(async () => work());
 
+  const categoryService = new CategoryService(categories);
+  const productService = new ProductService(products, categories, ingredients);
+  const inventoryService = new InventoryService(ingredients, movements);
+
   services = {
     auth: new AuthService(users),
-    categories: new CategoryService(categories),
-    products: new ProductService(products, categories, ingredients),
+    categories: categoryService,
+    products: productService,
     productImages: new ProductImageService(new TauriProductImageStore()),
-    inventory: new InventoryService(ingredients, movements),
+    inventory: inventoryService,
+    catalog: new CatalogService(categoryService, inventoryService, productService),
     cashSessions: new CashSessionService(cashSessions),
     sales: new SaleService(
       sales,

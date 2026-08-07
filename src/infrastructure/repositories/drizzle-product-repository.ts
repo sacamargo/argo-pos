@@ -171,7 +171,6 @@ export class DrizzleProductRepository implements ProductRepository {
     await this.db
       .update(products)
       .set({
-        code: normalizeBusinessCode(input.code),
         name: input.name,
         categoryId: input.categoryId,
         imagePath: input.imagePath ?? null,

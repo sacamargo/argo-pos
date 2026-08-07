@@ -8,7 +8,6 @@ export type CreateCategoryInput = {
 
 export type UpdateCategoryInput = {
   id: string;
-  code: string;
   name: string;
   sortOrder: number;
 };
