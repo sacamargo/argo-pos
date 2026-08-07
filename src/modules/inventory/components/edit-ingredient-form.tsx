@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button, Input } from "@/components";
 import type { Ingredient } from "@/domain/entities/ingredient";
 import {
@@ -16,6 +17,8 @@ type EditIngredientFormProps = {
   onMinChange: (value: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
+  /** Stock entry / adjustment UI (same actions as “Mover stock”). */
+  stockSection?: ReactNode;
 };
 
 export function EditIngredientForm({
@@ -29,11 +32,12 @@ export function EditIngredientForm({
   onMinChange,
   onSubmit,
   onCancel,
+  stockSection,
 }: EditIngredientFormProps) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
-        {item.name} — el stock no se cambia aquí (usa “Mover stock”).
+        {item.name} — stock actual: {item.stockQuantity} {item.unit}
       </p>
       <div className="space-y-2">
         <FieldLabel htmlFor="inv-edit-name">Nombre</FieldLabel>
@@ -64,6 +68,18 @@ export function EditIngredientForm({
           Cancelar
         </Button>
       </div>
+
+      {stockSection ? (
+        <div className="flex flex-col gap-3 border-t border-border pt-4">
+          <div>
+            <p className="text-sm font-medium">Cambiar stock</p>
+            <p className="text-xs text-muted-foreground">
+              Igual que “Mover stock”: suma una llegada o corrige la cantidad.
+            </p>
+          </div>
+          {stockSection}
+        </div>
+      ) : null}
     </div>
   );
 }

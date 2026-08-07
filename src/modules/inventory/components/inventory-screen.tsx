@@ -94,8 +94,9 @@ export function InventoryScreen() {
       <Modal
         open={s.editOpen && Boolean(s.editingItem)}
         title="Editar ítem"
-        description="Nombre, unidad y alerta. El stock solo cambia con movimientos."
+        description="Datos del ítem y movimientos de stock (compra o corrección)."
         onClose={s.cancelEdit}
+        className="max-w-xl"
       >
         {s.error ? <p className="mb-3 text-sm text-destructive">{s.error}</p> : null}
         {s.editingItem ? (
@@ -110,6 +111,25 @@ export function InventoryScreen() {
             onMinChange={s.setNewMin}
             onSubmit={() => void s.saveEdit()}
             onCancel={s.cancelEdit}
+            stockSection={
+              <MovementForms
+                busy={s.busy}
+                ingredients={s.ingredients}
+                selectedId={s.editingItem.id}
+                itemSelectMode="locked"
+                entryQty={s.entryQty}
+                entryNote={s.entryNote}
+                adjustQty={s.adjustQty}
+                adjustNote={s.adjustNote}
+                onSelect={s.setSelectedId}
+                onEntryQty={s.setEntryQty}
+                onEntryNote={s.setEntryNote}
+                onAdjustQty={s.setAdjustQty}
+                onAdjustNote={s.setAdjustNote}
+                onEntry={() => void s.registerEntry()}
+                onAdjust={() => void s.registerAdjustment()}
+              />
+            }
           />
         ) : null}
       </Modal>
