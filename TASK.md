@@ -143,6 +143,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] `resolveConsumption` unificado en venta
 - [x] `CatalogService` fachada (snapshot + orquestación; Excel pendiente)
 - [x] `CatalogWorkbookCodec` port + adapter ExcelJS (stubs; plantilla/export/import pendientes)
+- [x] `buildTemplate()` plantilla oficial (hojas + headers + ejemplos)
 
 ## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 
