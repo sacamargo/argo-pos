@@ -25,8 +25,12 @@ export function IngredientsTable({ loading, ingredients, lowCount }: Ingredients
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ingredientes</CardTitle>
-        <CardDescription>{lowCount} en stock bajo</CardDescription>
+        <CardTitle>Lo que hay en stock</CardTitle>
+        <CardDescription>
+          {lowCount === 0
+            ? "Ningún ítem en alerta de stock bajo"
+            : `${lowCount} en alerta de stock bajo`}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
@@ -76,15 +80,15 @@ export function MovementsTable({ movements }: MovementsTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Historial</CardTitle>
-        <CardDescription>Últimos movimientos</CardDescription>
+        <CardTitle>Historial de movimientos</CardTitle>
+        <CardDescription>Compras y correcciones recientes</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>
-              <TableHead>Ingrediente</TableHead>
+              <TableHead>Ítem</TableHead>
               <TableHead>Motivo</TableHead>
               <TableHead>Cantidad</TableHead>
               <TableHead>Nota</TableHead>

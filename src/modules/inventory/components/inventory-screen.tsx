@@ -10,6 +10,7 @@ import {
   IngredientsTable,
   MovementsTable,
 } from "@/modules/inventory/components/inventory-tables";
+import { DEFAULT_INVENTORY_UNIT } from "@/modules/inventory/constants/units";
 import { useSessionStore } from "@/shared/hooks/use-session";
 
 export function InventoryScreen() {
@@ -21,7 +22,7 @@ export function InventoryScreen() {
   const [busy, setBusy] = useState(false);
 
   const [newName, setNewName] = useState("");
-  const [newUnit, setNewUnit] = useState("ml");
+  const [newUnit, setNewUnit] = useState(DEFAULT_INVENTORY_UNIT);
   const [newMin, setNewMin] = useState("0");
   const [newInitial, setNewInitial] = useState("0");
 
@@ -74,7 +75,7 @@ export function InventoryScreen() {
         initialStock: Number(newInitial) || 0,
       });
       setNewName("");
-      setNewUnit("ml");
+      setNewUnit(DEFAULT_INVENTORY_UNIT);
       setNewMin("0");
       setNewInitial("0");
       await reload();
@@ -136,7 +137,8 @@ export function InventoryScreen() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Inventario</h1>
         <p className="text-sm text-muted-foreground">
-          El stock solo cambia con movimientos (entrada o ajuste).
+          Aquí guardas lo físico del negocio (snacks, vasos, pajitas, jarabes…). El
+          número de stock solo sube o baja con movimientos: compras o correcciones.
         </p>
       </div>
 
