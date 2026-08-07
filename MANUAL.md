@@ -194,8 +194,8 @@ docs/task-and-manual
 |--------|-----------------|-----------|
 | `pos` | Vender | Admin + Vendedor |
 | `dashboard` | Indicadores del día | Ambos (vendedor reducido) |
-| `catalog` | Productos + categorías | Admin |
-| `inventory` | Ingredientes + movimientos | Admin |
+| `catalog` | Catálogo = venta (productos + categorías) | Admin |
+| `inventory` | Inventario = bodega (stock + movimientos) | Admin |
 | `users` | Cuentas y roles | Admin |
 | `settings` | Tema / datos negocio | Admin |
 | `backup` | Backup / restore | Admin |
@@ -205,6 +205,35 @@ docs/task-and-manual
 
 - **Admin:** acceso completo.
 - **Vendedor:** ventas / historial / dashboard básico (sin catálogo, inventario, usuarios, backups).
+
+### Flujos operativos (cliente / dummy)
+
+**Nota importante:** el cliente normalmente **no** entra a Inventario para crear productos de venta. Los crea desde **Catálogo**. Inventario es la bodega (stock, insumos, movimientos).
+
+**Caso 1 — Crear Doritos (vendible empaquetado)**
+
+```text
+Catálogo
+  → producto Simple
+  → crear inventario automáticamente (o reutilizar existente)
+  → queda listo para vender en POS
+```
+
+**Caso 2 — Crear Granizado (se arma)**
+
+```text
+Inventario → crear ingredientes/insumos (vaso, pajita, base, dulces…)
+Catálogo  → producto Compuesto
+          → crear receta (consume esos ingredientes)
+          → queda listo para vender en POS
+```
+
+**Caso 3 — Mover stock**
+
+```text
+Siempre desde Inventario (entrada de compra o ajuste con nota).
+Nunca editar la cantidad “a mano” sin movimiento.
+```
 
 ---
 
@@ -217,11 +246,20 @@ docs/task-and-manual
 - Snapshots de nombre/precio en `sale_items`.
 - Efectivo: registrar recibido y cambio; no confirmar si recibido &lt; total.
 
+### Catálogo vs Inventario
+
+- **Catálogo = Venta.** Alta de lo vendible (Simple / Compuesto).
+- **Inventario = Bodega.** Stock, unidades, mínimos, insumos, movimientos.
+- Simple: puede crear o reutilizar ítem de inventario en el mismo flujo de Catálogo.
+- Compuesto: no crea inventario; solo receta sobre insumos existentes.
+- Soft delete: productos, categorías e ingredientes se **desactivan**; no hay delete físico como operación normal.
+- Wipe admin (entrega): vacía catálogo/inventario/categorías/recetas; no toca usuarios, ventas, caja, settings ni métodos de pago.
+
 ### Inventario
 
 - Stock solo cambia por `inventory_movements`.
-- Producto `simple`: descuenta su ítem de inventario vinculado.
-- Producto `compound`: descuenta según receta.
+- Producto Simple: descuenta su ítem de inventario vinculado.
+- Producto Compuesto: descuenta según receta.
 - Toda venta pasa por `resolveConsumption` (un solo motor).
 - Anulación reintegra.
 
@@ -311,7 +349,7 @@ Si el agente propone algo fuera de MVP: **detener** y mover a `future/`.
 | Fuente de verdad | Archivo SQLite del negocio |
 | Internet | Opcional; nunca bloquea venta |
 | Ventas | Inmutables |
-| Inventario | Por movimientos + recetas |
+| Inventario | Bodega por movimientos; alta vendible desde Catálogo |
 | Roles app | Admin / Vendedor |
 | Sync nube / multi-sucursal | Futuro explícito |
 | Prototipo web anterior | Rama `feature/system-pos-web` (archivo histórico, no base) |

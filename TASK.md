@@ -440,3 +440,50 @@ Un vendedor puede:
 3. Cobrar y ver historial básico
 
 Sin internet en ningún paso.
+
+---
+
+# Épica — Entrega cliente — Catálogo e Inventario `[P0]`
+
+> Objetivo: dejar Catálogo/Inventario listos para el cliente final (sin demos en la app, sin doble alta, UX para dummies).
+>
+> Fuente de verdad de producto: [ARCHITECTURE.md](./ARCHITECTURE.md) + [MANUAL.md](./MANUAL.md).
+>
+> Excel con filas de ejemplo `EJ-…` se **conserva** (guía de importación); no forma parte del wipe de la app.
+
+## Fase 1 — Limpiar demos `[P0]` `todo`
+
+- [ ] Quitar demos del seed (categorías / productos / inventario de ejemplo)
+- [ ] Operación admin “Vaciar Catálogo e Inventario” (recetas, productos, inventario, categorías)
+- [ ] Wipe no toca usuarios, ventas, caja, settings ni métodos de pago
+- [ ] UI con doble confirmación
+- [ ] Tests del wipe
+
+**Criterio de hecho:** app nueva y DB wipeada muestran Catálogo/Inventario/Categorías vacíos.
+
+## Fase 2 — CRUD Inventario `[P0]` `todo`
+
+- [ ] UI Editar ítem (nombre, unidad, mínimo)
+- [ ] UI Desactivar / reactivar (soft delete; copy claro)
+- [ ] Reglas al desactivar si está ligado a producto/receta activos
+- [ ] Tests / checklist manual
+
+**Criterio de hecho:** admin puede corregir y ocultar ítems de bodega sin tocar stock a mano.
+
+## Fase 3 — Alta única Producto Simple `[P0]` `todo`
+
+- [ ] En Catálogo, Simple crea o reutiliza inventario en el mismo flujo
+- [ ] Cero doble proceso obligatorio (Inventario + Catálogo) para vender empaquetados
+- [ ] Copy dummy: Simple = se vende tal cual
+- [ ] Tests service + checklist
+
+**Criterio de hecho:** crear Doritos/Cerveza solo desde Catálogo deja el producto vendible y con stock.
+
+## Fase 4 — Pulido UX de productos compuestos `[P1]` `todo`
+
+- [ ] Copy/wizard Compuesto (granizado) guiado
+- [ ] Validación: insumos deben existir en Inventario
+- [ ] Receta clara en UI
+- [ ] Checklist manual granizado
+
+**Criterio de hecho:** un admin dummy arma un granizado sin confusión con el flujo Simple.
