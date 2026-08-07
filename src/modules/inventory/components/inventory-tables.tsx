@@ -19,6 +19,9 @@ import {
 type IngredientsTableProps = {
   loading: boolean;
   ingredients: Ingredient[];
+  /** Total items before search filter (for “X de Y”). */
+  totalCount: number;
+  searchQuery: string;
   lowCount: number;
   busyId: string | null;
   onEdit: (item: Ingredient) => void;
@@ -28,6 +31,8 @@ type IngredientsTableProps = {
 export function IngredientsTable({
   loading,
   ingredients,
+  totalCount,
+  searchQuery,
   lowCount,
   busyId,
   onEdit,
@@ -38,14 +43,26 @@ export function IngredientsTable({
       <CardHeader>
         <CardTitle>Lo que hay en stock</CardTitle>
         <CardDescription>
-          {lowCount === 0
-            ? "Ningún ítem en alerta de stock bajo"
-            : `${lowCount} en alerta de stock bajo`}
+          {searchQuery.trim()
+            ? `${ingredients.length} de ${totalCount} ítem(s)`
+            : lowCount === 0
+              ? `${totalCount} ítem(s) · sin alerta de stock bajo`
+              : `${totalCount} ítem(s) · ${lowCount} en alerta de stock bajo`}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
-        {!loading ? (
+        {!loading && totalCount === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no hay ítems. Pulsa “Agregar ítem”.
+          </p>
+        ) : null}
+        {!loading && totalCount > 0 && ingredients.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Ningún ítem coincide con “{searchQuery.trim()}”.
+          </p>
+        ) : null}
+        {!loading && ingredients.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>

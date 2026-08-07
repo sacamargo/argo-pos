@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import type { Category } from "@/domain/entities/category";
 import {
   Badge,
@@ -17,7 +18,9 @@ import {
 } from "@/components";
 import { ProductFormFields } from "@/modules/catalog/components/product-form-fields";
 import { useProductsScreen } from "@/modules/catalog/hooks/use-products-screen";
+import { ListSearchInput } from "@/modules/shared/components/list-search-input";
 import { formatPesos } from "@/shared/utils/money";
+import { matchesNameSearch } from "@/shared/utils/name-search";
 
 type ProductsScreenProps = {
   categories: Category[];
@@ -25,6 +28,12 @@ type ProductsScreenProps = {
 
 export function ProductsScreen({ categories }: ProductsScreenProps) {
   const s = useProductsScreen(categories);
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(
+    () => s.products.filter((product) => matchesNameSearch(product.name, query)),
+    [s.products, query],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -52,10 +61,20 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
 
       {s.listError ? <p className="text-sm text-destructive">{s.listError}</p> : null}
 
+      <ListSearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Buscar producto por nombre…"
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Listado</CardTitle>
-          <CardDescription>{s.products.length} producto(s)</CardDescription>
+          <CardDescription>
+            {query.trim()
+              ? `${filtered.length} de ${s.products.length} producto(s)`
+              : `${s.products.length} producto(s)`}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {s.loading ? <p className="text-sm text-muted-foreground">Cargando…</p> : null}
@@ -64,7 +83,12 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
               Aún no hay productos. Pulsa “Agregar producto”.
             </p>
           ) : null}
-          {!s.loading && s.products.length > 0 ? (
+          {!s.loading && s.products.length > 0 && filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Ningún producto coincide con “{query.trim()}”.
+            </p>
+          ) : null}
+          {!s.loading && filtered.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -75,7 +99,7 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {s.products.map((product) => (
+                {filtered.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="font-medium">{product.name}</div>
