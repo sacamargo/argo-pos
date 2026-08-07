@@ -24,13 +24,20 @@ const INSTRUCTION_LINES = [
   "- Es un identificador interno del sistema (no lo uses en el día a día).",
   "- En altas nuevas normalmente déjala vacía: el sistema generará el código.",
   "- En importaciones futuras, un codigo existente actualiza ese registro (upsert).",
+  "- Si un producto Compuesto trae receta en el mismo archivo, pon codigo en Productos e Inventario para poder enlazarlos en Recetas.",
   "",
   "Productos — columna tipo (escribe exactamente así):",
   "- Simple → se vende tal cual (1 ítem de inventario). Llena inventario_codigo y cantidad_por_venta.",
   "- Compuesto → se arma con receta (varios ítems). Déjalos vacíos y completa la hoja Recetas.",
   "",
+  "Ejemplo incluido (filas con codigo EJ-...):",
+  "- Doritos = Simple: al vender se descuenta 1 und del inventario Doritos.",
+  "- Granizado mora = Compuesto: vaso + pajita + sticker + base de sabor (ml) + dulces.",
+  "- Cada venta del granizado descuenta todos los ítems listados en Recetas.",
+  "- Puedes borrar las filas EJ-... o adaptarlas a tu negocio.",
+  "",
   "Inventario — unidades sugeridas:",
-  "- und (Doritos, vaso, pajita), ml (jarabes), g, oz, caja.",
+  "- und (Doritos, vaso, pajita, sticker, dulces), ml (jarabes / bases), g, oz, caja.",
   "",
   "Inventario — actualizar_stock:",
   "- si → al importar se aplica el stock de la fila.",
@@ -130,18 +137,46 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
   }
 
   private fillTemplateExamples(workbook: Workbook): void {
-    workbook
-      .getWorksheet(CATALOG_WORKBOOK_SHEETS.categories)
-      ?.addRow(["", "Granizados"]);
-    workbook
-      .getWorksheet(CATALOG_WORKBOOK_SHEETS.inventory)
-      ?.addRow(["", "Base limón", "ml", 5000, 500, "no"]);
+    const categories = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.categories);
+    categories?.addRow(["EJ-CAT-GRAN", "Granizados"]);
+    categories?.addRow(["EJ-CAT-SNACK", "Snacks"]);
+
+    const inventory = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.inventory);
+    inventory?.addRow(["EJ-INV-VASO16", "Vaso 16 oz", "und", 200, 50, "no"]);
+    inventory?.addRow(["EJ-INV-PAJITA", "Pajita", "und", 500, 100, "no"]);
+    inventory?.addRow(["EJ-INV-STICKER", "Sticker marca", "und", 500, 100, "no"]);
+    inventory?.addRow(["EJ-INV-BASE-MORA", "Base sabor mora", "ml", 10000, 1000, "no"]);
+    inventory?.addRow(["EJ-INV-DULCES", "Dulces surtidos", "und", 300, 50, "no"]);
+    inventory?.addRow(["EJ-INV-DORITOS", "Doritos", "und", 48, 12, "no"]);
+
     const products = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products);
-    products?.addRow(["", "Agua 600ml", "", "Simple", "", 1, 2500, "si"]);
-    products?.addRow(["", "Granizado limón", "", "Compuesto", "", "", 8000, "si"]);
-    workbook
-      .getWorksheet(CATALOG_WORKBOOK_SHEETS.recipes)
-      ?.addRow(["", "", 250]);
+    products?.addRow([
+      "EJ-PROD-DORITOS",
+      "Doritos",
+      "EJ-CAT-SNACK",
+      "Simple",
+      "EJ-INV-DORITOS",
+      1,
+      3500,
+      "si",
+    ]);
+    products?.addRow([
+      "EJ-PROD-GRAN-MORA",
+      "Granizado mora",
+      "EJ-CAT-GRAN",
+      "Compuesto",
+      "",
+      "",
+      12000,
+      "si",
+    ]);
+
+    const recipes = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.recipes);
+    recipes?.addRow(["EJ-PROD-GRAN-MORA", "EJ-INV-VASO16", 1]);
+    recipes?.addRow(["EJ-PROD-GRAN-MORA", "EJ-INV-PAJITA", 1]);
+    recipes?.addRow(["EJ-PROD-GRAN-MORA", "EJ-INV-STICKER", 1]);
+    recipes?.addRow(["EJ-PROD-GRAN-MORA", "EJ-INV-BASE-MORA", 250]);
+    recipes?.addRow(["EJ-PROD-GRAN-MORA", "EJ-INV-DULCES", 3]);
   }
 
   private fillExportData(workbook: Workbook, data: CatalogWorkbookDto): void {
