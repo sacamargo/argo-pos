@@ -146,6 +146,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] `buildTemplate()` plantilla oficial (hojas + headers + ejemplos)
 - [x] `buildExport()` DTO → workbook (sin UI)
 - [x] `parse()` XLSX → CatalogWorkbookDto (sin validación de negocio)
+- [x] `CatalogWorkbookValidator` DTO → ValidationReport (sin DB)
 
 ## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 
