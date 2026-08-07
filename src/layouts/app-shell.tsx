@@ -18,6 +18,8 @@ import { ToastViewport } from "@/components/toast-viewport";
 import type { PublicUser } from "@/domain/entities/user";
 import { canAccessSection } from "@/domain/services/permissions";
 import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
+import { BrandAvatar } from "@/modules/shared/components/brand-avatar";
+import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useThemeStore } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/lib/cn";
@@ -58,7 +60,10 @@ export function AppShell({
     <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="text-sm font-semibold tracking-tight">Argo POS</span>
+          <BrandAvatar size="sm" />
+          <span className="truncate text-sm font-semibold tracking-tight">
+            {formatAppTitle()}
+          </span>
           <span className="hidden text-sm text-muted-foreground sm:inline">
             {activeItem?.label ?? "Inicio"}
           </span>
