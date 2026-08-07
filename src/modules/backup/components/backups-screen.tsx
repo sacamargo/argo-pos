@@ -13,6 +13,7 @@ import {
   Modal,
 } from "@/components";
 import { getErrorMessage } from "@/shared/utils/error-message";
+import { notify } from "@/shared/hooks/use-toast";
 
 function formatBytes(size: number | null): string {
   if (size == null) {
@@ -70,8 +71,11 @@ export function BackupsScreen() {
       await backups.createBackup({ note: note.trim() || undefined });
       setNote("");
       await reload();
+      notify({ tone: "success", title: "Backup creado" });
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo crear el backup"));
+      const message = getErrorMessage(err, "No se pudo crear el backup");
+      setError(message);
+      notify({ tone: "error", title: "Backup", description: message });
     } finally {
       setBusy(false);
     }
@@ -89,8 +93,15 @@ export function BackupsScreen() {
         backupId: restoreTarget.id,
         confirmPhrase,
       });
+      notify({
+        tone: "success",
+        title: "Restauración iniciada",
+        description: "La app puede necesitar reinicio.",
+      });
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo restaurar"));
+      const message = getErrorMessage(err, "No se pudo restaurar");
+      setError(message);
+      notify({ tone: "error", title: "Restaurar backup", description: message });
       setBusy(false);
     }
   };

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/button";
+import { ToastViewport } from "@/components/toast-viewport";
 import type { PublicUser } from "@/domain/entities/user";
 import { canAccessSection } from "@/domain/services/permissions";
 import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
@@ -111,6 +112,8 @@ export function AppShell({
 
         <main className="min-h-0 flex-1 overflow-auto p-6">{children}</main>
       </div>
+
+      <ToastViewport />
     </div>
   );
 }

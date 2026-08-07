@@ -19,6 +19,7 @@ import {
   RoleBadge,
 } from "@/modules/users/components/users-forms";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import { notify } from "@/shared/hooks/use-toast";
 import { getErrorMessage } from "@/shared/utils/error-message";
 
 export function UsersScreen() {
@@ -70,8 +71,11 @@ export function UsersScreen() {
       setPassword("");
       setRole("vendedor");
       await reload();
+      notify({ tone: "success", title: "Usuario creado", description: username });
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo crear el usuario"));
+      const message = getErrorMessage(err, "No se pudo crear el usuario");
+      setError(message);
+      notify({ tone: "error", title: "Usuarios", description: message });
     } finally {
       setBusy(false);
     }
@@ -84,8 +88,15 @@ export function UsersScreen() {
       const { users } = await getAppServices();
       await users.setActive({ id: user.id, active: !user.active });
       await reload();
+      notify({
+        tone: "success",
+        title: user.active ? "Usuario desactivado" : "Usuario activado",
+        description: user.username,
+      });
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo cambiar el estado"));
+      const message = getErrorMessage(err, "No se pudo cambiar el estado");
+      setError(message);
+      notify({ tone: "error", title: "Usuarios", description: message });
     } finally {
       setBusy(false);
     }
@@ -103,8 +114,11 @@ export function UsersScreen() {
       setPasswordUserId(null);
       setNewPassword("");
       await reload();
+      notify({ tone: "success", title: "Contraseña actualizada" });
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo cambiar la contraseña"));
+      const message = getErrorMessage(err, "No se pudo cambiar la contraseña");
+      setError(message);
+      notify({ tone: "error", title: "Usuarios", description: message });
     } finally {
       setBusy(false);
     }

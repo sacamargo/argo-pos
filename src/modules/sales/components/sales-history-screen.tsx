@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { SaleDetailModal } from "@/modules/sales/components/sale-detail-modal";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import { notify } from "@/shared/hooks/use-toast";
 import { todayLocalDateInput } from "@/shared/utils/date";
 import { getErrorMessage } from "@/shared/utils/error-message";
 import { formatPesos } from "@/shared/utils/money";
@@ -93,8 +94,15 @@ export function SalesHistoryScreen() {
       });
       setSelected(detail);
       await reload();
+      notify({
+        tone: "warning",
+        title: "Venta anulada",
+        description: formatPesos(detail.totalCents),
+      });
     } catch (err) {
-      setReverseError(getErrorMessage(err, "No se pudo anular"));
+      const message = getErrorMessage(err, "No se pudo anular");
+      setReverseError(message);
+      notify({ tone: "error", title: "Anular venta", description: message });
     } finally {
       setBusy(false);
     }

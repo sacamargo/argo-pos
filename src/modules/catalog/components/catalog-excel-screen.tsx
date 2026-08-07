@@ -12,6 +12,7 @@ import {
   Modal,
 } from "@/components";
 import { downloadWorkbookBytes } from "@/modules/catalog/utils/download-workbook";
+import { notify } from "@/shared/hooks/use-toast";
 import { getErrorMessage } from "@/shared/utils/error-message";
 
 export function CatalogExcelScreen() {
@@ -31,7 +32,9 @@ export function CatalogExcelScreen() {
     try {
       await work();
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo completar la operación Excel"));
+      const message = getErrorMessage(err, "No se pudo completar la operación Excel");
+      setError(message);
+      notify({ tone: "error", title: "Excel", description: message });
     } finally {
       setBusy(false);
     }
@@ -43,6 +46,7 @@ export function CatalogExcelScreen() {
       const bytes = await catalog.buildTemplateWorkbook();
       downloadWorkbookBytes(bytes, "argo-pos-plantilla-catalogo.xlsx");
       setSuccess("Plantilla descargada.");
+      notify({ tone: "success", title: "Plantilla descargada" });
     });
 
   const exportCatalog = () =>
@@ -51,6 +55,7 @@ export function CatalogExcelScreen() {
       const bytes = await catalog.exportCatalogWorkbook();
       downloadWorkbookBytes(bytes, "argo-pos-catalogo.xlsx");
       setSuccess("Catálogo exportado.");
+      notify({ tone: "success", title: "Catálogo exportado" });
     });
 
   const onPickFile = (file: File | undefined) => {
@@ -67,9 +72,19 @@ export function CatalogExcelScreen() {
       setLastResult(null);
       if (!report.valid) {
         setError(`El archivo tiene ${report.errors.length} error(es). Revisa el informe.`);
+        notify({
+          tone: "error",
+          title: "Importación inválida",
+          description: `${report.errors.length} error(es) en el archivo.`,
+        });
       } else {
         setSuccess("Archivo válido. Confirma para aplicar la importación.");
         setConfirmOpen(true);
+        notify({
+          tone: "info",
+          title: "Archivo válido",
+          description: "Confirma para aplicar la importación.",
+        });
       }
     });
   };
@@ -86,6 +101,7 @@ export function CatalogExcelScreen() {
       setPendingBytes(null);
       setPreview(null);
       setSuccess("Importación aplicada correctamente.");
+      notify({ tone: "success", title: "Importación aplicada" });
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
