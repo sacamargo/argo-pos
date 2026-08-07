@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Button, Modal } from "@/components";
 import {
   CreateIngredientForm,
@@ -9,9 +10,17 @@ import {
   MovementsTable,
 } from "@/modules/inventory/components/inventory-tables";
 import { useInventoryScreen } from "@/modules/inventory/hooks/use-inventory-screen";
+import { ListSearchInput } from "@/modules/shared/components/list-search-input";
+import { matchesNameSearch } from "@/shared/utils/name-search";
 
 export function InventoryScreen() {
   const s = useInventoryScreen();
+  const [query, setQuery] = useState("");
+
+  const filteredIngredients = useMemo(
+    () => s.ingredients.filter((item) => matchesNameSearch(item.name, query)),
+    [s.ingredients, query],
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -42,9 +51,17 @@ export function InventoryScreen() {
         <p className="text-sm text-destructive">{s.error}</p>
       ) : null}
 
+      <ListSearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Buscar ítem por nombre…"
+      />
+
       <IngredientsTable
         loading={s.loading}
-        ingredients={s.ingredients}
+        ingredients={filteredIngredients}
+        totalCount={s.ingredients.length}
+        searchQuery={query}
         lowCount={s.lowCount}
         busyId={s.busyId}
         onEdit={s.startEdit}
