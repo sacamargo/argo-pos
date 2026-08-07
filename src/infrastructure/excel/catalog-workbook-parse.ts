@@ -9,6 +9,7 @@ import {
   type CatalogWorkbookRecipeDto,
 } from "@/domain/catalog/catalog-workbook-dto";
 import { CATALOG_WORKBOOK_HEADERS } from "@/infrastructure/excel/catalog-workbook-headers";
+import { parseFulfillmentTypeFromExcel } from "@/infrastructure/excel/fulfillment-type-excel";
 
 type HeaderMap = Map<string, number>;
 
@@ -185,6 +186,7 @@ function parseProducts(sheet: Worksheet): CatalogWorkbookProductDto[] {
   const headers = readHeaderMap(sheet, CATALOG_WORKBOOK_HEADERS.products);
   return iterateDataRows(sheet, headers, (rowNumber) => {
     const fulfillmentRaw = cellToString(getCell(sheet, rowNumber, headers, "tipo"));
+    const fulfillmentParsed = parseFulfillmentTypeFromExcel(fulfillmentRaw);
     const inventoryCode = cellToString(
       getCell(sheet, rowNumber, headers, "inventario_codigo"),
     );
@@ -196,7 +198,8 @@ function parseProducts(sheet: Worksheet): CatalogWorkbookProductDto[] {
       code: cellToString(getCell(sheet, rowNumber, headers, "codigo")),
       name: cellToString(getCell(sheet, rowNumber, headers, "nombre")),
       categoryCode: cellToString(getCell(sheet, rowNumber, headers, "categoria_codigo")),
-      fulfillmentType: fulfillmentRaw as CatalogWorkbookFulfillmentType,
+      fulfillmentType: (fulfillmentParsed ??
+        fulfillmentRaw) as CatalogWorkbookFulfillmentType,
       pricePesos: cellToNumber(getCell(sheet, rowNumber, headers, "precio")),
       active: parseSiNo(getCell(sheet, rowNumber, headers, "activo"), true),
       inventoryCode: inventoryCode === "" ? null : inventoryCode,

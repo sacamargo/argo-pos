@@ -6,6 +6,7 @@ import {
 } from "@/domain/catalog/catalog-workbook-dto";
 import { CATALOG_WORKBOOK_HEADERS } from "@/infrastructure/excel/catalog-workbook-headers";
 import { parseCatalogWorkbook } from "@/infrastructure/excel/catalog-workbook-parse";
+import { fulfillmentTypeToExcel } from "@/infrastructure/excel/fulfillment-type-excel";
 
 type ExcelJsApi = {
   Workbook: new () => Workbook;
@@ -20,19 +21,22 @@ const INSTRUCTION_LINES = [
   "3. Una fila = un registro.",
   "",
   "Columna codigo:",
-  "- Es un identificador interno del sistema (no lo inventes a mano en el día a día).",
+  "- Es un identificador interno del sistema (no lo uses en el día a día).",
   "- En altas nuevas normalmente déjala vacía: el sistema generará el código.",
-  "- En importaciones futuras, un codigo existente permite actualizar ese registro (upsert).",
+  "- En importaciones futuras, un codigo existente actualiza ese registro (upsert).",
   "",
-  "Productos:",
-  "- tipo = simple → un solo ítem de inventario (inventario_codigo + cantidad_por_venta).",
-  "- tipo = compound → se arma con filas en la hoja Recetas (deja inventario_codigo vacío).",
+  "Productos — columna tipo (escribe exactamente así):",
+  "- Simple → se vende tal cual (1 ítem de inventario). Llena inventario_codigo y cantidad_por_venta.",
+  "- Compuesto → se arma con receta (varios ítems). Déjalos vacíos y completa la hoja Recetas.",
   "",
-  "Inventario:",
-  "- actualizar_stock = si → al importar se podrá aplicar el stock de la fila.",
-  "- actualizar_stock = no (o vacío) → el stock existente no se pisa.",
+  "Inventario — unidades sugeridas:",
+  "- und (Doritos, vaso, pajita), ml (jarabes), g, oz, caja.",
   "",
-  "Orden sugerido al completar el archivo: Categorias → Inventario → Productos → Recetas.",
+  "Inventario — actualizar_stock:",
+  "- si → al importar se aplica el stock de la fila.",
+  "- no (o vacío) → no se pisa el stock existente.",
+  "",
+  "Orden sugerido: Categorias → Inventario → Productos → Recetas.",
 ] as const;
 
 const CATEGORY_WIDTHS = [16, 28];
@@ -133,8 +137,8 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
       .getWorksheet(CATALOG_WORKBOOK_SHEETS.inventory)
       ?.addRow(["", "Base limón", "ml", 5000, 500, "no"]);
     const products = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products);
-    products?.addRow(["", "Agua 600ml", "", "simple", "", 1, 2500, "si"]);
-    products?.addRow(["", "Granizado limón", "", "compound", "", "", 8000, "si"]);
+    products?.addRow(["", "Agua 600ml", "", "Simple", "", 1, 2500, "si"]);
+    products?.addRow(["", "Granizado limón", "", "Compuesto", "", "", 8000, "si"]);
     workbook
       .getWorksheet(CATALOG_WORKBOOK_SHEETS.recipes)
       ?.addRow(["", "", 250]);
@@ -165,7 +169,7 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
         row.code,
         row.name,
         row.categoryCode,
-        row.fulfillmentType,
+        fulfillmentTypeToExcel(row.fulfillmentType),
         isSimple ? emptyIfNull(row.inventoryCode) : "",
         isSimple ? emptyIfNull(row.qtyPerSale) : "",
         row.pricePesos,
