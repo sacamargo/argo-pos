@@ -10,6 +10,7 @@ import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
 import { UserService } from "@/application/services/user-service";
+import type { CatalogWorkbookCodec } from "@/domain/catalog/catalog-workbook-codec";
 import { TauriBackupFileStore } from "@/infrastructure/backup/tauri-backup-file-store";
 import { TauriProductImageStore } from "@/infrastructure/images/tauri-product-image-store";
 import { DrizzleBackupRepository } from "@/infrastructure/repositories/drizzle-backup-repository";
@@ -23,6 +24,25 @@ import { DrizzleSaleRepository } from "@/infrastructure/repositories/drizzle-sal
 import { DrizzleUserRepository } from "@/infrastructure/repositories/drizzle-user-repository";
 import { getDatabase, withTransaction } from "@/infrastructure/sqlite/client";
 
+/** Lazy codec: exceljs + adapter load only when Excel ops run (not on POS boot). */
+function createLazyCatalogWorkbookCodec(): CatalogWorkbookCodec {
+  let instance: CatalogWorkbookCodec | null = null;
+  const resolve = async (): Promise<CatalogWorkbookCodec> => {
+    if (!instance) {
+      const { ExcelJsCatalogWorkbookCodec } = await import(
+        "@/infrastructure/excel/exceljs-catalog-workbook-codec"
+      );
+      instance = new ExcelJsCatalogWorkbookCodec();
+    }
+    return instance;
+  };
+  return {
+    buildTemplate: async () => (await resolve()).buildTemplate(),
+    buildExport: async (data) => (await resolve()).buildExport(data),
+    parse: async (bytes) => (await resolve()).parse(bytes),
+  };
+}
+
 export type AppServices = {
   auth: AuthService;
   categories: CategoryService;
@@ -31,6 +51,8 @@ export type AppServices = {
   inventory: InventoryService;
   /** Facade for catalog-wide ops (future Excel import/export). */
   catalog: CatalogService;
+  /** Excel workbook codec (port); CatalogService will consume it in later branches. */
+  catalogWorkbook: CatalogWorkbookCodec;
   cashSessions: CashSessionService;
   sales: SaleService;
   saleQueries: SaleQueryService;
@@ -70,6 +92,7 @@ export async function getAppServices(): Promise<AppServices> {
     productImages: new ProductImageService(new TauriProductImageStore()),
     inventory: inventoryService,
     catalog: new CatalogService(categoryService, inventoryService, productService),
+    catalogWorkbook: createLazyCatalogWorkbookCodec(),
     cashSessions: new CashSessionService(cashSessions),
     sales: new SaleService(
       sales,
