@@ -1,8 +1,8 @@
 import {
   CATALOG_WORKBOOK_SHEETS,
   type CatalogWorkbookDto,
-  type CatalogWorkbookFulfillmentType,
 } from "@/domain/catalog/catalog-workbook-dto";
+import { parseFulfillmentTypeFromExcel } from "@/infrastructure/excel/fulfillment-type-excel";
 
 export type ValidationError = {
   sheet: string;
@@ -31,11 +31,6 @@ export type ValidationReport = {
     recipes: number;
   };
 };
-
-const FULFILLMENT_TYPES = new Set<CatalogWorkbookFulfillmentType>([
-  "simple",
-  "compound",
-]);
 
 /** Excel data row ≈ DTO index + 2 (header is row 1). */
 function excelRow(index: number): number {
@@ -313,15 +308,15 @@ export class CatalogWorkbookValidator {
         );
       }
 
-      const tipo = String(row.fulfillmentType ?? "").trim().toLowerCase();
-      if (!FULFILLMENT_TYPES.has(tipo as CatalogWorkbookFulfillmentType)) {
+      const tipo = parseFulfillmentTypeFromExcel(String(row.fulfillmentType ?? "").trim());
+      if (!tipo) {
         this.pushError(
           errors,
           sheet,
           rowNumber,
           "tipo",
           "PRODUCT_TYPE_INVALID",
-          'El tipo debe ser "simple" o "compound".',
+          'El tipo debe ser "Simple" o "Compuesto".',
         );
         return;
       }
@@ -334,7 +329,7 @@ export class CatalogWorkbookValidator {
             rowNumber,
             "inventario_codigo",
             "PRODUCT_SIMPLE_INVENTORY_REQUIRED",
-            "Un producto simple requiere inventario_codigo.",
+            'Un producto "Simple" requiere inventario_codigo.',
           );
         } else if (!inventoryCodes.has(row.inventoryCode!.trim().toUpperCase())) {
           this.pushError(
@@ -367,7 +362,7 @@ export class CatalogWorkbookValidator {
             rowNumber,
             "inventario_codigo",
             "PRODUCT_COMPOUND_INVENTORY_FORBIDDEN",
-            "Un producto compound no debe tener inventario_codigo.",
+            'Un producto "Compuesto" no debe tener inventario_codigo.',
           );
         }
         if (row.qtyPerSale !== null) {
@@ -377,7 +372,7 @@ export class CatalogWorkbookValidator {
             rowNumber,
             "cantidad_por_venta",
             "PRODUCT_COMPOUND_QTY_FORBIDDEN",
-            "Un producto compound no debe tener cantidad_por_venta.",
+            'Un producto "Compuesto" no debe tener cantidad_por_venta.',
           );
         }
       }

@@ -107,10 +107,18 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
 
     expect(String(categories.getCell(2, 2).value)).toContain("Granizados");
     expect(String(inventory.getCell(2, 2).value)).toContain("Base limón");
-    expect(String(products.getCell(2, 4).value)).toBe("simple");
-    expect(String(products.getCell(3, 4).value)).toBe("compound");
+    expect(String(products.getCell(2, 4).value)).toBe("Simple");
+    expect(String(products.getCell(3, 4).value)).toBe("Compuesto");
     expect(Number(recipes.getCell(2, 3).value)).toBe(250);
     expect(String(instructions.getCell(1, 1).value)).toMatch(/Argo POS/i);
+
+    const instructionText = Array.from(
+      { length: instructions.rowCount },
+      (_, i) => String(instructions.getCell(i + 1, 1).value ?? ""),
+    ).join("\n");
+    expect(instructionText).toMatch(/Simple/);
+    expect(instructionText).toMatch(/Compuesto/);
+    expect(instructionText).not.toMatch(/\bcompound\b/i);
   });
 
   describe("buildExport", () => {
@@ -180,7 +188,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
       });
       const sheet = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products)!;
       expect(cell(sheet, 2, 1)).toBe("PROD-S1");
-      expect(cell(sheet, 2, 4)).toBe("simple");
+      expect(cell(sheet, 2, 4)).toBe("Simple");
       expect(cell(sheet, 2, 5)).toBe("INV-B1");
       expect(cell(sheet, 2, 6)).toBe(1);
       expect(cell(sheet, 2, 7)).toBe(2500);
@@ -204,7 +212,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
         ],
       });
       const sheet = workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products)!;
-      expect(cell(sheet, 2, 4)).toBe("compound");
+      expect(cell(sheet, 2, 4)).toBe("Compuesto");
       expect(cell(sheet, 2, 5)).toBe("");
       expect(cell(sheet, 2, 6)).toBe("");
       expect(cell(sheet, 2, 7)).toBe(8000);
@@ -435,6 +443,35 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
       expect(parsed.categories[0]?.name).toBe("Bebidas no alcohólicas");
       expect(parsed.inventory[0]?.name).toBe("Base limón — ñoño");
       expect(parsed.inventory[0]?.updateStock).toBe(true);
+    });
+
+    it("parses Spanish tipo labels into domain fulfillment types", async () => {
+      const workbook = new ExcelJS.Workbook();
+      addRequiredSheets(workbook);
+      workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products)!.addRow([
+        "PROD-ES",
+        "Granizado",
+        "CAT-A",
+        "Compuesto",
+        "",
+        "",
+        8000,
+        "si",
+      ]);
+      workbook.getWorksheet(CATALOG_WORKBOOK_SHEETS.products)!.addRow([
+        "PROD-ES2",
+        "Doritos",
+        "CAT-A",
+        "Simple",
+        "INV-1",
+        1,
+        3000,
+        "si",
+      ]);
+
+      const parsed = await codec.parse(await workbookToBytes(workbook));
+      expect(parsed.products[0]?.fulfillmentType).toBe("compound");
+      expect(parsed.products[1]?.fulfillmentType).toBe("simple");
     });
 
     it("reads unknown product tipo without validating it", async () => {

@@ -97,7 +97,8 @@ export function CatalogExcelScreen() {
         <CardHeader>
           <CardTitle>Excel del catálogo</CardTitle>
           <CardDescription>
-            Plantilla, exportación e importación por códigos internos. Solo admin.
+            Plantilla, exportación e importación. En productos usa tipo Simple o
+            Compuesto. Solo admin.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
