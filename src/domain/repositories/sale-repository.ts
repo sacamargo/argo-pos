@@ -66,4 +66,6 @@ export interface SaleRepository {
   markReversed(saleId: string): Promise<Sale>;
   createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;
+  /** True if any sale_items row still points at this product (blocks hard delete). */
+  isProductReferenced(productId: string): Promise<boolean>;
 }

@@ -134,4 +134,8 @@ export class DrizzleIngredientRepository implements IngredientRepository {
       .where(eq(ingredients.id, id));
     return { ...current, stockQuantity: nextStock };
   }
+
+  async deleteById(id: string): Promise<void> {
+    await this.db.delete(ingredients).where(eq(ingredients.id, id));
+  }
 }

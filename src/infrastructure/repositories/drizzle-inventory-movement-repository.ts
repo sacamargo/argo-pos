@@ -142,4 +142,13 @@ export class DrizzleInventoryMovementRepository implements InventoryMovementRepo
       createdAt: row.createdAt,
     }));
   }
+
+  async hasMovementsForIngredient(ingredientId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: inventoryMovements.id })
+      .from(inventoryMovements)
+      .where(eq(inventoryMovements.ingredientId, ingredientId))
+      .limit(1);
+    return Boolean(row);
+  }
 }

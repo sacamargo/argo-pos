@@ -107,8 +107,9 @@ Seed inicial (solo primer arranque / seed core):
 
 - admin / `admin123`
 - vendedor / `vendedor123`
-- métodos de pago, categorías, motivos de inventario
-- producto demo `Granizado limón` + ingrediente `Base limón`
+- métodos de pago, motivos de inventario, settings
+- Catálogo, inventario y categorías **vacíos** al instalar (sin demos de negocio)
+
 | Script | Uso |
 |--------|-----|
 | `pnpm dev` | Solo frontend Vite (sin ventana nativa / sin SQLite) |

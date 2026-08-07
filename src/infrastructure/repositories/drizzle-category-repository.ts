@@ -106,4 +106,8 @@ export class DrizzleCategoryRepository implements CategoryRepository {
     }
     return updated;
   }
+
+  async deleteById(id: string): Promise<void> {
+    await this.db.delete(categories).where(eq(categories.id, id));
+  }
 }

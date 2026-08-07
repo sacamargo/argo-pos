@@ -20,4 +20,6 @@ export interface CategoryRepository {
   create(input: CreateCategoryInput): Promise<Category>;
   update(input: UpdateCategoryInput): Promise<Category>;
   setActive(id: string, active: boolean): Promise<Category>;
+  /** Maintenance wipe: hard-delete when no products reference the category. */
+  deleteById(id: string): Promise<void>;
 }

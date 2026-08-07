@@ -23,4 +23,6 @@ export interface InventoryMovementRepository {
     referenceType: "sale" | "sale_reversal" | "manual",
     referenceId: string,
   ): Promise<InventoryMovement[]>;
+  /** True if ingredient has any movement (FK blocks hard delete; keep for integrity). */
+  hasMovementsForIngredient(ingredientId: string): Promise<boolean>;
 }

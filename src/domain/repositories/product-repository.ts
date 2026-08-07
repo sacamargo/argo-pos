@@ -43,4 +43,8 @@ export interface ProductRepository {
   update(input: UpdateProductInput): Promise<ProductWithRecipe>;
   setActive(id: string, active: boolean): Promise<Product>;
   listRecipeByProductId(productId: string): Promise<ProductRecipeItem[]>;
+  /** Maintenance wipe: removes every recipe row. */
+  deleteAllRecipeItems(): Promise<number>;
+  /** Maintenance wipe: hard-delete product row (caller ensures no blocking FKs). */
+  deleteById(id: string): Promise<void>;
 }

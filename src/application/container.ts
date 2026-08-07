@@ -2,6 +2,7 @@ import { AuthService } from "@/application/services/auth-service";
 import { BackupService } from "@/application/services/backup-service";
 import { CashSessionService } from "@/application/services/cash-session-service";
 import { CatalogImportService } from "@/application/services/catalog-import-service";
+import { CatalogMaintenanceService } from "@/application/services/catalog-maintenance-service";
 import { CatalogService } from "@/application/services/catalog-service";
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
@@ -53,6 +54,8 @@ export type AppServices = {
   inventory: InventoryService;
   /** Facade for catalog-wide ops (future Excel import/export). */
   catalog: CatalogService;
+  /** Admin wipe of catalog/inventory — not Excel. */
+  catalogMaintenance: CatalogMaintenanceService;
   /** Excel workbook codec (port). */
   catalogWorkbook: CatalogWorkbookCodec;
   /** Persist validated workbook DTOs (upsert by code). */
@@ -111,6 +114,17 @@ export async function getAppServices(): Promise<AppServices> {
       catalogWorkbook,
       catalogImport,
       workbookValidator,
+    ),
+    catalogMaintenance: new CatalogMaintenanceService(
+      productService,
+      inventoryService,
+      categoryService,
+      products,
+      ingredients,
+      categories,
+      sales,
+      movements,
+      runInTransaction,
     ),
     catalogWorkbook,
     catalogImport,
