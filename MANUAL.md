@@ -228,10 +228,12 @@ Catálogo  → producto Compuesto
           → queda listo para vender en POS
 ```
 
-**Caso 3 — Mover stock**
+**Caso 3 — Cambiar stock**
 
 ```text
-Siempre desde Inventario (entrada de compra o ajuste con nota).
+Inventario → Editar ítem
+  → Sumar compra/llegada
+  → o Corregir cantidad (nota obligatoria)
 Nunca editar la cantidad “a mano” sin movimiento.
 ```
 

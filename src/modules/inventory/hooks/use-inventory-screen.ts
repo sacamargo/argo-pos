@@ -16,12 +16,10 @@ export function useInventoryScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [moveOpen, setMoveOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newUnit, setNewUnit] = useState(DEFAULT_INVENTORY_UNIT);
   const [newMin, setNewMin] = useState("0");
   const [newInitial, setNewInitial] = useState("0");
-  const [selectedId, setSelectedId] = useState("");
   const [entryQty, setEntryQty] = useState("");
   const [entryNote, setEntryNote] = useState("");
   const [adjustQty, setAdjustQty] = useState("");
@@ -37,13 +35,6 @@ export function useInventoryScreen() {
     ]);
     setIngredients(ingredientRows);
     setMovements(movementRows);
-    const active = ingredientRows.filter((item) => item.active);
-    setSelectedId((current) => {
-      if (current && active.some((item) => item.id === current)) {
-        return current;
-      }
-      return active[0]?.id || "";
-    });
   }, []);
 
   useEffect(() => {
@@ -74,6 +65,10 @@ export function useInventoryScreen() {
     setNewUnit(DEFAULT_INVENTORY_UNIT);
     setNewMin("0");
     setNewInitial("0");
+    setEntryQty("");
+    setEntryNote("");
+    setAdjustQty("");
+    setAdjustNote("");
   };
 
   const openCreate = () => {
@@ -133,9 +128,7 @@ export function useInventoryScreen() {
   const startEdit = (item: Ingredient) => {
     setError(null);
     setCreateOpen(false);
-    setMoveOpen(false);
     setEditingId(item.id);
-    setSelectedId(item.id);
     setNewName(item.name);
     setNewUnit(item.unit);
     setNewMin(String(item.minStock));
@@ -163,16 +156,16 @@ export function useInventoryScreen() {
     }
   };
 
-  const targetIngredientId = () =>
-    editOpen && editingId ? editingId : selectedId;
-
   const registerEntry = async () => {
+    if (!editingId) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const { inventory } = await getAppServices();
       await inventory.recordPurchaseIn({
-        ingredientId: targetIngredientId(),
+        ingredientId: editingId,
         quantity: Number(entryQty),
         note: entryNote || undefined,
         userId: user?.id,
@@ -188,12 +181,15 @@ export function useInventoryScreen() {
   };
 
   const registerAdjustment = async () => {
+    if (!editingId) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const { inventory } = await getAppServices();
       await inventory.recordAdjustment({
-        ingredientId: targetIngredientId(),
+        ingredientId: editingId,
         quantity: Number(adjustQty),
         note: adjustNote,
         userId: user?.id,
@@ -222,12 +218,10 @@ export function useInventoryScreen() {
     editingItem,
     createOpen,
     editOpen,
-    moveOpen,
     newName,
     newUnit,
     newMin,
     newInitial,
-    selectedId,
     entryQty,
     entryNote,
     adjustQty,
@@ -237,12 +231,10 @@ export function useInventoryScreen() {
     setNewUnit,
     setNewMin,
     setNewInitial,
-    setSelectedId,
     setEntryQty,
     setEntryNote,
     setAdjustQty,
     setAdjustNote,
-    setMoveOpen,
     openCreate,
     createIngredient,
     saveEdit,

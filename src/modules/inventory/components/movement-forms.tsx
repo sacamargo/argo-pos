@@ -1,18 +1,13 @@
 import { Button, Input } from "@/components";
 import type { Ingredient } from "@/domain/entities/ingredient";
-import { FieldLabel } from "@/modules/inventory/components/inventory-form-fields";
 
 type MovementFormsProps = {
   busy: boolean;
-  ingredients: Ingredient[];
-  selectedId: string;
-  /** When locked, stock actions apply to selectedId and the item picker is hidden. */
-  itemSelectMode?: "picker" | "locked";
+  item: Ingredient;
   entryQty: string;
   entryNote: string;
   adjustQty: string;
   adjustNote: string;
-  onSelect: (id: string) => void;
   onEntryQty: (value: string) => void;
   onEntryNote: (value: string) => void;
   onAdjustQty: (value: string) => void;
@@ -23,14 +18,11 @@ type MovementFormsProps = {
 
 export function MovementForms({
   busy,
-  ingredients,
-  selectedId,
-  itemSelectMode = "picker",
+  item,
   entryQty,
   entryNote,
   adjustQty,
   adjustNote,
-  onSelect,
   onEntryQty,
   onEntryNote,
   onAdjustQty,
@@ -38,46 +30,21 @@ export function MovementForms({
   onEntry,
   onAdjust,
 }: MovementFormsProps) {
-  const activeItems = ingredients.filter((item) => item.active);
-  const selected = ingredients.find((item) => item.id === selectedId) ?? null;
-  const canMove = Boolean(selected?.active);
+  const canMove = item.active;
 
   return (
     <div className="flex flex-col gap-3">
-      {itemSelectMode === "picker" ? (
-        <div className="space-y-2">
-          <FieldLabel htmlFor="inv-item">Qué ítem quieres cambiar</FieldLabel>
-          <select
-            id="inv-item"
-            className="h-11 w-full rounded-md border border-input bg-card px-3 text-sm"
-            value={selectedId}
-            onChange={(e) => onSelect(e.target.value)}
-          >
-            {activeItems.length === 0 ? (
-              <option value="">Sin ítems activos</option>
-            ) : null}
-            {activeItems.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name} — tienes {item.stockQuantity} {item.unit}
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Stock actual:{" "}
-          <span className="font-medium text-foreground">
-            {selected
-              ? `${selected.stockQuantity} ${selected.unit}`
-              : "—"}
+      <p className="text-sm text-muted-foreground">
+        Stock actual:{" "}
+        <span className="font-medium text-foreground">
+          {item.stockQuantity} {item.unit}
+        </span>
+        {!canMove ? (
+          <span className="block text-destructive">
+            Ítem oculto: actívalo (Mostrar) para cambiar el stock.
           </span>
-          {!selected?.active ? (
-            <span className="block text-destructive">
-              Ítem oculto: actívalo (Mostrar) para mover stock.
-            </span>
-          ) : null}
-        </p>
-      )}
+        ) : null}
+      </p>
 
       <div className="space-y-2 rounded-md border border-border p-3">
         <p className="text-sm font-medium">Sumar compra / llegada</p>

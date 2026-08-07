@@ -17,7 +17,7 @@ type EditIngredientFormProps = {
   onMinChange: (value: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
-  /** Stock entry / adjustment UI (same actions as “Mover stock”). */
+  /** Stock entry / adjustment UI. */
   stockSection?: ReactNode;
 };
 
@@ -74,7 +74,7 @@ export function EditIngredientForm({
           <div>
             <p className="text-sm font-medium">Cambiar stock</p>
             <p className="text-xs text-muted-foreground">
-              Igual que “Mover stock”: suma una llegada o corrige la cantidad.
+              Suma una llegada o corrige la cantidad (queda registrado en el historial).
             </p>
           </div>
           {stockSection}
