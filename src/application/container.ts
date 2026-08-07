@@ -88,6 +88,15 @@ export async function getAppServices(): Promise<AppServices> {
   const categoryService = new CategoryService(categories);
   const productService = new ProductService(products, categories, ingredients);
   const inventoryService = new InventoryService(ingredients, movements);
+  const catalogWorkbook = createLazyCatalogWorkbookCodec();
+  const workbookValidator = new CatalogWorkbookValidator();
+  const catalogImport = new CatalogImportService(
+    categoryService,
+    inventoryService,
+    productService,
+    workbookValidator,
+    runInTransaction,
+  );
 
   services = {
     auth: new AuthService(users),
@@ -95,15 +104,16 @@ export async function getAppServices(): Promise<AppServices> {
     products: productService,
     productImages: new ProductImageService(new TauriProductImageStore()),
     inventory: inventoryService,
-    catalog: new CatalogService(categoryService, inventoryService, productService),
-    catalogWorkbook: createLazyCatalogWorkbookCodec(),
-    catalogImport: new CatalogImportService(
+    catalog: new CatalogService(
       categoryService,
       inventoryService,
       productService,
-      new CatalogWorkbookValidator(),
-      runInTransaction,
+      catalogWorkbook,
+      catalogImport,
+      workbookValidator,
     ),
+    catalogWorkbook,
+    catalogImport,
     cashSessions: new CashSessionService(cashSessions),
     sales: new SaleService(
       sales,

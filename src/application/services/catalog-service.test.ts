@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { CatalogService } from "@/application/services/catalog-service";
+import type { CatalogImportService } from "@/application/services/catalog-import-service";
 import type { CategoryService } from "@/application/services/category-service";
 import type { InventoryService } from "@/application/services/inventory-service";
 import type { ProductService } from "@/application/services/product-service";
+import type { CatalogWorkbookCodec } from "@/domain/catalog/catalog-workbook-codec";
 
 describe("CatalogService", () => {
   it("aggregates categories, inventory and products with recipes", async () => {
@@ -64,7 +66,23 @@ describe("CatalogService", () => {
       findByCode: vi.fn(),
     } as unknown as ProductService;
 
-    const catalog = new CatalogService(categories, inventory, products);
+    const workbook = {
+      buildTemplate: vi.fn(),
+      buildExport: vi.fn(),
+      parse: vi.fn(),
+    } as unknown as CatalogWorkbookCodec;
+
+    const catalogImport = { import: vi.fn() } as unknown as CatalogImportService;
+    const validator = { validate: vi.fn() };
+
+    const catalog = new CatalogService(
+      categories,
+      inventory,
+      products,
+      workbook,
+      catalogImport,
+      validator,
+    );
     const snapshot = await catalog.getCatalogSnapshot();
 
     expect(snapshot.categories).toHaveLength(1);

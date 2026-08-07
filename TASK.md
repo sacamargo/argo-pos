@@ -148,6 +148,7 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] `parse()` XLSX → CatalogWorkbookDto (sin validación de negocio)
 - [x] `CatalogWorkbookValidator` DTO → ValidationReport (sin DB)
 - [x] `CatalogImportService` apply/upsert por `code` (sin UI)
+- [x] UI admin Excel (tab Catálogo: plantilla / export / import + dry-run)
 
 ## FE-003 · Pantalla Productos (admin) `[P0]` `done`
 

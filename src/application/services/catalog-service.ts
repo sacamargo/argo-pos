@@ -1,24 +1,47 @@
+import type { CatalogImportService } from "@/application/services/catalog-import-service";
+import type { CatalogImportValidator } from "@/application/services/catalog-import-service";
+import type { CatalogImportResult } from "@/application/services/catalog-import-service";
 import type { CategoryService } from "@/application/services/category-service";
 import type { InventoryService } from "@/application/services/inventory-service";
 import type { ProductService } from "@/application/services/product-service";
+import { snapshotToWorkbookDto } from "@/application/catalog/snapshot-to-workbook-dto";
 import type { CatalogSnapshot } from "@/application/catalog/catalog-snapshot";
+import type { CatalogWorkbookCodec } from "@/domain/catalog/catalog-workbook-codec";
 import type { Category } from "@/domain/entities/category";
 import type { Ingredient } from "@/domain/entities/ingredient";
 import type { Product, ProductWithRecipe } from "@/domain/entities/product";
+
+export type CatalogImportPreview = {
+  valid: boolean;
+  errors: Array<{
+    sheet: string;
+    row: number;
+    column: string | null;
+    code: string;
+    message: string;
+  }>;
+  summary: {
+    categories: number;
+    inventory: number;
+    products: number;
+    recipes: number;
+  };
+};
 
 /**
  * Application facade for the business catalog (categories + inventory + products/recipes).
  *
  * - UI CRUD keeps using CategoryService / InventoryService / ProductService directly.
- * - Future Excel import/export must talk only to CatalogService (not to child services).
- *
- * Does not replace specialized services; it orchestrates them.
+ * - Excel import/export talks only to CatalogService (not to exceljs or child services).
  */
 export class CatalogService {
   constructor(
     private readonly categories: CategoryService,
     private readonly inventory: InventoryService,
     private readonly products: ProductService,
+    private readonly workbook: CatalogWorkbookCodec,
+    private readonly catalogImport: CatalogImportService,
+    private readonly validator: CatalogImportValidator,
   ) {}
 
   /** Read-only aggregate for export / dry-run baselines. */
@@ -68,14 +91,37 @@ export class CatalogService {
     return this.products.findByCode(code);
   }
 
-  /*
-   * Future Excel phase (not implemented here):
-   * - exportCatalog(): Promise<Uint8Array>
-   * - validateCatalog(input): Promise<CatalogValidationReport>
-   * - applyCatalog(input): Promise<CatalogApplyResult>
-   * - importCatalog(bytes) = parse → validate → apply (orquestration only)
-   *
-   * Those methods will depend on a CatalogWorkbookCodec port in infrastructure,
-   * and will call categories / inventory / products services for upserts.
-   */
+  /** Official empty template workbook bytes. */
+  async buildTemplateWorkbook(): Promise<Uint8Array> {
+    return this.workbook.buildTemplate();
+  }
+
+  /** Export current catalog as workbook bytes. */
+  async exportCatalogWorkbook(): Promise<Uint8Array> {
+    const snapshot = await this.getCatalogSnapshot();
+    const dto = snapshotToWorkbookDto(snapshot);
+    return this.workbook.buildExport(dto);
+  }
+
+  /** Parse + validate without writing (dry-run). */
+  async previewImport(bytes: Uint8Array): Promise<CatalogImportPreview> {
+    const dto = await this.workbook.parse(bytes);
+    const report = this.validator.validate(dto);
+    return {
+      valid: report.valid,
+      errors: report.errors,
+      summary: {
+        categories: dto.categories.length,
+        inventory: dto.inventory.length,
+        products: dto.products.length,
+        recipes: dto.recipes.length,
+      },
+    };
+  }
+
+  /** Parse → validate → apply. */
+  async importCatalogWorkbook(bytes: Uint8Array): Promise<CatalogImportResult> {
+    const dto = await this.workbook.parse(bytes);
+    return this.catalogImport.import(dto);
+  }
 }
