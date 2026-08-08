@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { CategoryService } from "@/application/services/category-service";
 import type { InventoryService } from "@/application/services/inventory-service";
 import type { ProductService } from "@/application/services/product-service";
@@ -11,43 +12,31 @@ import type { TransactionRunner } from "@/domain/repositories/transaction-runner
 export type CatalogWipeResult = {
   recipesDeleted: number;
   productsDeleted: number;
-  productsDeactivated: number;
   ingredientsDeleted: number;
-  ingredientsDeactivated: number;
   categoriesDeleted: number;
-  categoriesDeactivated: number;
+  saleLinksDetached: number;
+  movementsDeleted: number;
 };
+
+const idSchema = z.object({
+  id: z.string().min(1),
+});
 
 /**
  * Administrative maintenance for client delivery / reset of business catalog data.
  *
- * Separate from CatalogService (which owns Excel + catalog facade).
- * Does not touch users, sales, cash sessions, settings, or payment methods.
+ * Hard-deletes so rows disappear from lists. Sales keep name/price snapshots
+ * (product_id is detached). Does not touch users, cash sessions, settings, or payment methods.
  */
 export class CatalogMaintenanceService {
   constructor(
     private readonly productService: ProductService,
     private readonly inventoryService: InventoryService,
     private readonly categoryService: CategoryService,
-    /**
-     * Direct repo: ProductService has no wipe/delete API; recipes must clear before products.
-     */
     private readonly products: ProductRepository,
-    /**
-     * Direct repo: hard-delete when FKs allow; InventoryService only updates/activates today.
-     */
     private readonly ingredients: IngredientRepository,
-    /**
-     * Direct repo: hard-delete unused categories after products are resolved.
-     */
     private readonly categories: CategoryRepository,
-    /**
-     * Direct repo: sale_items FK check — never delete products that appear in sales history.
-     */
     private readonly sales: SaleRepository,
-    /**
-     * Direct repo: movements FK — keep ingredient (+ movements) when history exists.
-     */
     private readonly movements: InventoryMovementRepository,
     private readonly runInTransaction: TransactionRunner,
   ) {}
@@ -57,71 +46,95 @@ export class CatalogMaintenanceService {
       const result: CatalogWipeResult = {
         recipesDeleted: 0,
         productsDeleted: 0,
-        productsDeactivated: 0,
         ingredientsDeleted: 0,
-        ingredientsDeactivated: 0,
         categoriesDeleted: 0,
-        categoriesDeactivated: 0,
+        saleLinksDetached: 0,
+        movementsDeleted: 0,
       };
 
       result.recipesDeleted = await this.products.deleteAllRecipeItems();
 
       const productRows = await this.productService.listAll();
       for (const product of productRows) {
-        const referenced = await this.sales.isProductReferenced(product.id);
-        if (referenced) {
-          if (product.active) {
-            await this.productService.setActive({ id: product.id, active: false });
-            result.productsDeactivated += 1;
-          }
-        } else {
-          await this.products.deleteById(product.id);
-          result.productsDeleted += 1;
-        }
+        result.saleLinksDetached += await this.sales.detachProductReferences(product.id);
+        await this.products.deleteById(product.id);
+        result.productsDeleted += 1;
       }
-
-      const remainingProducts = await this.productService.listAll();
-      const linkedIngredientIds = new Set(
-        remainingProducts
-          .map((product) => product.stockItemId)
-          .filter((id): id is string => Boolean(id)),
-      );
 
       const ingredientRows = await this.inventoryService.listIngredients();
       for (const ingredient of ingredientRows) {
-        const linkedToProduct = linkedIngredientIds.has(ingredient.id);
-        const hasMovements = await this.movements.hasMovementsForIngredient(ingredient.id);
-        if (linkedToProduct || hasMovements) {
-          if (ingredient.active) {
-            await this.ingredients.setActive(ingredient.id, false);
-            result.ingredientsDeactivated += 1;
-          }
-        } else {
-          await this.ingredients.deleteById(ingredient.id);
-          result.ingredientsDeleted += 1;
-        }
+        result.movementsDeleted += await this.movements.deleteByIngredientId(ingredient.id);
+        await this.ingredients.deleteById(ingredient.id);
+        result.ingredientsDeleted += 1;
       }
-
-      const linkedCategoryIds = new Set(
-        remainingProducts
-          .map((product) => product.categoryId)
-          .filter((id): id is string => Boolean(id)),
-      );
 
       const categoryRows = await this.categoryService.listAll();
       for (const category of categoryRows) {
-        if (linkedCategoryIds.has(category.id)) {
-          if (category.active) {
-            await this.categoryService.setActive({ id: category.id, active: false });
-            result.categoriesDeactivated += 1;
-          }
-        } else {
-          await this.categories.deleteById(category.id);
-          result.categoriesDeleted += 1;
-        }
+        await this.categories.deleteById(category.id);
+        result.categoriesDeleted += 1;
       }
 
       return result;
+    });
+  }
+
+  /** Hard-delete one product (detaches sale links; removes recipe). */
+  async deleteProduct(raw: unknown): Promise<void> {
+    const input = idSchema.parse(raw);
+    await this.runInTransaction(async () => {
+      const existing = await this.products.findByIdWithRecipe(input.id);
+      if (!existing) {
+        throw new Error("Producto no encontrado");
+      }
+      await this.products.deleteRecipeItemsByProductId(input.id);
+      await this.sales.detachProductReferences(input.id);
+      const stockItemId = existing.stockItemId;
+      await this.products.deleteById(input.id);
+
+      if (stockItemId) {
+        const links = await this.products.findLinksToIngredient(stockItemId);
+        if (!links.asStock && !links.inRecipe) {
+          await this.movements.deleteByIngredientId(stockItemId);
+          await this.ingredients.deleteById(stockItemId);
+        }
+      }
+    });
+  }
+
+  /** Hard-delete one inventory item (blocked if still used by any product). */
+  async deleteIngredient(raw: unknown): Promise<void> {
+    const input = idSchema.parse(raw);
+    await this.runInTransaction(async () => {
+      const existing = await this.ingredients.findById(input.id);
+      if (!existing) {
+        throw new Error("Ítem de inventario no encontrado");
+      }
+      const links = await this.products.findLinksToIngredient(input.id);
+      if (links.asStock || links.inRecipe) {
+        throw new Error(
+          "No se puede eliminar: está ligado a un producto en Catálogo. Elimina o edita ese producto primero.",
+        );
+      }
+      await this.movements.deleteByIngredientId(input.id);
+      await this.ingredients.deleteById(input.id);
+    });
+  }
+
+  /** Hard-delete one category (blocked if any product still uses it). */
+  async deleteCategory(raw: unknown): Promise<void> {
+    const input = idSchema.parse(raw);
+    await this.runInTransaction(async () => {
+      const existing = await this.categories.findById(input.id);
+      if (!existing) {
+        throw new Error("Categoría no encontrada");
+      }
+      const products = await this.productService.listAll();
+      if (products.some((product) => product.categoryId === input.id)) {
+        throw new Error(
+          "No se puede eliminar: hay productos en esta categoría. Elimínalos primero.",
+        );
+      }
+      await this.categories.deleteById(input.id);
     });
   }
 }

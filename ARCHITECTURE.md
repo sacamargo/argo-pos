@@ -669,25 +669,27 @@ Operación normal del sistema:
 - Categorías → se **desactivan**.
 - Ítems de inventario (ingredientes) → se **desactivan**.
 
-**No existe delete físico como operación normal** de la UI. El historial de movimientos y las ventas inmutables deben preservarse.
+**No existe delete físico como operación del día a día** para el cajero. El historial de ventas (snapshots) se preserva.
+
+Admin sí puede **Eliminar** (hard delete) productos / categorías / ítems de inventario con confirmación, y **Vaciar catálogo e inventario** (entrega / reset).
 
 ---
 
 # Wipe administrativo (entrega / reset de negocio)
 
-Existirá una operación administrativa **“Vaciar Catálogo e Inventario”** (solo admin, con confirmación fuerte) pensada para dejar la app lista para cargar el negocio del cliente sin demos.
+Operación administrativa **“Vaciar catálogo e inventario”** (solo admin, doble confirmación + frase `VACIAR`) en **Backup**.
 
-Efectos previstos:
+Efectos:
 
 - Elimina recetas
-- Elimina o desactiva productos
-- Elimina o desactiva ítems de inventario
-- Elimina o desactiva categorías
+- Elimina productos (las ventas conservan nombre/precio; se desliga `product_id`)
+- Elimina ítems de inventario y sus movimientos de stock
+- Elimina categorías
 
 **No toca:**
 
 - Usuarios
-- Ventas (ni anulaciones)
+- Ventas (ni anulaciones) — solo se desliga el producto
 - Caja (`cash_sessions`)
 - Configuración / settings
 - Métodos de pago

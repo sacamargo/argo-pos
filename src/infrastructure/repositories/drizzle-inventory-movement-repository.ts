@@ -151,4 +151,18 @@ export class DrizzleInventoryMovementRepository implements InventoryMovementRepo
       .limit(1);
     return Boolean(row);
   }
+
+  async deleteByIngredientId(ingredientId: string): Promise<number> {
+    const existing = await this.db
+      .select({ id: inventoryMovements.id })
+      .from(inventoryMovements)
+      .where(eq(inventoryMovements.ingredientId, ingredientId));
+    if (existing.length === 0) {
+      return 0;
+    }
+    await this.db
+      .delete(inventoryMovements)
+      .where(eq(inventoryMovements.ingredientId, ingredientId));
+    return existing.length;
+  }
 }

@@ -237,6 +237,20 @@ export class DrizzleProductRepository implements ProductRepository {
     return existing.length;
   }
 
+  async deleteRecipeItemsByProductId(productId: string): Promise<number> {
+    const existing = await this.db
+      .select({ id: productRecipeItems.id })
+      .from(productRecipeItems)
+      .where(eq(productRecipeItems.productId, productId));
+    if (existing.length === 0) {
+      return 0;
+    }
+    await this.db
+      .delete(productRecipeItems)
+      .where(eq(productRecipeItems.productId, productId));
+    return existing.length;
+  }
+
   async deleteById(id: string): Promise<void> {
     await this.db.delete(products).where(eq(products.id, id));
   }
@@ -245,17 +259,39 @@ export class DrizzleProductRepository implements ProductRepository {
     asStock: boolean;
     inRecipe: boolean;
   }> {
+    return this.findLinksToIngredientInternal(ingredientId, true);
+  }
+
+  async findLinksToIngredient(ingredientId: string): Promise<{
+    asStock: boolean;
+    inRecipe: boolean;
+  }> {
+    return this.findLinksToIngredientInternal(ingredientId, false);
+  }
+
+  private async findLinksToIngredientInternal(
+    ingredientId: string,
+    activeOnly: boolean,
+  ): Promise<{ asStock: boolean; inRecipe: boolean }> {
+    const stockWhere = activeOnly
+      ? and(eq(products.active, true), eq(products.stockItemId, ingredientId))
+      : eq(products.stockItemId, ingredientId);
+
     const [asStockRow] = await this.db
       .select({ id: products.id })
       .from(products)
-      .where(and(eq(products.active, true), eq(products.stockItemId, ingredientId)))
+      .where(stockWhere)
       .limit(1);
+
+    const recipeWhere = activeOnly
+      ? and(eq(products.active, true), eq(productRecipeItems.ingredientId, ingredientId))
+      : eq(productRecipeItems.ingredientId, ingredientId);
 
     const [recipeRow] = await this.db
       .select({ id: productRecipeItems.id })
       .from(productRecipeItems)
       .innerJoin(products, eq(productRecipeItems.productId, products.id))
-      .where(and(eq(products.active, true), eq(productRecipeItems.ingredientId, ingredientId)))
+      .where(recipeWhere)
       .limit(1);
 
     return {

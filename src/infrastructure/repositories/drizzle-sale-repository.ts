@@ -294,6 +294,21 @@ export class DrizzleSaleRepository implements SaleRepository {
     return Boolean(row);
   }
 
+  async detachProductReferences(productId: string): Promise<number> {
+    const existing = await this.db
+      .select({ id: saleItems.id })
+      .from(saleItems)
+      .where(eq(saleItems.productId, productId));
+    if (existing.length === 0) {
+      return 0;
+    }
+    await this.db
+      .update(saleItems)
+      .set({ productId: null })
+      .where(eq(saleItems.productId, productId));
+    return existing.length;
+  }
+
   private async findSale(id: string): Promise<Sale | null> {
     const [row] = await this.db.select().from(sales).where(eq(sales.id, id)).limit(1);
     return row ? mapSale(row) : null;
