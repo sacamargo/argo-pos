@@ -11,6 +11,7 @@ import { getDatabase, isTauriRuntime } from "@/infrastructure/sqlite/client";
 import {
   seedBootstrapIfNeeded,
   seedCoreIfNeeded,
+  seedMasterIfNeeded,
   seedVendorIfNeeded,
 } from "@/infrastructure/sqlite/seed";
 
@@ -47,6 +48,7 @@ export async function ensureDatabaseReady(): Promise<DatabaseStatus> {
     const didBootstrap = await seedBootstrapIfNeeded();
     const didCore = await seedCoreIfNeeded();
     const didVendor = await seedVendorIfNeeded();
+    const didMaster = await seedMasterIfNeeded();
     const db = await getDatabase();
 
     const [admin] = await db
@@ -73,7 +75,7 @@ export async function ensureDatabaseReady(): Promise<DatabaseStatus> {
       productCount: productRows.length,
       ingredientCount: ingredientRows.length,
       message:
-        didBootstrap || didCore || didVendor
+        didBootstrap || didCore || didVendor || didMaster
           ? "Schema listo: migraciones aplicadas y seed reproducible cargado."
           : "Base lista. Migraciones al día; seed ya existía.",
     };

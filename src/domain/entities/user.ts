@@ -1,4 +1,7 @@
-export type UserRole = "admin" | "vendedor";
+export type UserRole = "admin" | "vendedor" | "master";
+
+/** Roles visibles / asignables en la UI de usuarios (nunca master). */
+export type AssignableUserRole = "admin" | "vendedor";
 
 export type User = {
   id: string;
@@ -15,16 +18,23 @@ export type PublicUser = {
   role: UserRole;
 };
 
-/** Usuario listable en admin (sin hash). */
+/** Usuario listable en admin (sin hash). Master nunca se lista. */
 export type ManagedUser = {
   id: string;
   username: string;
-  role: UserRole;
+  role: AssignableUserRole;
   active: boolean;
   createdAt: string;
 };
 
-export function toManagedUser(user: User): ManagedUser {
+export function isMasterRole(role: UserRole): boolean {
+  return role === "master";
+}
+
+export function toManagedUser(user: User): ManagedUser | null {
+  if (user.role === "master") {
+    return null;
+  }
   return {
     id: user.id,
     username: user.username,

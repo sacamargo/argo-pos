@@ -11,6 +11,7 @@ import { ProductImageService } from "@/application/services/product-image-servic
 import { ProductService } from "@/application/services/product-service";
 import { SaleQueryService } from "@/application/services/sale-query-service";
 import { SaleService } from "@/application/services/sale-service";
+import { SettingsService } from "@/application/services/settings-service";
 import { UserService } from "@/application/services/user-service";
 import type { CatalogWorkbookCodec } from "@/domain/catalog/catalog-workbook-codec";
 import { TauriBackupFileStore } from "@/infrastructure/backup/tauri-backup-file-store";
@@ -24,6 +25,7 @@ import { DrizzleInventoryMovementRepository } from "@/infrastructure/repositorie
 import { DrizzlePaymentMethodRepository } from "@/infrastructure/repositories/drizzle-payment-method-repository";
 import { DrizzleProductRepository } from "@/infrastructure/repositories/drizzle-product-repository";
 import { DrizzleSaleRepository } from "@/infrastructure/repositories/drizzle-sale-repository";
+import { DrizzleSettingsRepository } from "@/infrastructure/repositories/drizzle-settings-repository";
 import { DrizzleUserRepository } from "@/infrastructure/repositories/drizzle-user-repository";
 import { getDatabase, withTransaction } from "@/infrastructure/sqlite/client";
 
@@ -65,6 +67,7 @@ export type AppServices = {
   saleQueries: SaleQueryService;
   dashboard: DashboardService;
   users: UserService;
+  settings: SettingsService;
   backups: BackupService;
 };
 
@@ -85,6 +88,7 @@ export async function getAppServices(): Promise<AppServices> {
   const paymentMethods = new DrizzlePaymentMethodRepository(db);
   const sales = new DrizzleSaleRepository(db);
   const backups = new DrizzleBackupRepository(db);
+  const appSettings = new DrizzleSettingsRepository(db);
   const runInTransaction = async <T>(work: () => Promise<T>) =>
     withTransaction(async () => work());
 
@@ -146,6 +150,7 @@ export async function getAppServices(): Promise<AppServices> {
     saleQueries: new SaleQueryService(sales, paymentMethods),
     dashboard: new DashboardService(sales, cashSessions, ingredients),
     users: new UserService(users),
+    settings: new SettingsService(appSettings),
     backups: new BackupService(backups, new TauriBackupFileStore()),
   };
 
