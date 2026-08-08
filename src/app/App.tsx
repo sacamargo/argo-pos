@@ -11,13 +11,22 @@ import { HelpScreen } from "@/modules/help/components/help-screen";
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
 import { PosScreen } from "@/modules/pos/components/pos-screen";
 import { SalesHistoryScreen } from "@/modules/sales/components/sales-history-screen";
+import { ModuleVisibilityScreen } from "@/modules/settings/components/module-visibility-screen";
 import { UsersScreen } from "@/modules/users/components/users-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
+import { useModuleVisibilityStore } from "@/shared/hooks/use-module-visibility";
 import { useSessionStore } from "@/shared/hooks/use-session";
+import type { PublicUser } from "@/domain/entities/user";
 
-function SectionContent({ section }: { section: AppSection }) {
+function SectionContent({
+  section,
+  user,
+}: {
+  section: AppSection;
+  user: PublicUser;
+}) {
   switch (section) {
     case "dashboard":
       return <DashboardScreen />;
@@ -32,7 +41,9 @@ function SectionContent({ section }: { section: AppSection }) {
     case "users":
       return <UsersScreen />;
     case "settings":
-      return (
+      return user.role === "master" ? (
+        <ModuleVisibilityScreen />
+      ) : (
         <PlaceholderScreen title="Ajustes" description="Preferencias del negocio." />
       );
     case "backup":
@@ -47,6 +58,8 @@ export function App() {
   const hydrated = useSessionStore((state) => state.hydrated);
   const hydrate = useSessionStore((state) => state.hydrate);
   const clearSession = useSessionStore((state) => state.clearSession);
+  const moduleConfig = useModuleVisibilityStore((state) => state.config);
+  const hydrateModules = useModuleVisibilityStore((state) => state.hydrate);
 
   const [section, setSection] = useState<AppSection>("dashboard");
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
@@ -68,6 +81,13 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user || !dbStatus?.ready) {
+      return;
+    }
+    void hydrateModules();
+  }, [user, dbStatus?.ready, hydrateModules]);
 
   if (!hydrated || !dbStatus) {
     return (
@@ -93,7 +113,9 @@ export function App() {
     return <LoginForm />;
   }
 
-  const activeSection = canAccessSection(user.role, section) ? section : "dashboard";
+  const activeSection = canAccessSection(user.role, section, moduleConfig)
+    ? section
+    : "dashboard";
   const active = NAV_ITEMS.find((item) => item.id === activeSection);
 
   return (
@@ -101,7 +123,7 @@ export function App() {
       user={user}
       activeSection={activeSection}
       onNavigate={(next) => {
-        if (canAccessSection(user.role, next)) {
+        if (canAccessSection(user.role, next, moduleConfig)) {
           setSection(next);
         }
       }}
@@ -110,7 +132,7 @@ export function App() {
       <div className="mb-4 flex items-center gap-2 lg:hidden">
         <Badge variant="outline">{active?.label}</Badge>
       </div>
-      <SectionContent section={activeSection} />
+      <SectionContent section={activeSection} user={user} />
     </AppShell>
   );
 }

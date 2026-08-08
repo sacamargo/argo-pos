@@ -4,6 +4,7 @@ import type { UserRole } from "@/domain/entities/user";
 import type { CashSessionRepository } from "@/domain/repositories/cash-session-repository";
 import type { IngredientRepository } from "@/domain/repositories/ingredient-repository";
 import type { SaleRepository } from "@/domain/repositories/sale-repository";
+import { isAdminLike } from "@/domain/services/permissions";
 import { localDayBounds, todayLocalDateInput } from "@/shared/utils/date";
 
 export const dashboardQuerySchema = z.object({
@@ -11,7 +12,7 @@ export const dashboardQuerySchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
     .optional(),
-  role: z.enum(["admin", "vendedor"]),
+  role: z.enum(["admin", "vendedor", "master"]),
 });
 
 export class DashboardService {
@@ -26,19 +27,19 @@ export class DashboardService {
     const date = input.date ?? todayLocalDateInput();
     const { fromIso, toIso } = localDayBounds(date);
     const role = input.role as UserRole;
+    const adminLike = isAdminLike(role);
 
     const [summary, openSession, allIngredients] = await Promise.all([
       this.sales.summarizeCompletedDay(fromIso, toIso),
       this.cashSessions.findOpen(),
-      role === "admin" ? this.ingredients.listAll() : Promise.resolve([]),
+      adminLike ? this.ingredients.listAll() : Promise.resolve([]),
     ]);
 
-    const lowStock =
-      role === "admin"
-        ? allIngredients.filter(
-            (item) => item.active && item.stockQuantity <= item.minStock,
-          )
-        : [];
+    const lowStock = adminLike
+      ? allIngredients.filter(
+          (item) => item.active && item.stockQuantity <= item.minStock,
+        )
+      : [];
 
     return {
       date,

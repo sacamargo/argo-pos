@@ -30,7 +30,9 @@ export class UserService {
 
   async list(): Promise<ManagedUser[]> {
     const rows = await this.users.listAll();
-    return rows.map(toManagedUser);
+    return rows
+      .map(toManagedUser)
+      .filter((row): row is ManagedUser => row !== null);
   }
 
   async create(raw: unknown): Promise<ManagedUser> {
@@ -50,7 +52,11 @@ export class UserService {
       createdAt: new Date().toISOString(),
     });
 
-    return toManagedUser(created);
+    const managed = toManagedUser(created);
+    if (!managed) {
+      throw new Error("No se pudo crear el usuario");
+    }
+    return managed;
   }
 
   async setActive(raw: unknown): Promise<ManagedUser> {
@@ -58,6 +64,9 @@ export class UserService {
     const user = await this.users.findById(input.id);
     if (!user) {
       throw new Error("Usuario no encontrado");
+    }
+    if (user.role === "master") {
+      throw new Error("Ese usuario no se puede modificar");
     }
 
     if (user.role === "admin" && user.active && !input.active) {
@@ -68,7 +77,11 @@ export class UserService {
     }
 
     const updated = await this.users.setActive(input.id, input.active);
-    return toManagedUser(updated);
+    const managed = toManagedUser(updated);
+    if (!managed) {
+      throw new Error("Usuario no encontrado");
+    }
+    return managed;
   }
 
   async changePassword(raw: unknown): Promise<ManagedUser> {
@@ -77,9 +90,16 @@ export class UserService {
     if (!user) {
       throw new Error("Usuario no encontrado");
     }
+    if (user.role === "master") {
+      throw new Error("Ese usuario no se puede modificar");
+    }
 
     const passwordHash = await hashPassword(input.password);
     const updated = await this.users.setPasswordHash(input.id, passwordHash);
-    return toManagedUser(updated);
+    const managed = toManagedUser(updated);
+    if (!managed) {
+      throw new Error("Usuario no encontrado");
+    }
+    return managed;
   }
 }

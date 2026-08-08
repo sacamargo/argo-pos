@@ -1,33 +1,41 @@
 import type { UserRole } from "@/domain/entities/user";
+import type { ModuleVisibilityConfig } from "@/domain/entities/module-visibility";
+import { defaultModuleVisibility } from "@/domain/entities/module-visibility";
 import type { AppSection } from "@/shared/constants/navigation";
+import { NAV_ITEMS } from "@/shared/constants/navigation";
 
-const ADMIN_ONLY: AppSection[] = ["catalog", "inventory", "users", "settings", "backup"];
-
-export function canAccessSection(role: UserRole, section: AppSection): boolean {
-  if (role === "admin") {
+export function canAccessSection(
+  role: UserRole,
+  section: AppSection,
+  visibility?: ModuleVisibilityConfig | null,
+): boolean {
+  if (role === "master") {
     return true;
   }
 
-  return !ADMIN_ONLY.includes(section);
+  if (role !== "admin" && role !== "vendedor") {
+    return false;
+  }
+
+  const config = visibility ?? defaultModuleVisibility();
+  return Boolean(config[role][section]);
 }
 
-/** Admin y vendedor pueden anular ventas (motivo obligatorio). */
+/** Admin, vendedor y master pueden anular ventas (motivo obligatorio). */
 export function canReverseSale(role: UserRole): boolean {
-  return role === "admin" || role === "vendedor";
+  return role === "admin" || role === "vendedor" || role === "master";
 }
 
-export function sectionsForRole(role: UserRole): AppSection[] {
-  const all: AppSection[] = [
-    "dashboard",
-    "pos",
-    "sales",
-    "catalog",
-    "inventory",
-    "users",
-    "settings",
-    "backup",
-    "help",
-  ];
+export function sectionsForRole(
+  role: UserRole,
+  visibility?: ModuleVisibilityConfig | null,
+): AppSection[] {
+  return NAV_ITEMS.map((item) => item.id).filter((section) =>
+    canAccessSection(role, section, visibility),
+  );
+}
 
-  return all.filter((section) => canAccessSection(role, section));
+/** Admin-like operational privileges (dashboard stock, etc.). */
+export function isAdminLike(role: UserRole): boolean {
+  return role === "admin" || role === "master";
 }

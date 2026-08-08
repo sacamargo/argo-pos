@@ -119,10 +119,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             <Button type="submit" size="lg" className="h-12 w-full" disabled={submitting}>
               {submitting ? "Entrando…" : "Entrar"}
             </Button>
-
-            <p className="text-xs text-muted-foreground">
-              Demo: admin / admin123 · vendedor / vendedor123
-            </p>
           </form>
         </CardContent>
       </Card>

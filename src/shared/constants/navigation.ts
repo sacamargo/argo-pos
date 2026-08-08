@@ -22,7 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "catalog", label: "Catálogo", description: "Productos y categorías" },
   { id: "inventory", label: "Inventario", description: "Ingredientes y movimientos" },
   { id: "users", label: "Usuarios", description: "Cuentas y roles" },
-  { id: "settings", label: "Ajustes", description: "Preferencias del negocio" },
+  { id: "settings", label: "Ajustes", description: "Preferencias / módulos (master)" },
   { id: "backup", label: "Backup", description: "Respaldo y restauración" },
   { id: "help", label: "Tutorial", description: "Guía de cada módulo" },
 ];

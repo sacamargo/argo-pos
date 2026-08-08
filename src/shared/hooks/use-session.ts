@@ -37,7 +37,9 @@ function readStoredUser(): PublicUser | null {
     if (
       typeof candidate.id !== "string" ||
       typeof candidate.username !== "string" ||
-      (candidate.role !== "admin" && candidate.role !== "vendedor")
+      (candidate.role !== "admin" &&
+        candidate.role !== "vendedor" &&
+        candidate.role !== "master")
     ) {
       return null;
     }

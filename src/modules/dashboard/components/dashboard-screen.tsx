@@ -19,6 +19,7 @@ import { CashSessionControls } from "@/modules/cash/components/cash-session-cont
 import { DashboardMetricCards } from "@/modules/dashboard/components/dashboard-metric-cards";
 import { LowStockPanel } from "@/modules/dashboard/components/low-stock-panel";
 import { notify } from "@/shared/hooks/use-toast";
+import { isAdminLike } from "@/domain/services/permissions";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import { getErrorMessage } from "@/shared/utils/error-message";
 import { notifyLowStockSummary } from "@/shared/utils/notify-low-stock";
@@ -63,7 +64,7 @@ export function DashboardScreen() {
   }, [user]);
 
   useEffect(() => {
-    if (!snapshot || user?.role !== "admin" || lowStockNotified.current) {
+    if (!snapshot || !user || !isAdminLike(user.role) || lowStockNotified.current) {
       return;
     }
     if (snapshot.lowStock.length === 0) {
@@ -74,7 +75,7 @@ export function DashboardScreen() {
       id: "dashboard-low-stock",
       title: "Stock crítico",
     });
-  }, [snapshot, user?.role]);
+  }, [snapshot, user]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -95,7 +96,7 @@ export function DashboardScreen() {
 
       {snapshot ? <DashboardMetricCards snapshot={snapshot} /> : null}
 
-      {user?.role === "admin" && snapshot ? (
+      {user && isAdminLike(user.role) && snapshot ? (
         <LowStockPanel items={snapshot.lowStock} />
       ) : null}
 

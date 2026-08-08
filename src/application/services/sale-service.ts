@@ -41,7 +41,7 @@ export const createSaleSchema = z.object({
 export const reverseSaleSchema = z.object({
   saleId: z.string().min(1),
   userId: z.string().min(1),
-  role: z.enum(["admin", "vendedor"]),
+  role: z.enum(["admin", "vendedor", "master"]),
   reason: z.string().trim().min(3, "Indica un motivo (mín. 3 caracteres)").max(200),
 });
 

@@ -21,6 +21,7 @@ import { CashSessionControls } from "@/modules/cash/components/cash-session-cont
 import { BrandAvatar } from "@/modules/shared/components/brand-avatar";
 import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
+import { useModuleVisibilityStore } from "@/shared/hooks/use-module-visibility";
 import { useThemeStore } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/lib/cn";
 
@@ -53,7 +54,14 @@ export function AppShell({
 }: AppShellProps) {
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const visibleItems = NAV_ITEMS.filter((item) => canAccessSection(user.role, item.id));
+  const moduleConfig = useModuleVisibilityStore((state) => state.config);
+  const visibleItems = NAV_ITEMS.filter((item) =>
+    canAccessSection(user.role, item.id, moduleConfig),
+  ).map((item) =>
+    user.role === "master" && item.id === "settings"
+      ? { ...item, label: "Módulos", description: "Qué ven admin y vendedor" }
+      : item,
+  );
   const activeItem = visibleItems.find((item) => item.id === activeSection);
 
   return (
