@@ -7,17 +7,12 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   Input,
 } from "@/components";
 import { BrandAvatar } from "@/modules/shared/components/brand-avatar";
-import {
-  APP_PRODUCT_NAME,
-  BUSINESS_NAME,
-  formatAppTitle,
-} from "@/shared/constants/branding";
+import { BUSINESS_NAME, formatAppTitle } from "@/shared/constants/branding";
 import { useSessionStore } from "@/shared/hooks/use-session";
 
 type LoginFormProps = {
@@ -76,9 +71,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-xl">Iniciar sesión</CardTitle>
-          <CardDescription>
-            {APP_PRODUCT_NAME} · {BUSINESS_NAME}. Caja local, sin internet.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
