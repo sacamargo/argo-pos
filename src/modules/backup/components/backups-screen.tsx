@@ -12,6 +12,7 @@ import {
   Input,
   Modal,
 } from "@/components";
+import { CatalogWipePanel } from "@/modules/catalog/components/catalog-wipe-panel";
 import { getErrorMessage } from "@/shared/utils/error-message";
 import { notify } from "@/shared/hooks/use-toast";
 
@@ -124,6 +125,8 @@ export function BackupsScreen() {
       )}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      <CatalogWipePanel />
 
       <Card>
         <CardHeader>

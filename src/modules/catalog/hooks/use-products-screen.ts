@@ -216,6 +216,32 @@ export function useProductsScreen(categories: Category[]) {
     }
   };
 
+  const deleteProduct = async (product: Product) => {
+    setBusyId(product.id);
+    setListError(null);
+    try {
+      const { catalogMaintenance } = await getAppServices();
+      await catalogMaintenance.deleteProduct({ id: product.id });
+      if (form.id === product.id) {
+        closeForm();
+      }
+      await reload();
+      notify({
+        tone: "success",
+        title: "Producto eliminado",
+        description: product.name,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No se pudo eliminar el producto";
+      setListError(message);
+      notify({ tone: "error", title: "Eliminar producto", description: message });
+      throw err;
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const categoryName = (categoryId: string | null) =>
     categories.find((category) => category.id === categoryId)?.name ?? "—";
 
@@ -238,6 +264,7 @@ export function useProductsScreen(categories: Category[]) {
     onPickImage,
     onSave,
     toggleActive,
+    deleteProduct,
     categoryName,
   };
 }

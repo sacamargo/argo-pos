@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { Ingredient } from "@/domain/entities/ingredient";
 import { Button, Modal } from "@/components";
 import {
   CreateIngredientForm,
@@ -10,12 +11,15 @@ import {
   MovementsTable,
 } from "@/modules/inventory/components/inventory-tables";
 import { useInventoryScreen } from "@/modules/inventory/hooks/use-inventory-screen";
+import { ConfirmDestructiveModal } from "@/modules/shared/components/confirm-destructive-modal";
 import { ListSearchInput } from "@/modules/shared/components/list-search-input";
 import { matchesNameSearch } from "@/shared/utils/name-search";
 
 export function InventoryScreen() {
   const s = useInventoryScreen();
   const [query, setQuery] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<Ingredient | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const filteredIngredients = useMemo(
     () => s.ingredients.filter((item) => matchesNameSearch(item.name, query)),
@@ -36,7 +40,7 @@ export function InventoryScreen() {
         </Button>
       </div>
 
-      {s.error && !s.createOpen && !s.editOpen ? (
+      {s.error && !s.createOpen && !s.editOpen && !pendingDelete ? (
         <p className="text-sm text-destructive">{s.error}</p>
       ) : null}
 
@@ -55,6 +59,10 @@ export function InventoryScreen() {
         busyId={s.busyId}
         onEdit={s.startEdit}
         onToggleActive={(item) => void s.toggleActive(item)}
+        onDelete={(item) => {
+          setDeleteError(null);
+          setPendingDelete(item);
+        }}
       />
       <MovementsTable movements={s.movements} />
 
@@ -119,6 +127,40 @@ export function InventoryScreen() {
           />
         ) : null}
       </Modal>
+
+      <ConfirmDestructiveModal
+        open={Boolean(pendingDelete)}
+        title="Eliminar ítem de inventario"
+        description="Desaparece de la bodega y se borran sus movimientos de stock."
+        confirmPhrase="ELIMINAR"
+        confirmLabel="Eliminar ítem"
+        busy={s.busyId === pendingDelete?.id}
+        error={deleteError}
+        onClose={() => {
+          setPendingDelete(null);
+          setDeleteError(null);
+        }}
+        onConfirm={() => {
+          if (!pendingDelete) {
+            return;
+          }
+          void s
+            .deleteIngredient(pendingDelete)
+            .then(() => {
+              setPendingDelete(null);
+              setDeleteError(null);
+            })
+            .catch((err: unknown) => {
+              setDeleteError(
+                err instanceof Error ? err.message : "No se pudo eliminar",
+              );
+            });
+        }}
+      >
+        {pendingDelete ? (
+          <p className="text-sm font-medium">{pendingDelete.name}</p>
+        ) : null}
+      </ConfirmDestructiveModal>
     </div>
   );
 }

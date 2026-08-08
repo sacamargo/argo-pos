@@ -197,6 +197,32 @@ export function useInventoryScreen() {
     }
   };
 
+  const deleteIngredient = async (item: Ingredient) => {
+    setBusyId(item.id);
+    setError(null);
+    try {
+      const { catalogMaintenance } = await getAppServices();
+      await catalogMaintenance.deleteIngredient({ id: item.id });
+      if (editingId === item.id) {
+        resetCreateFields();
+      }
+      await reload();
+      notify({
+        tone: "success",
+        title: "Ítem eliminado",
+        description: item.name,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No se pudo eliminar el ítem";
+      setError(message);
+      notify({ tone: "error", title: "Eliminar inventario", description: message });
+      throw err;
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const registerEntry = async () => {
     if (!editingId) {
       return;
@@ -296,6 +322,7 @@ export function useInventoryScreen() {
     startEdit,
     cancelEdit: resetCreateFields,
     toggleActive,
+    deleteIngredient,
     registerEntry,
     registerAdjustment,
   };

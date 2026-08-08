@@ -26,6 +26,7 @@ type IngredientsTableProps = {
   busyId: string | null;
   onEdit: (item: Ingredient) => void;
   onToggleActive: (item: Ingredient) => void;
+  onDelete: (item: Ingredient) => void;
 };
 
 export function IngredientsTable({
@@ -37,6 +38,7 @@ export function IngredientsTable({
   busyId,
   onEdit,
   onToggleActive,
+  onDelete,
 }: IngredientsTableProps) {
   return (
     <Card>
@@ -108,6 +110,13 @@ export function IngredientsTable({
                         onClick={() => onToggleActive(item)}
                       >
                         {item.active ? "Ocultar" : "Mostrar"}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={busyId === item.id}
+                        onClick={() => onDelete(item)}
+                      >
+                        Eliminar
                       </Button>
                     </TableCell>
                   </TableRow>

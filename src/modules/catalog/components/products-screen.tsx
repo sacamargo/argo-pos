@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Category } from "@/domain/entities/category";
+import type { Product } from "@/domain/entities/product";
 import {
   Badge,
   Button,
@@ -18,6 +19,7 @@ import {
 } from "@/components";
 import { ProductFormFields } from "@/modules/catalog/components/product-form-fields";
 import { useProductsScreen } from "@/modules/catalog/hooks/use-products-screen";
+import { ConfirmDestructiveModal } from "@/modules/shared/components/confirm-destructive-modal";
 import { ListSearchInput } from "@/modules/shared/components/list-search-input";
 import { formatPesos } from "@/shared/utils/money";
 import { matchesNameSearch } from "@/shared/utils/name-search";
@@ -29,6 +31,8 @@ type ProductsScreenProps = {
 export function ProductsScreen({ categories }: ProductsScreenProps) {
   const s = useProductsScreen(categories);
   const [query, setQuery] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<Product | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => s.products.filter((product) => matchesNameSearch(product.name, query)),
@@ -130,6 +134,16 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
                       >
                         {product.active ? "Desactivar" : "Activar"}
                       </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={s.busyId === product.id}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setPendingDelete(product);
+                        }}
+                      >
+                        Eliminar
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -160,6 +174,40 @@ export function ProductsScreen({ categories }: ProductsScreenProps) {
           onCancel={s.closeForm}
         />
       </Modal>
+
+      <ConfirmDestructiveModal
+        open={Boolean(pendingDelete)}
+        title="Eliminar producto"
+        description="Desaparece del catálogo y del POS. Las ventas antiguas conservan el nombre."
+        confirmPhrase="ELIMINAR"
+        confirmLabel="Eliminar producto"
+        busy={s.busyId === pendingDelete?.id}
+        error={deleteError}
+        onClose={() => {
+          setPendingDelete(null);
+          setDeleteError(null);
+        }}
+        onConfirm={() => {
+          if (!pendingDelete) {
+            return;
+          }
+          void s
+            .deleteProduct(pendingDelete)
+            .then(() => {
+              setPendingDelete(null);
+              setDeleteError(null);
+            })
+            .catch((err: unknown) => {
+              setDeleteError(
+                err instanceof Error ? err.message : "No se pudo eliminar",
+              );
+            });
+        }}
+      >
+        {pendingDelete ? (
+          <p className="text-sm font-medium">{pendingDelete.name}</p>
+        ) : null}
+      </ConfirmDestructiveModal>
     </div>
   );
 }

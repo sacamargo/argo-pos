@@ -254,7 +254,9 @@ Nunca editar la cantidad “a mano” sin movimiento.
 - **Inventario = Bodega.** Stock, unidades, mínimos, insumos, movimientos.
 - Simple: puede crear o reutilizar ítem de inventario en el mismo flujo de Catálogo.
 - Compuesto: no crea inventario; solo receta sobre insumos existentes.
-- Soft delete: productos, categorías e ingredientes se **desactivan**; no hay delete físico como operación normal.
+- Soft delete (ocultar/desactivar) sigue disponible en operación diaria.
+- Admin puede **Eliminar** (hard delete) productos, categorías e ítems de inventario con confirmación (`ELIMINAR`).
+- Admin puede **Vaciar catálogo e inventario** desde Backup (frase `VACIAR`) para entrega al cliente.
 - Wipe admin (entrega): vacía catálogo/inventario/categorías/recetas; no toca usuarios, ventas, caja, settings ni métodos de pago.
 
 ### Inventario

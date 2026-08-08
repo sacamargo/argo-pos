@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components";
 import { ListSearchInput } from "@/modules/shared/components/list-search-input";
+import { ConfirmDestructiveModal } from "@/modules/shared/components/confirm-destructive-modal";
 import { notify } from "@/shared/hooks/use-toast";
 import { matchesNameSearch } from "@/shared/utils/name-search";
 
@@ -35,6 +36,8 @@ export function CategoriesScreen() {
   const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const {
     register,
@@ -123,6 +126,29 @@ export function CategoriesScreen() {
     }
   };
 
+  const deleteCategory = async (category: Category) => {
+    setBusyId(category.id);
+    setDeleteError(null);
+    try {
+      const { catalogMaintenance } = await getAppServices();
+      await catalogMaintenance.deleteCategory({ id: category.id });
+      await reload();
+      notify({
+        tone: "success",
+        title: "Categoría eliminada",
+        description: category.name,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No se pudo eliminar la categoría";
+      setDeleteError(message);
+      notify({ tone: "error", title: "Eliminar categoría", description: message });
+      throw err;
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -193,13 +219,23 @@ export function CategoriesScreen() {
                         {category.active ? "Activa" : "Inactiva"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="space-x-2 text-right">
                       <Button
                         variant="outline"
                         disabled={busyId === category.id}
                         onClick={() => void toggleActive(category)}
                       >
                         {category.active ? "Desactivar" : "Activar"}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={busyId === category.id}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setPendingDelete(category);
+                        }}
+                      >
+                        Eliminar
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -239,6 +275,37 @@ export function CategoriesScreen() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDestructiveModal
+        open={Boolean(pendingDelete)}
+        title="Eliminar categoría"
+        description="Desaparece del listado. Solo si no tiene productos."
+        confirmPhrase="ELIMINAR"
+        confirmLabel="Eliminar categoría"
+        busy={busyId === pendingDelete?.id}
+        error={deleteError}
+        onClose={() => {
+          setPendingDelete(null);
+          setDeleteError(null);
+        }}
+        onConfirm={() => {
+          if (!pendingDelete) {
+            return;
+          }
+          void deleteCategory(pendingDelete)
+            .then(() => {
+              setPendingDelete(null);
+              setDeleteError(null);
+            })
+            .catch(() => {
+              /* error already set */
+            });
+        }}
+      >
+        {pendingDelete ? (
+          <p className="text-sm font-medium">{pendingDelete.name}</p>
+        ) : null}
+      </ConfirmDestructiveModal>
     </div>
   );
 }

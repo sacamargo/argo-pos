@@ -68,4 +68,6 @@ export interface SaleRepository {
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;
   /** True if any sale_items row still points at this product (blocks hard delete). */
   isProductReferenced(productId: string): Promise<boolean>;
+  /** Nulls sale_items.product_id so the product can be hard-deleted (keeps sale snapshots). */
+  detachProductReferences(productId: string): Promise<number>;
 }
