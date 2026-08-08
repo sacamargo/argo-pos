@@ -60,7 +60,7 @@ pnpm tauri:build
 **Opción A — Descargar instalador desde GitHub Actions**
 
 1. Abre [Actions del repo](https://github.com/sacamargo/argo-pos/actions/workflows/build-windows.yml).
-2. Entra al run del tag más reciente en verde (p. ej. `v0.1.4`).
+2. Entra al run del tag más reciente en verde (p. ej. `v0.1.5`).
 3. Al final, descarga el artifact `argo-pos-windows` (zip con `.exe` NSIS y/o `.msi`).
 4. En el portátil Windows: descomprime → ejecuta el instalador NSIS (`Argo POS_…_x64-setup.exe`).
 5. Abre **Argo POS** desde el menú Inicio.
@@ -72,7 +72,7 @@ Requisitos: Node 20, pnpm 9, Rust stable ([rustup](https://rustup.rs/)), [Visual
 ```powershell
 git clone https://github.com/sacamargo/argo-pos.git
 cd argo-pos
-git checkout v0.1.4
+git checkout v0.1.5
 pnpm install
 pnpm tauri:build
 ```
