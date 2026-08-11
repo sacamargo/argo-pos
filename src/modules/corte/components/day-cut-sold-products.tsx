@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { DayCutSoldProduct } from "@/domain/entities/day-cut";
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -115,7 +114,9 @@ export function DayCutSoldProducts({
                         <TableCell>{formatPesos(product.revenueCents)}</TableCell>
                         <TableCell>
                           {needsCost ? (
-                            <Badge variant="outline">Sin precio de compra</Badge>
+                            <span className="text-sm font-medium text-destructive">
+                              Sin precio de compra
+                            </span>
                           ) : (
                             <span className="text-sm text-muted-foreground">
                               {formatPesos(product.productCostCents ?? 0)}
@@ -143,30 +144,18 @@ export function DayCutSoldProducts({
               </Table>
 
               {products.length > PAGE_SIZE ? (
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-muted-foreground">
-                    Página {safePage + 1} de {pageCount}
-                  </span>
-                  <div className="flex gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-1 pt-1">
+                  {Array.from({ length: pageCount }, (_, index) => (
                     <Button
+                      key={index}
                       size="sm"
-                      variant="outline"
-                      disabled={safePage === 0}
-                      onClick={() => setPage((current) => Math.max(0, current - 1))}
+                      variant={index === safePage ? "default" : "ghost"}
+                      className="min-w-9 px-2"
+                      onClick={() => setPage(index)}
                     >
-                      Anterior
+                      {index + 1}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={safePage >= pageCount - 1}
-                      onClick={() =>
-                        setPage((current) => Math.min(pageCount - 1, current + 1))
-                      }
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
+                  ))}
                 </div>
               ) : null}
             </>

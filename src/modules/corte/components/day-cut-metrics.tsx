@@ -57,9 +57,11 @@ export function DayCutMetrics({ summary, showBackfill, onBackfill }: DayCutMetri
             ) : (
               <span>
                 Ganancia parcial
-                {summary.profit.missingCostLines > 0
-                  ? ` · ${summary.profit.missingCostLines} líneas sin costo`
-                  : ""}
+                {summary.profit.missingCostLines > 0 ? (
+                  <span className="text-destructive">
+                    {` · ${summary.profit.missingCostLines} líneas sin costo`}
+                  </span>
+                ) : null}
               </span>
             )}
             {showBackfill ? (
