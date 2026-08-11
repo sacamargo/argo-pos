@@ -14,6 +14,8 @@ export type Product = {
   name: string;
   imagePath: string | null;
   priceCents: number;
+  /** null = costo no configurado */
+  costCents: number | null;
   fulfillmentType: ProductFulfillmentType;
   stockItemId: string | null;
   qtyPerSale: number | null;

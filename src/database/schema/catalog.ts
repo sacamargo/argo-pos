@@ -16,6 +16,8 @@ export const products = sqliteTable("products", {
   name: text("name").notNull(),
   imagePath: text("image_path"),
   priceCents: integer("price_cents").notNull(),
+  /** Optional purchase/cost price in cents; null = unknown */
+  costCents: integer("cost_cents"),
   /** simple = stocked item · compound = recipe BOM */
   fulfillmentType: text("fulfillment_type", {
     enum: ["simple", "compound"],

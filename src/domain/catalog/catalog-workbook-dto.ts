@@ -34,6 +34,8 @@ export type CatalogWorkbookProductDto = {
   fulfillmentType: CatalogWorkbookFulfillmentType;
   /** Human price in COP pesos (Excel column); domain uses cents after validate/apply. */
   pricePesos: number;
+  /** Optional cost in COP pesos; null/empty = unknown. */
+  costPesos: number | null;
   active: boolean;
   /** Required for simple; null for compound. */
   inventoryCode: string | null;

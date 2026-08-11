@@ -83,6 +83,8 @@ export function useProductsScreen(categories: Category[]) {
         categoryId: detail.categoryId ?? activeCategories[0]?.id ?? "",
         imagePath: detail.imagePath ?? "",
         pricePesos: String(centsToPesos(detail.priceCents)),
+        costPesos:
+          detail.costCents === null ? "" : String(centsToPesos(detail.costCents)),
         fulfillmentType: detail.fulfillmentType,
         inventoryLinkMode: "existing",
         stockItemId: detail.stockItemId ?? "",
@@ -126,11 +128,22 @@ export function useProductsScreen(categories: Category[]) {
         throw new Error("El precio debe ser mayor a 0");
       }
 
+      const costRaw = form.costPesos.trim();
+      let costCents: number | null = null;
+      if (costRaw !== "") {
+        const cost = Number(costRaw);
+        if (!Number.isFinite(cost) || cost < 0) {
+          throw new Error("El costo debe estar vacío o ser mayor o igual a 0");
+        }
+        costCents = pesosToCents(cost);
+      }
+
       const base = {
         name: form.name,
         categoryId: form.categoryId,
         imagePath: form.imagePath.trim() ? form.imagePath.trim() : null,
         priceCents: pesosToCents(price),
+        costCents,
       };
 
       if (form.fulfillmentType === "compound") {

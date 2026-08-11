@@ -17,6 +17,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "compound",
       priceCents: 0,
+      costCents: null,
       recipe: [{ ingredientId: "ing-1", quantity: 1 }],
     });
     expect(result.success).toBe(false);
@@ -29,6 +30,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "compound",
       priceCents: 5000,
+      costCents: null,
       recipe: [{ ingredientId: "ing-1", quantity: 0 }],
     });
     expect(result.success).toBe(false);
@@ -40,6 +42,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "compound",
       priceCents: 5000,
+      costCents: null,
       recipe: [{ ingredientId: "ing-1", quantity: 250 }],
     });
     expect(result.success).toBe(true);
@@ -51,6 +54,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "simple",
       priceCents: 2000,
+      costCents: null,
       stockItemId: "inv-agua",
       qtyPerSale: 1,
       recipe: [],
@@ -65,6 +69,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "compound",
       priceCents: 5000,
+      costCents: null,
       recipe: [{ ingredientId: "ing-1", quantity: 1 }],
     });
     expect(result.success).toBe(true);
@@ -77,6 +82,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "simple",
       priceCents: 2000,
+      costCents: null,
       qtyPerSale: 1,
       recipe: [],
     });
@@ -89,6 +95,7 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "simple",
       priceCents: 3500,
+      costCents: null,
       qtyPerSale: 1,
       createInventory: { unit: "und", minStock: 12, initialStock: 48 },
       recipe: [],
@@ -102,11 +109,65 @@ describe("productWriteSchema", () => {
       categoryId: "cat-1",
       fulfillmentType: "simple",
       priceCents: 3500,
+      costCents: null,
       qtyPerSale: 1,
       stockItemId: "inv-1",
       createInventory: { unit: "und", minStock: 0 },
       recipe: [],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts optional cost zero and positive", () => {
+    const zero = productWriteSchema.safeParse({
+      name: "Agua",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 2000,
+      costCents: 0,
+      stockItemId: "inv-agua",
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(zero.success).toBe(true);
+
+    const withCost = productWriteSchema.safeParse({
+      name: "Agua",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 10_000,
+      costCents: 6_000,
+      stockItemId: "inv-agua",
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(withCost.success).toBe(true);
+  });
+
+  it("rejects negative cost", () => {
+    const result = productWriteSchema.safeParse({
+      name: "Agua",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 2000,
+      costCents: -1,
+      stockItemId: "inv-agua",
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts product without cost field", () => {
+    const result = productWriteSchema.safeParse({
+      name: "Agua",
+      categoryId: "cat-1",
+      fulfillmentType: "simple",
+      priceCents: 2000,
+      stockItemId: "inv-agua",
+      qtyPerSale: 1,
+      recipe: [],
+    });
+    expect(result.success).toBe(true);
   });
 });

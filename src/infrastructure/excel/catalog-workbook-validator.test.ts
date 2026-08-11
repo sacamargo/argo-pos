@@ -41,6 +41,7 @@ function validCatalog(): CatalogWorkbookDto {
         categoryCode: "CAT-BEBIDAS",
         fulfillmentType: "simple",
         pricePesos: 2500,
+        costPesos: null,
         active: true,
         inventoryCode: "INV-VASO",
         qtyPerSale: 1,
@@ -51,6 +52,7 @@ function validCatalog(): CatalogWorkbookDto {
         categoryCode: "CAT-BEBIDAS",
         fulfillmentType: "compound",
         pricePesos: 8000,
+        costPesos: null,
         active: true,
         inventoryCode: null,
         qtyPerSale: null,
@@ -186,6 +188,7 @@ describe("CatalogWorkbookValidator", () => {
       categoryCode: "CAT-BEBIDAS",
       fulfillmentType: "simple",
       pricePesos: 100,
+      costPesos: null,
       active: true,
       inventoryCode: "INV-VASO",
       qtyPerSale: 1,
@@ -259,6 +262,7 @@ describe("CatalogWorkbookValidator", () => {
           categoryCode: "CAT-X",
           fulfillmentType: "simple",
           pricePesos: -10,
+          costPesos: null,
           active: true,
           inventoryCode: null,
           qtyPerSale: 0,
@@ -272,5 +276,21 @@ describe("CatalogWorkbookValidator", () => {
     const report = validator.validate(dto);
     expect(report.valid).toBe(false);
     expect(report.errors.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("rejects negative cost", () => {
+    const dto = validCatalog();
+    dto.products[0]!.costPesos = -5;
+    const report = validator.validate(dto);
+    expect(report.valid).toBe(false);
+    expect(report.errors.some((e) => e.code === "PRODUCT_COST_INVALID")).toBe(true);
+  });
+
+  it("accepts empty cost", () => {
+    const dto = validCatalog();
+    dto.products[0]!.costPesos = null;
+    dto.products[1]!.costPesos = 0;
+    const report = validator.validate(dto);
+    expect(report.valid).toBe(true);
   });
 });

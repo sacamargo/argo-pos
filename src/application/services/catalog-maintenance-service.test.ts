@@ -151,6 +151,7 @@ function product(
     categoryId: null,
     imagePath: null,
     priceCents: 1000,
+    costCents: null,
     stockItemId: null,
     qtyPerSale: null,
     active: true,

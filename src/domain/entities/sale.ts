@@ -14,6 +14,8 @@ export type SaleItem = {
   productId: string | null;
   productNameSnapshot: string;
   unitPriceCentsSnapshot: number;
+  /** null = venta sin costo conocido */
+  unitCostCentsSnapshot: number | null;
   quantity: number;
   lineTotalCents: number;
 };

@@ -28,6 +28,7 @@ describe("snapshotToWorkbookDto", () => {
           name: "Agua",
           imagePath: null,
           priceCents: 5000,
+          costCents: null,
           fulfillmentType: "simple",
           stockItemId: "i1",
           qtyPerSale: 1,
@@ -43,6 +44,7 @@ describe("snapshotToWorkbookDto", () => {
           name: "Granizado",
           imagePath: null,
           priceCents: 8000,
+          costCents: null,
           fulfillmentType: "compound",
           stockItemId: null,
           qtyPerSale: null,
@@ -64,6 +66,7 @@ describe("snapshotToWorkbookDto", () => {
       fulfillmentType: "simple",
       inventoryCode: "INV-A",
       pricePesos: 50,
+      costPesos: null,
     });
     expect(dto.products[1]).toMatchObject({
       fulfillmentType: "compound",

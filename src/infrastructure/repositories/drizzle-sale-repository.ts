@@ -68,6 +68,7 @@ export class DrizzleSaleRepository implements SaleRepository {
           productId: item.productId,
           productNameSnapshot: item.productNameSnapshot,
           unitPriceCentsSnapshot: item.unitPriceCentsSnapshot,
+          unitCostCentsSnapshot: item.unitCostCentsSnapshot,
           quantity: item.quantity,
           lineTotalCents: item.lineTotalCents,
         })),
@@ -93,6 +94,7 @@ export class DrizzleSaleRepository implements SaleRepository {
       productId: row.productId,
       productNameSnapshot: row.productNameSnapshot,
       unitPriceCentsSnapshot: row.unitPriceCentsSnapshot,
+      unitCostCentsSnapshot: row.unitCostCentsSnapshot,
       quantity: row.quantity,
       lineTotalCents: row.lineTotalCents,
     }));

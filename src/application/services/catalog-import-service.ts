@@ -230,6 +230,10 @@ export class CatalogImportService {
         name: row.name.trim(),
         categoryId,
         priceCents: pesosToCents(row.pricePesos),
+        costCents:
+          row.costPesos === null || row.costPesos === undefined
+            ? null
+            : pesosToCents(row.costPesos),
         fulfillmentType: "simple" as const,
         stockItemId,
         qtyPerSale: row.qtyPerSale,
@@ -255,6 +259,10 @@ export class CatalogImportService {
         name: row.name.trim(),
         categoryId,
         priceCents: pesosToCents(row.pricePesos),
+        costCents:
+          row.costPesos === null || row.costPesos === undefined
+            ? null
+            : pesosToCents(row.costPesos),
         fulfillmentType: "compound" as const,
         stockItemId: null,
         qtyPerSale: null,

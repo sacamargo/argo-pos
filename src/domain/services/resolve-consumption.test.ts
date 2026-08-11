@@ -12,6 +12,7 @@ const baseProduct = {
   name: "Demo",
   imagePath: null,
   priceCents: 1000,
+  costCents: null,
   active: true,
   createdAt: "t",
   updatedAt: "t",

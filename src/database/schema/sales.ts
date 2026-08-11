@@ -46,6 +46,8 @@ export const saleItems = sqliteTable("sale_items", {
   productId: text("product_id").references(() => products.id),
   productNameSnapshot: text("product_name_snapshot").notNull(),
   unitPriceCentsSnapshot: integer("unit_price_cents_snapshot").notNull(),
+  /** Cost at sale time; null if product had no cost configured */
+  unitCostCentsSnapshot: integer("unit_cost_cents_snapshot"),
   quantity: integer("quantity").notNull(),
   lineTotalCents: integer("line_total_cents").notNull(),
 });

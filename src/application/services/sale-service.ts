@@ -101,6 +101,7 @@ export class SaleService {
       productId: string;
       productNameSnapshot: string;
       unitPriceCentsSnapshot: number;
+      unitCostCentsSnapshot: number | null;
       quantity: number;
       lineTotalCents: number;
     }> = [];
@@ -116,6 +117,7 @@ export class SaleService {
         productId: product.id,
         productNameSnapshot: product.name,
         unitPriceCentsSnapshot: product.priceCents,
+        unitCostCentsSnapshot: product.costCents,
         quantity: line.quantity,
         lineTotalCents: lineTotalCents({
           ...line,

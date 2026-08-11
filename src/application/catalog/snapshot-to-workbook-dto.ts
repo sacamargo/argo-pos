@@ -38,6 +38,8 @@ export function snapshotToWorkbookDto(snapshot: CatalogSnapshot): CatalogWorkboo
         categoryCode,
         fulfillmentType: product.fulfillmentType,
         pricePesos: centsToPesos(product.priceCents),
+        costPesos:
+          product.costCents === null ? null : centsToPesos(product.costCents),
         active: product.active,
         inventoryCode:
           isSimple && product.stockItemId

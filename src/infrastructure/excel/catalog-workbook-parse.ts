@@ -201,6 +201,7 @@ function parseProducts(sheet: Worksheet): CatalogWorkbookProductDto[] {
       fulfillmentType: (fulfillmentParsed ??
         fulfillmentRaw) as CatalogWorkbookFulfillmentType,
       pricePesos: cellToNumber(getCell(sheet, rowNumber, headers, "precio")),
+      costPesos: cellToOptionalNumber(getCell(sheet, rowNumber, headers, "costo")),
       active: parseSiNo(getCell(sheet, rowNumber, headers, "activo"), true),
       inventoryCode: inventoryCode === "" ? null : inventoryCode,
       qtyPerSale,
