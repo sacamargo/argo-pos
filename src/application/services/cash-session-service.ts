@@ -4,6 +4,7 @@ import type {
   CashSessionSummary,
 } from "@/domain/entities/cash-session";
 import type { CashSessionRepository } from "@/domain/repositories/cash-session-repository";
+import { isLocalDateInput, localDayBounds } from "@/shared/utils/date";
 
 export const openCashSessionSchema = z.object({
   openedByUserId: z.string().min(1, "Usuario obligatorio"),
@@ -75,6 +76,18 @@ export class CashSessionService {
 
   async listRecent(limit = 10): Promise<CashSession[]> {
     return this.sessions.listRecent(limit);
+  }
+
+  /**
+   * Cash sessions that belong to a business day (local date of openedAt).
+   * Supports multiple sessions on the same operating day.
+   */
+  async listByBusinessDay(dateInput: string): Promise<CashSession[]> {
+    if (!isLocalDateInput(dateInput)) {
+      throw new Error("Fecha inválida");
+    }
+    const { fromIso, toIso } = localDayBounds(dateInput);
+    return this.sessions.listByOpenedAtRange(fromIso, toIso);
   }
 
   async openSession(raw: unknown): Promise<CashSession> {
