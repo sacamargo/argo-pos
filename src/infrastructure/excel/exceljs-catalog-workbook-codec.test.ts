@@ -118,8 +118,12 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
     expect(String(products.getCell(2, 2).value)).toBe("Doritos");
     expect(String(products.getCell(2, 4).value)).toBe("Simple");
     expect(String(products.getCell(2, 5).value)).toBe("EJ-INV-DORITOS");
+    expect(Number(products.getCell(2, 8).value)).toBe(2000);
+    expect(String(products.getCell(2, 9).value)).toBe("si");
     expect(String(products.getCell(3, 2).value)).toContain("Granizado mora");
     expect(String(products.getCell(3, 4).value)).toBe("Compuesto");
+    expect(String(products.getCell(3, 8).value ?? "")).toBe("");
+    expect(String(products.getCell(3, 9).value)).toBe("si");
 
     expect(String(recipes.getCell(2, 1).value)).toBe("EJ-PROD-GRAN-MORA");
     expect(String(recipes.getCell(2, 2).value)).toBe("EJ-INV-VASO16");
@@ -199,6 +203,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
             categoryCode: "CAT-A1",
             fulfillmentType: "simple",
             pricePesos: 2500,
+            costPesos: null,
             active: true,
             inventoryCode: "INV-B1",
             qtyPerSale: 1,
@@ -211,7 +216,8 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
       expect(cell(sheet, 2, 5)).toBe("INV-B1");
       expect(cell(sheet, 2, 6)).toBe(1);
       expect(cell(sheet, 2, 7)).toBe(2500);
-      expect(cell(sheet, 2, 8)).toBe("si");
+      expect(cell(sheet, 2, 8)).toBe("");
+      expect(cell(sheet, 2, 9)).toBe("si");
     });
 
     it("exports a compound product without inventory link", async () => {
@@ -224,6 +230,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
             categoryCode: "CAT-A1",
             fulfillmentType: "compound",
             pricePesos: 8000,
+            costPesos: null,
             active: true,
             inventoryCode: "INV-SHOULD-IGNORE",
             qtyPerSale: 99,
@@ -298,6 +305,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
             categoryCode: "CAT-A1",
             fulfillmentType: "simple",
             pricePesos: 2500,
+            costPesos: null,
             active: true,
             inventoryCode: "INV-B1",
             qtyPerSale: 1,
@@ -326,6 +334,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
         inventoryCode: "INV-B1",
         qtyPerSale: 1,
         pricePesos: 2500,
+        costPesos: null,
       });
       expect(parsed.recipes).toEqual([]);
     });
@@ -390,6 +399,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
             categoryCode: "CAT-A1",
             fulfillmentType: "simple",
             pricePesos: 2500,
+            costPesos: null,
             active: true,
             inventoryCode: "INV-B1",
             qtyPerSale: 1,
@@ -413,6 +423,7 @@ describe("ExcelJsCatalogWorkbookCodec", () => {
             categoryCode: "CAT-A1",
             fulfillmentType: "compound",
             pricePesos: 8000,
+            costPesos: null,
             active: true,
             inventoryCode: null,
             qtyPerSale: null,

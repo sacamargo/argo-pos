@@ -84,6 +84,15 @@ export function ProductFormFields({
         value={form.pricePesos}
         onChange={(event) => onChange({ ...form, pricePesos: event.target.value })}
       />
+      <Input
+        className="h-12"
+        type="number"
+        min="0"
+        step="1"
+        placeholder="Costo (COP, opcional)"
+        value={form.costPesos}
+        onChange={(event) => onChange({ ...form, costPesos: event.target.value })}
+      />
 
       {isSimple ? (
         <ProductSimpleInventoryFields

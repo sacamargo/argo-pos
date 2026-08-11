@@ -14,6 +14,7 @@ export type ProductFormState = {
   categoryId: string;
   imagePath: string;
   pricePesos: string;
+  costPesos: string;
   fulfillmentType: ProductFulfillmentType;
   inventoryLinkMode: InventoryLinkMode;
   stockItemId: string;
@@ -30,6 +31,7 @@ export function emptyProductForm(categoryId = ""): ProductFormState {
     categoryId,
     imagePath: "",
     pricePesos: "",
+    costPesos: "",
     fulfillmentType: "simple",
     inventoryLinkMode: "new",
     stockItemId: "",

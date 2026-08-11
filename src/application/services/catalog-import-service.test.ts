@@ -177,6 +177,10 @@ function createHarness(options?: { failOnProductCode?: string }) {
         name: String(raw.name),
         imagePath: null,
         priceCents: Number(raw.priceCents),
+        costCents:
+          raw.costCents === undefined || raw.costCents === null
+            ? null
+            : Number(raw.costCents),
         fulfillmentType: raw.fulfillmentType as "simple" | "compound",
         stockItemId: (raw.stockItemId as string | null) ?? null,
         qtyPerSale: (raw.qtyPerSale as number | null) ?? null,
@@ -209,6 +213,10 @@ function createHarness(options?: { failOnProductCode?: string }) {
         name: String(raw.name),
         categoryId: String(raw.categoryId),
         priceCents: Number(raw.priceCents),
+        costCents:
+          raw.costCents === undefined || raw.costCents === null
+            ? null
+            : Number(raw.costCents),
         fulfillmentType: raw.fulfillmentType as "simple" | "compound",
         stockItemId: (raw.stockItemId as string | null) ?? null,
         qtyPerSale: (raw.qtyPerSale as number | null) ?? null,
@@ -283,6 +291,7 @@ function sampleDto(): CatalogWorkbookDto {
         categoryCode: "CAT-BEBIDAS",
         fulfillmentType: "simple",
         pricePesos: 25,
+        costPesos: null,
         active: true,
         inventoryCode: "INV-VASO",
         qtyPerSale: 1,
@@ -293,6 +302,7 @@ function sampleDto(): CatalogWorkbookDto {
         categoryCode: "CAT-BEBIDAS",
         fulfillmentType: "compound",
         pricePesos: 80,
+        costPesos: null,
         active: true,
         inventoryCode: null,
         qtyPerSale: null,
@@ -398,6 +408,7 @@ describe("CatalogImportService", () => {
         code: p.code,
         name: p.name,
         priceCents: p.priceCents,
+        costCents: null,
         recipe: p.recipe.map((r) => ({
           ingredientId: r.ingredientId,
           quantity: r.quantity,
@@ -408,6 +419,7 @@ describe("CatalogImportService", () => {
         code: p.code,
         name: p.name,
         priceCents: p.priceCents,
+        costCents: null,
         recipe: p.recipe.map((r) => ({
           ingredientId: r.ingredientId,
           quantity: r.quantity,

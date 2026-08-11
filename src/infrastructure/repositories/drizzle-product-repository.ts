@@ -21,6 +21,7 @@ function mapProduct(row: {
   name: string;
   imagePath: string | null;
   priceCents: number;
+  costCents: number | null;
   fulfillmentType: ProductFulfillmentType;
   stockItemId: string | null;
   qtyPerSale: number | null;
@@ -35,6 +36,7 @@ function mapProduct(row: {
     name: row.name,
     imagePath: row.imagePath,
     priceCents: row.priceCents,
+    costCents: row.costCents,
     fulfillmentType: row.fulfillmentType,
     stockItemId: row.stockItemId,
     qtyPerSale: row.qtyPerSale,
@@ -51,6 +53,7 @@ const selectFields = {
   name: products.name,
   imagePath: products.imagePath,
   priceCents: products.priceCents,
+  costCents: products.costCents,
   fulfillmentType: products.fulfillmentType,
   stockItemId: products.stockItemId,
   qtyPerSale: products.qtyPerSale,
@@ -137,6 +140,7 @@ export class DrizzleProductRepository implements ProductRepository {
       name: input.name,
       imagePath: input.imagePath ?? null,
       priceCents: input.priceCents,
+      costCents: input.costCents ?? null,
       fulfillmentType: input.fulfillmentType,
       stockItemId:
         input.fulfillmentType === "simple" ? (input.stockItemId ?? null) : null,
@@ -175,6 +179,7 @@ export class DrizzleProductRepository implements ProductRepository {
         categoryId: input.categoryId,
         imagePath: input.imagePath ?? null,
         priceCents: input.priceCents,
+        costCents: input.costCents ?? null,
         fulfillmentType: input.fulfillmentType,
         stockItemId:
           input.fulfillmentType === "simple" ? (input.stockItemId ?? null) : null,

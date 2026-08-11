@@ -12,6 +12,7 @@ export type CreateSaleItemInput = {
   productId: string;
   productNameSnapshot: string;
   unitPriceCentsSnapshot: number;
+  unitCostCentsSnapshot: number | null;
   quantity: number;
   lineTotalCents: number;
 };

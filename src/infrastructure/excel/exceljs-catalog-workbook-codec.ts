@@ -34,6 +34,7 @@ const INSTRUCTION_LINES = [
   "- Doritos = Simple: al vender se descuenta 1 und del inventario Doritos.",
   "- Granizado mora = Compuesto: vaso + pajita + sticker + base de sabor (ml) + dulces.",
   "- Cada venta del granizado descuenta todos los ítems listados en Recetas.",
+  "- Columna costo (opcional): costo en pesos COP. Vacío = sin costo (ganancia parcial).",
   "- Puedes borrar las filas EJ-... o adaptarlas a tu negocio.",
   "",
   "Inventario — unidades sugeridas:",
@@ -48,7 +49,7 @@ const INSTRUCTION_LINES = [
 
 const CATEGORY_WIDTHS = [16, 28];
 const INVENTORY_WIDTHS = [16, 28, 10, 12, 14, 16];
-const PRODUCT_WIDTHS = [16, 28, 18, 12, 18, 18, 12, 10];
+const PRODUCT_WIDTHS = [16, 28, 18, 12, 18, 18, 12, 12, 10];
 const RECIPE_WIDTHS = [20, 20, 12];
 
 function boolSiNo(value: boolean): "si" | "no" {
@@ -158,6 +159,7 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
       "EJ-INV-DORITOS",
       1,
       3500,
+      2000,
       "si",
     ]);
     products?.addRow([
@@ -168,6 +170,7 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
       "",
       "",
       12000,
+      "",
       "si",
     ]);
 
@@ -208,6 +211,7 @@ export class ExcelJsCatalogWorkbookCodec implements CatalogWorkbookCodec {
         isSimple ? emptyIfNull(row.inventoryCode) : "",
         isSimple ? emptyIfNull(row.qtyPerSale) : "",
         row.pricePesos,
+        emptyIfNull(row.costPesos),
         boolSiNo(row.active),
       ]);
     }

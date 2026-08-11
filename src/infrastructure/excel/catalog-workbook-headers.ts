@@ -17,6 +17,7 @@ export const CATALOG_WORKBOOK_HEADERS = {
     "inventario_codigo",
     "cantidad_por_venta",
     "precio",
+    "costo",
     "activo",
   ] as const,
   recipes: ["producto_codigo", "inventario_codigo", "cantidad"] as const,

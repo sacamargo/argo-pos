@@ -308,6 +308,17 @@ export class CatalogWorkbookValidator {
         );
       }
 
+      if (row.costPesos !== null && !isNonNegativeNumber(row.costPesos)) {
+        this.pushError(
+          errors,
+          sheet,
+          rowNumber,
+          "costo",
+          "PRODUCT_COST_INVALID",
+          "El costo debe estar vacío o ser mayor o igual a 0.",
+        );
+      }
+
       const tipo = parseFulfillmentTypeFromExcel(String(row.fulfillmentType ?? "").trim());
       if (!tipo) {
         this.pushError(

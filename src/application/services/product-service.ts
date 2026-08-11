@@ -20,6 +20,12 @@ const productFieldsSchema = z.object({
   categoryId: z.string().min(1, "La categoría es obligatoria"),
   imagePath: z.string().trim().nullable().optional(),
   priceCents: z.number().int().positive("El precio debe ser mayor a 0"),
+  costCents: z
+    .number()
+    .int("El costo debe ser entero en centavos")
+    .min(0, "El costo no puede ser negativo")
+    .nullable()
+    .optional(),
 });
 
 const productCreateFieldsSchema = productFieldsSchema.extend({
@@ -188,6 +194,7 @@ export class ProductService {
       categoryId: input.categoryId,
       imagePath: input.imagePath?.trim() ? input.imagePath.trim() : null,
       priceCents: input.priceCents,
+      costCents: input.costCents ?? null,
       fulfillmentType: input.fulfillmentType,
       recipe: input.fulfillmentType === "compound" ? input.recipe : [],
       stockItemId,

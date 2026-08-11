@@ -16,6 +16,7 @@ export type CreateProductInput = {
   categoryId: string;
   imagePath?: string | null;
   priceCents: number;
+  costCents?: number | null;
   fulfillmentType: ProductFulfillmentType;
   stockItemId?: string | null;
   qtyPerSale?: number | null;
@@ -28,6 +29,7 @@ export type UpdateProductInput = {
   categoryId: string;
   imagePath?: string | null;
   priceCents: number;
+  costCents?: number | null;
   fulfillmentType: ProductFulfillmentType;
   stockItemId?: string | null;
   qtyPerSale?: number | null;
