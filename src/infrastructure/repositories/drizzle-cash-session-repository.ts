@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { cashSessions, paymentMethods, sales } from "@/database/schema";
 import type { CashSession, CashSessionTotals } from "@/domain/entities/cash-session";
 import type {
@@ -51,6 +51,18 @@ export class DrizzleCashSessionRepository implements CashSessionRepository {
       .from(cashSessions)
       .orderBy(desc(cashSessions.openedAt))
       .limit(limit);
+
+    return rows.map(mapRow);
+  }
+
+  async listByOpenedAtRange(fromIso: string, toIso: string): Promise<CashSession[]> {
+    const rows = await this.db
+      .select()
+      .from(cashSessions)
+      .where(
+        and(gte(cashSessions.openedAt, fromIso), lte(cashSessions.openedAt, toIso)),
+      )
+      .orderBy(asc(cashSessions.openedAt));
 
     return rows.map(mapRow);
   }

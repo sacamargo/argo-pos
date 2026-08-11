@@ -20,6 +20,8 @@ export interface CashSessionRepository {
   findOpen(): Promise<CashSession | null>;
   findById(id: string): Promise<CashSession | null>;
   listRecent(limit: number): Promise<CashSession[]>;
+  /** Sessions whose openedAt falls in the local calendar day [fromIso, toIso]. */
+  listByOpenedAtRange(fromIso: string, toIso: string): Promise<CashSession[]>;
   create(input: OpenCashSessionInput): Promise<CashSession>;
   close(input: CloseCashSessionInput): Promise<CashSession>;
   getSessionTotals(sessionId: string): Promise<CashSessionTotals>;
