@@ -211,12 +211,59 @@ Tablas mínimas (ajustar nombres al dominio, sin inventar ERP):
 - [x] Modal/pantalla abrir
 - [x] Modal cerrar con resumen del turno
 - [x] Indicador “Caja abierta” en header/dashboard
+- [x] Store global de caja (sync header / dashboard / POS)
 
 ## QA-005 · Caja `[P0]` `doing`
 
 - [x] No vender sin sesión abierta (`requireOpenSession`)
 - [x] Cierre registra totales del período
 - [x] Reapertura solo tras cierre
+- [x] Abrir desde header actualiza dashboard y viceversa (mismo store)
+
+---
+
+# Fase 4b — Corte del día / rentabilidad
+
+## BE-009b · Día operativo + DayCutService `[P0]` `done`
+
+- [x] Día operativo = localDate(openedAt)
+- [x] Resumen por día: ventas, pagos, base, ganancia, top 6
+- [x] Costo opcional + snapshot en sale_items
+- [x] Ganancia parcial cuando faltan costos
+
+## FE-006b · UI Corte + reloj `[P0]` `done`
+
+- [x] Sección Corte con filtro por fecha
+- [x] Reloj fecha/hora en header
+- [x] Mostrar timestamp de apertura de caja
+
+## QA-005b · Corte checklist manual `[P0]` `doing`
+
+### Caso 1 — Jornada normal
+
+- [ ] Abrir sábado 16:30 → vender → cerrar sábado 23:00 → verificar corte del sábado
+
+### Caso 2 — Jornada overnight
+
+- [ ] Abrir sábado 16:30 → vender sábado → vender domingo 02:00 → cerrar domingo 05:00
+- [ ] Corte del sábado incluye TODAS las ventas; domingo no las incluye
+
+### Caso 3 — Costo
+
+- [ ] Producto precio $10.000 costo $6.000 · venta 2 uds → ganancia $8.000
+
+### Caso 4 — Sin costo
+
+- [ ] Venta permitida sin costo → corte marca ganancia parcial / líneas sin costo
+
+### Caso 5 — Cambio de costo
+
+- [ ] Vender con costo $5.000 → cambiar producto a $7.000 → snapshot de la venta sigue en $5.000
+
+### Caso 6 — Sync de caja
+
+- [ ] Admin abre caja → vendedor ve abierta sin reiniciar app
+- [ ] Admin cierra → vendedor ve cerrada
 
 ---
 

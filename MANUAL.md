@@ -190,22 +190,27 @@ docs/task-and-manual
 
 ## 7. Módulos del MVP (mapa mental)
 
+Login → Dashboard → Corte → POS → Ventas → Catálogo → Inventario → Usuarios → Ajustes → Backup → Tutorial.
+
+El **Corte** reporta la jornada por fecha de apertura de caja. Ventas totales ≠ ganancia (la ganancia depende de costos opcionales).
+
 | Módulo | Responsabilidad | Quién usa |
 |--------|-----------------|-----------|
 | `pos` | Vender | Admin + Vendedor |
 | `dashboard` | Indicadores del día | Ambos (vendedor reducido) |
-| `catalog` | Catálogo = venta (productos + categorías) | Admin |
+| `corte` | Resumen jornada (día operativo = openedAt) | Admin + Vendedor |
+| `catalog` | Catálogo = venta (productos + categorías + costo opcional) | Admin |
 | `inventory` | Inventario = bodega (stock + movimientos) | Admin |
 | `users` | Cuentas y roles | Admin |
-| `settings` | Tema / datos negocio | Admin |
+| `settings` | Tema / datos negocio / módulos (master) | Admin / Master |
 | `backup` | Backup / restore | Admin |
-| caja (`cash_sessions`) | Apertura/cierre | Según regla MVP (ambos típico) |
+| caja (`cash_sessions`) | Apertura/cierre global (store compartido) | Ambos |
 
 ### Roles de producto (app)
 
 - **Admin:** acceso completo.
-- **Vendedor:** ventas / historial / dashboard básico (sin catálogo, inventario, usuarios, backups).
-
+- **Vendedor:** dashboard, corte, POS, ventas, tutorial (sin catálogo, inventario, usuarios, backups).
+- **Master:** acceso total + menú Módulos (visibilidad).
 ### Flujos operativos (cliente / dummy)
 
 **Nota importante:** el cliente normalmente **no** entra a Inventario para crear productos de venta. Los crea desde **Catálogo**. Inventario es la bodega (stock, insumos, movimientos).
@@ -271,6 +276,15 @@ Nunca editar la cantidad “a mano” sin movimiento.
 
 - Debe existir sesión abierta para cobrar (MVP).
 - Apertura y cierre quedan auditados.
+- La caja es **global** (una sesión open para todos los usuarios).
+- Header, Dashboard y POS comparten el mismo estado de UI (`useCashSessionStore`).
+- Día operativo del corte = fecha local de apertura (`openedAt`), aunque el cierre sea al día siguiente.
+
+### Costos y ganancia
+
+- Costo de producto opcional.
+- Snapshot histórico en la venta.
+- Corte muestra ganancia completa o parcial (líneas sin costo).
 
 ### Backups
 
