@@ -99,11 +99,6 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
           <Badge variant={isOpen ? "success" : "secondary"}>
             {showLoading ? "Caja…" : isOpen ? "Caja abierta" : "Caja cerrada"}
           </Badge>
-          {isOpen && summary ? (
-            <span className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:inline">
-              Apertura: {formatCashDateTime(summary.session.openedAt)}
-            </span>
-          ) : null}
           {!showLoading && !isOpen ? (
             <Button size="sm" variant="outline" onClick={() => setOpenModal(true)}>
               Abrir
