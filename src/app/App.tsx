@@ -6,6 +6,7 @@ import { AppShell } from "@/layouts/app-shell";
 import { LoginForm } from "@/modules/auth/components/login-form";
 import { BackupsScreen } from "@/modules/backup/components/backups-screen";
 import { CatalogScreen } from "@/modules/catalog/components/catalog-screen";
+import { DayCutScreen } from "@/modules/corte/components/day-cut-screen";
 import { DashboardScreen } from "@/modules/dashboard/components/dashboard-screen";
 import { HelpScreen } from "@/modules/help/components/help-screen";
 import { InventoryScreen } from "@/modules/inventory/components/inventory-screen";
@@ -31,6 +32,8 @@ function SectionContent({
   switch (section) {
     case "dashboard":
       return <DashboardScreen />;
+    case "corte":
+      return <DayCutScreen />;
     case "pos":
       return <PosScreen />;
     case "sales":

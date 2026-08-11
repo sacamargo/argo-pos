@@ -63,6 +63,31 @@ export const HELP_MODULES: HelpModule[] = [
     ],
   },
   {
+    id: "corte",
+    title: "Corte / Resumen del día",
+    audience: "todos",
+    summary:
+      "Reporte de la jornada operativa: ventas, pagos, ganancia y top productos. El día es la fecha local de apertura de caja (aunque cierren después de medianoche).",
+    whenToUse: "Al cerrar el turno o para revisar un día anterior.",
+    fields: [
+      {
+        name: "Día operativo",
+        expects: "Fecha YYYY-MM-DD",
+        notes: "Filtra por openedAt de la caja, no por created_at de cada venta.",
+      },
+    ],
+    actions: [
+      {
+        name: "(solo lectura)",
+        does: "Muestra métricas del turno. No abre ni cierra caja.",
+      },
+    ],
+    tips: [
+      "Si faltan costos en productos, la ganancia se marca como parcial.",
+      "Una venta del domingo 02:00 con caja abierta el sábado cuenta para el sábado.",
+    ],
+  },
+  {
     id: "dashboard",
     title: "Dashboard",
     audience: "todos",

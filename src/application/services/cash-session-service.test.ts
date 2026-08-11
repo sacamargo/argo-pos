@@ -74,3 +74,38 @@ describe("CashSessionService.listByBusinessDay", () => {
     await expect(service.listByBusinessDay("nope")).rejects.toThrow("Fecha inválida");
   });
 });
+
+describe("cash session schemas", () => {
+  it("accepts a valid open payload", async () => {
+    const { openCashSessionSchema } = await import(
+      "@/application/services/cash-session-service"
+    );
+    const result = openCashSessionSchema.safeParse({
+      openedByUserId: "user-1",
+      openingAmountCents: 50000,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects negative opening amount", async () => {
+    const { openCashSessionSchema } = await import(
+      "@/application/services/cash-session-service"
+    );
+    const result = openCashSessionSchema.safeParse({
+      openedByUserId: "user-1",
+      openingAmountCents: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects fractional cents", async () => {
+    const { openCashSessionSchema } = await import(
+      "@/application/services/cash-session-service"
+    );
+    const result = openCashSessionSchema.safeParse({
+      openedByUserId: "user-1",
+      openingAmountCents: 10.5,
+    });
+    expect(result.success).toBe(false);
+  });
+});

@@ -6,6 +6,7 @@ import { CatalogMaintenanceService } from "@/application/services/catalog-mainte
 import { CatalogService } from "@/application/services/catalog-service";
 import { CategoryService } from "@/application/services/category-service";
 import { DashboardService } from "@/application/services/dashboard-service";
+import { DayCutService } from "@/application/services/day-cut-service";
 import { InventoryService } from "@/application/services/inventory-service";
 import { ProductImageService } from "@/application/services/product-image-service";
 import { ProductService } from "@/application/services/product-service";
@@ -66,6 +67,7 @@ export type AppServices = {
   sales: SaleService;
   saleQueries: SaleQueryService;
   dashboard: DashboardService;
+  dayCut: DayCutService;
   users: UserService;
   settings: SettingsService;
   backups: BackupService;
@@ -149,6 +151,7 @@ export async function getAppServices(): Promise<AppServices> {
     ),
     saleQueries: new SaleQueryService(sales, paymentMethods),
     dashboard: new DashboardService(sales, cashSessions, ingredients),
+    dayCut: new DayCutService(cashSessions, sales, users),
     users: new UserService(users),
     settings: new SettingsService(appSettings),
     backups: new BackupService(backups, new TauriBackupFileStore()),

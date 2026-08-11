@@ -14,7 +14,13 @@ describe("role permissions", () => {
     expect(canAccessSection("vendedor", "catalog")).toBe(false);
     expect(canAccessSection("vendedor", "users")).toBe(false);
     expect(canAccessSection("vendedor", "help")).toBe(true);
-    expect(sectionsForRole("vendedor")).toEqual(["dashboard", "pos", "sales", "help"]);
+    expect(sectionsForRole("vendedor")).toEqual([
+      "dashboard",
+      "corte",
+      "pos",
+      "sales",
+      "help",
+    ]);
   });
 
   it("allows admin full access by default", () => {

@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { paymentMethods, saleItems, saleReversals, sales } from "@/database/schema";
 import { users } from "@/database/schema/users";
 import type {
@@ -10,6 +10,7 @@ import type {
   SaleWithItems,
 } from "@/domain/entities/sale";
 import type {
+  CashSessionSalesAggregate,
   CreateSaleRecordInput,
   CreateSaleReversalInput,
   DaySalesSummary,
@@ -245,6 +246,106 @@ export class DrizzleSaleRepository implements SaleRepository {
         revenueCents: row.revenueCents,
       })),
       lastSale: completed[0] ?? null,
+    };
+  }
+
+  async summarizeByCashSessionIds(
+    sessionIds: string[],
+    topLimit = 6,
+  ): Promise<CashSessionSalesAggregate> {
+    if (sessionIds.length === 0) {
+      return {
+        salesCount: 0,
+        revenueCents: 0,
+        unitsSold: 0,
+        payments: [],
+        topProducts: [],
+        profitLines: [],
+      };
+    }
+
+    const sessionFilter = and(
+      inArray(sales.cashSessionId, sessionIds),
+      eq(sales.status, "completed"),
+    );
+
+    const [totals] = await this.db
+      .select({
+        salesCount: sql<number>`count(*)`.mapWith(Number),
+        revenueCents: sql<number>`coalesce(sum(${sales.totalCents}), 0)`.mapWith(Number),
+      })
+      .from(sales)
+      .where(sessionFilter);
+
+    const [units] = await this.db
+      .select({
+        unitsSold: sql<number>`coalesce(sum(${saleItems.quantity}), 0)`.mapWith(Number),
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(sessionFilter);
+
+    const paymentRows = await this.db
+      .select({
+        code: paymentMethods.code,
+        name: paymentMethods.name,
+        salesCount: sql<number>`count(*)`.mapWith(Number),
+        totalCents: sql<number>`coalesce(sum(${sales.totalCents}), 0)`.mapWith(Number),
+      })
+      .from(sales)
+      .innerJoin(paymentMethods, eq(sales.paymentMethodId, paymentMethods.id))
+      .where(sessionFilter)
+      .groupBy(paymentMethods.code, paymentMethods.name)
+      .orderBy(desc(sql`sum(${sales.totalCents})`));
+
+    const productRows = await this.db
+      .select({
+        productName: saleItems.productNameSnapshot,
+        quantity: sql<number>`coalesce(sum(${saleItems.quantity}), 0)`.mapWith(Number),
+        revenueCents: sql<number>`coalesce(sum(${saleItems.lineTotalCents}), 0)`.mapWith(
+          Number,
+        ),
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(sessionFilter)
+      .groupBy(saleItems.productNameSnapshot)
+      .orderBy(
+        desc(sql`sum(${saleItems.quantity})`),
+        desc(sql`sum(${saleItems.lineTotalCents})`),
+      )
+      .limit(topLimit);
+
+    const profitRows = await this.db
+      .select({
+        unitPriceCentsSnapshot: saleItems.unitPriceCentsSnapshot,
+        unitCostCentsSnapshot: saleItems.unitCostCentsSnapshot,
+        quantity: saleItems.quantity,
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .where(sessionFilter);
+
+    return {
+      salesCount: totals?.salesCount ?? 0,
+      revenueCents: totals?.revenueCents ?? 0,
+      unitsSold: units?.unitsSold ?? 0,
+      payments: paymentRows.map((row) => ({
+        code: row.code,
+        name: row.name,
+        salesCount: row.salesCount,
+        totalCents: row.totalCents,
+      })),
+      topProducts: productRows.map((row) => ({
+        productName: row.productName,
+        quantity: row.quantity,
+        revenueCents: row.revenueCents,
+      })),
+      profitLines: profitRows.map((row) => ({
+        unitPriceCentsSnapshot: row.unitPriceCentsSnapshot,
+        unitCostCentsSnapshot: row.unitCostCentsSnapshot,
+        quantity: row.quantity,
+      })),
     };
   }
 

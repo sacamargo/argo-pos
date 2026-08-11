@@ -57,6 +57,28 @@ export type DaySalesSummary = {
   lastSale: SaleListItem | null;
 };
 
+export type CashSessionSalesAggregate = {
+  salesCount: number;
+  revenueCents: number;
+  unitsSold: number;
+  payments: Array<{
+    code: string;
+    name: string;
+    salesCount: number;
+    totalCents: number;
+  }>;
+  topProducts: Array<{
+    productName: string;
+    quantity: number;
+    revenueCents: number;
+  }>;
+  profitLines: Array<{
+    unitPriceCentsSnapshot: number;
+    unitCostCentsSnapshot: number | null;
+    quantity: number;
+  }>;
+};
+
 export interface SaleRepository {
   create(input: CreateSaleRecordInput): Promise<Sale>;
   findByIdWithItems(id: string): Promise<SaleWithItems | null>;
@@ -64,6 +86,11 @@ export interface SaleRepository {
   listItems(saleId: string): Promise<SaleItem[]>;
   list(filter: ListSalesFilter): Promise<SaleListItem[]>;
   summarizeCompletedDay(fromIso: string, toIso: string): Promise<DaySalesSummary>;
+  /** Aggregate completed sales for one or more cash sessions (business day cut). */
+  summarizeByCashSessionIds(
+    sessionIds: string[],
+    topLimit?: number,
+  ): Promise<CashSessionSalesAggregate>;
   markReversed(saleId: string): Promise<Sale>;
   createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;
