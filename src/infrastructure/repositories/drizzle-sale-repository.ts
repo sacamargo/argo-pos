@@ -251,7 +251,6 @@ export class DrizzleSaleRepository implements SaleRepository {
 
   async summarizeByCashSessionIds(
     sessionIds: string[],
-    topLimit = 6,
   ): Promise<CashSessionSalesAggregate> {
     if (sessionIds.length === 0) {
       return {
@@ -259,7 +258,7 @@ export class DrizzleSaleRepository implements SaleRepository {
         revenueCents: 0,
         unitsSold: 0,
         payments: [],
-        topProducts: [],
+        soldProducts: [],
         profitLines: [],
       };
     }
@@ -300,21 +299,28 @@ export class DrizzleSaleRepository implements SaleRepository {
 
     const productRows = await this.db
       .select({
-        productName: saleItems.productNameSnapshot,
+        productId: saleItems.productId,
+        productName: sql<string>`max(${saleItems.productNameSnapshot})`.mapWith(String),
         quantity: sql<number>`coalesce(sum(${saleItems.quantity}), 0)`.mapWith(Number),
         revenueCents: sql<number>`coalesce(sum(${saleItems.lineTotalCents}), 0)`.mapWith(
           Number,
         ),
+        missingCostLines: sql<number>`coalesce(sum(case when ${saleItems.unitCostCentsSnapshot} is null then 1 else 0 end), 0)`.mapWith(
+          Number,
+        ),
+        productCostCents: sql<number | null>`max(${products.costCents})`.mapWith(
+          (value) => (value === null || value === undefined ? null : Number(value)),
+        ),
       })
       .from(saleItems)
       .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .leftJoin(products, eq(saleItems.productId, products.id))
       .where(sessionFilter)
-      .groupBy(saleItems.productNameSnapshot)
+      .groupBy(saleItems.productId)
       .orderBy(
         desc(sql`sum(${saleItems.quantity})`),
         desc(sql`sum(${saleItems.lineTotalCents})`),
-      )
-      .limit(topLimit);
+      );
 
     const profitRows = await this.db
       .select({
@@ -336,10 +342,13 @@ export class DrizzleSaleRepository implements SaleRepository {
         salesCount: row.salesCount,
         totalCents: row.totalCents,
       })),
-      topProducts: productRows.map((row) => ({
+      soldProducts: productRows.map((row) => ({
+        productId: row.productId,
         productName: row.productName,
         quantity: row.quantity,
         revenueCents: row.revenueCents,
+        missingCostLines: row.missingCostLines,
+        productCostCents: row.productCostCents,
       })),
       profitLines: profitRows.map((row) => ({
         unitPriceCentsSnapshot: row.unitPriceCentsSnapshot,
@@ -349,9 +358,22 @@ export class DrizzleSaleRepository implements SaleRepository {
     };
   }
 
-  async backfillMissingCostsForSessionIds(sessionIds: string[]): Promise<number> {
+  async backfillMissingCostsForSessionIds(
+    sessionIds: string[],
+    productId?: string,
+  ): Promise<number> {
     if (sessionIds.length === 0) {
       return 0;
+    }
+
+    const filters = [
+      inArray(sales.cashSessionId, sessionIds),
+      eq(sales.status, "completed"),
+      isNull(saleItems.unitCostCentsSnapshot),
+      isNotNull(products.costCents),
+    ];
+    if (productId) {
+      filters.push(eq(saleItems.productId, productId));
     }
 
     const candidates = await this.db
@@ -362,14 +384,7 @@ export class DrizzleSaleRepository implements SaleRepository {
       .from(saleItems)
       .innerJoin(sales, eq(saleItems.saleId, sales.id))
       .innerJoin(products, eq(saleItems.productId, products.id))
-      .where(
-        and(
-          inArray(sales.cashSessionId, sessionIds),
-          eq(sales.status, "completed"),
-          isNull(saleItems.unitCostCentsSnapshot),
-          isNotNull(products.costCents),
-        ),
-      );
+      .where(and(...filters));
 
     for (const row of candidates) {
       if (row.costCents === null) {

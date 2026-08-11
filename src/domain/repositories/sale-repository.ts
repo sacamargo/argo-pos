@@ -67,10 +67,13 @@ export type CashSessionSalesAggregate = {
     salesCount: number;
     totalCents: number;
   }>;
-  topProducts: Array<{
+  soldProducts: Array<{
+    productId: string | null;
     productName: string;
     quantity: number;
     revenueCents: number;
+    missingCostLines: number;
+    productCostCents: number | null;
   }>;
   profitLines: Array<{
     unitPriceCentsSnapshot: number;
@@ -87,15 +90,16 @@ export interface SaleRepository {
   list(filter: ListSalesFilter): Promise<SaleListItem[]>;
   summarizeCompletedDay(fromIso: string, toIso: string): Promise<DaySalesSummary>;
   /** Aggregate completed sales for one or more cash sessions (business day cut). */
-  summarizeByCashSessionIds(
-    sessionIds: string[],
-    topLimit?: number,
-  ): Promise<CashSessionSalesAggregate>;
+  summarizeByCashSessionIds(sessionIds: string[]): Promise<CashSessionSalesAggregate>;
   /**
    * Fill null unit_cost_cents_snapshot from current product.costCents
    * for completed sales in the given cash sessions. Never overwrites existing snapshots.
+   * Optional productId scopes the backfill to one product.
    */
-  backfillMissingCostsForSessionIds(sessionIds: string[]): Promise<number>;
+  backfillMissingCostsForSessionIds(
+    sessionIds: string[],
+    productId?: string,
+  ): Promise<number>;
   markReversed(saleId: string): Promise<Sale>;
   createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;

@@ -43,6 +43,8 @@ export interface ProductRepository {
   findByCode(code: string): Promise<ProductWithRecipe | null>;
   create(input: CreateProductInput): Promise<ProductWithRecipe>;
   update(input: UpdateProductInput): Promise<ProductWithRecipe>;
+  /** Sets catalog purchase cost only (centavos COP). */
+  updateCostCents(id: string, costCents: number): Promise<void>;
   setActive(id: string, active: boolean): Promise<Product>;
   listRecipeByProductId(productId: string): Promise<ProductRecipeItem[]>;
   /** Maintenance wipe: removes every recipe row. */

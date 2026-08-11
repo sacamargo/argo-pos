@@ -213,6 +213,14 @@ export class DrizzleProductRepository implements ProductRepository {
     return updated;
   }
 
+  async updateCostCents(id: string, costCents: number): Promise<void> {
+    const now = new Date().toISOString();
+    await this.db
+      .update(products)
+      .set({ costCents, updatedAt: now })
+      .where(eq(products.id, id));
+  }
+
   async setActive(id: string, active: boolean): Promise<Product> {
     const now = new Date().toISOString();
     await this.db

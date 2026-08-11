@@ -8,10 +8,15 @@ export type DayCutPaymentTotal = {
   totalCents: number;
 };
 
-export type DayCutTopProduct = {
+export type DayCutSoldProduct = {
+  productId: string | null;
   productName: string;
   quantity: number;
   revenueCents: number;
+  /** Líneas de venta del día sin unit_cost_cents_snapshot. */
+  missingCostLines: number;
+  /** Costo actual del producto en catálogo (null = sin precio de compra). */
+  productCostCents: number | null;
 };
 
 export type DayCutSessionInfo = {
@@ -31,5 +36,5 @@ export type DayCutSummary = {
   unitsSold: number;
   payments: DayCutPaymentTotal[];
   profit: ProfitSummary;
-  topProducts: DayCutTopProduct[];
+  soldProducts: DayCutSoldProduct[];
 };
