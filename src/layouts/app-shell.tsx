@@ -1,6 +1,7 @@
 import {
   Archive,
   BookOpen,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -27,6 +28,7 @@ import { cn } from "@/shared/lib/cn";
 
 const ICONS = {
   dashboard: LayoutDashboard,
+  corte: ClipboardList,
   pos: ShoppingCart,
   sales: Receipt,
   catalog: Package,

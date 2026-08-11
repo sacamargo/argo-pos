@@ -23,6 +23,7 @@ export function defaultModuleVisibility(): ModuleVisibilityConfig {
     vendedor: {
       ...allSections(false),
       dashboard: true,
+      corte: true,
       pos: true,
       sales: true,
       help: true,

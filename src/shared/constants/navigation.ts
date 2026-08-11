@@ -1,5 +1,6 @@
 export type AppSection =
   | "dashboard"
+  | "corte"
   | "pos"
   | "sales"
   | "catalog"
@@ -17,6 +18,7 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", label: "Dashboard", description: "Indicadores del día" },
+  { id: "corte", label: "Corte", description: "Resumen del día operativo" },
   { id: "pos", label: "POS", description: "Vender en caja" },
   { id: "sales", label: "Ventas", description: "Historial de ventas" },
   { id: "catalog", label: "Catálogo", description: "Productos y categorías" },
