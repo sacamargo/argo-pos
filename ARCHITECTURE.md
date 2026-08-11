@@ -572,7 +572,18 @@ Productos vendidos.
 
 Última venta.
 
-Caja abierta.
+Caja abierta (estado compartido en UI vía store global).
+
+---
+
+# Corte / Resumen del día
+
+Módulo de consulta (no reemplaza abrir/cerrar caja).
+
+- Filtra por **día operativo** = fecha local de `cash_sessions.openedAt`.
+- Una jornada que abre sábado 16:30 y cierra domingo 05:00 cuenta para el **sábado**.
+- Métricas: nº ventas, ventas totales, efectivo, transferencia (y otros métodos), base de caja, ganancia, top 6.
+- Ganancia usa `sale_items.unit_cost_cents_snapshot` (histórico). Si faltan costos → **ganancia parcial**.
 
 ---
 
@@ -598,12 +609,15 @@ Responsable de **todo lo que puede venderse** en el POS.
 Cada producto tiene:
 
 - Nombre
-- Precio
+- Precio de venta
+- Costo opcional (`cost_cents`, nullable — no bloquea vender)
 - Categoría
 - Imagen
 - Tipo: **Simple** o **Compuesto** (en dominio: `simple` / `compound`)
 - Estado (activo / inactivo)
 - `code` interno único (ej. `PROD-7BC221`) — auto-generado; no visible en UI; base del upsert Excel
+
+Al vender, el costo vigente se congela en `sale_items.unit_cost_cents_snapshot`. Cambios posteriores del producto no alteran ventas históricas.
 
 ## Producto Simple
 
@@ -770,13 +784,14 @@ Sin reescribir el proyecto.
 
 - Login
 - Dashboard
+- Corte / Resumen del día
 - POS
 - Carrito
 - Cobro
 - Cambio
 - Historial
 - Anulación
-- Productos
+- Productos (con costo opcional)
 - Categorías
 - Inventario
 - Usuarios
@@ -786,6 +801,8 @@ Sin reescribir el proyecto.
 - Restauración
 - Apertura de caja
 - Cierre de caja
+- Reloj fecha/hora en header
+- Sync global de estado de caja (header / dashboard / POS)
 
 ---
 
