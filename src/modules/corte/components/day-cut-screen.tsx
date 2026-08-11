@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAppServices } from "@/application/container";
 import type { DayCutSummary } from "@/domain/entities/day-cut";
+import { isAdminLike } from "@/domain/services/permissions";
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
   Input,
+  Modal,
   Table,
   TableBody,
   TableCell,
@@ -16,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components";
+import { useSessionStore } from "@/shared/hooks/use-session";
 import { notify } from "@/shared/hooks/use-toast";
 import { todayLocalDateInput } from "@/shared/utils/date";
 import { getErrorMessage } from "@/shared/utils/error-message";
@@ -32,10 +36,14 @@ function formatDateTime(iso: string | null): string {
 }
 
 export function DayCutScreen() {
+  const user = useSessionStore((state) => state.user);
+  const canBackfill = user ? isAdminLike(user.role) : false;
   const [date, setDate] = useState(todayLocalDateInput);
   const [summary, setSummary] = useState<DayCutSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [backfillOpen, setBackfillOpen] = useState(false);
+  const [backfillBusy, setBackfillBusy] = useState(false);
 
   const reload = useCallback(async () => {
     const { dayCut } = await getAppServices();
@@ -67,9 +75,40 @@ export function DayCutScreen() {
     };
   }, [reload]);
 
+  const runBackfill = async () => {
+    setBackfillBusy(true);
+    try {
+      const { dayCut } = await getAppServices();
+      const result = await dayCut.backfillMissingCosts({ date });
+      setSummary(result.summary);
+      setBackfillOpen(false);
+      if (result.updatedLines === 0) {
+        notify({
+          tone: "warning",
+          title: "Sin cambios",
+          description:
+            "No había líneas para completar (falta costo en el producto o ya estaban llenas).",
+        });
+      } else {
+        notify({
+          tone: "success",
+          title: "Costos completados",
+          description: `${result.updatedLines} línea${result.updatedLines === 1 ? "" : "s"} actualizada${result.updatedLines === 1 ? "" : "s"}.`,
+        });
+      }
+    } catch (err) {
+      const message = getErrorMessage(err, "No se pudieron completar los costos");
+      notify({ tone: "error", title: "Completar costos", description: message });
+    } finally {
+      setBackfillBusy(false);
+    }
+  };
+
   const hasSessions = (summary?.sessions.length ?? 0) > 0;
   const cashPayment = summary?.payments.find((p) => p.code === "cash");
   const transferPayment = summary?.payments.find((p) => p.code === "transfer");
+  const showBackfill =
+    canBackfill && hasSessions && (summary?.profit.missingCostLines ?? 0) > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -130,7 +169,7 @@ export function DayCutScreen() {
                   {formatPesos(summary.profit.profitCents)}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
                 {summary.profit.missingCostLines === 0 && summary.salesCount > 0 ? (
                   <Badge variant="success">Ganancia completa</Badge>
                 ) : (
@@ -141,6 +180,16 @@ export function DayCutScreen() {
                       : ""}
                   </span>
                 )}
+                {showBackfill ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setBackfillOpen(true)}
+                  >
+                    Completar costos
+                  </Button>
+                ) : null}
               </CardContent>
             </Card>
             <Card>
@@ -278,6 +327,30 @@ export function DayCutScreen() {
           </Card>
         </>
       ) : null}
+
+      <Modal
+        open={backfillOpen}
+        title="Completar costos faltantes"
+        description="Rellena el costo en las ventas de este día que no lo tenían, usando el costo actual del producto. No cambia líneas que ya tenían costo."
+        onClose={() => {
+          if (!backfillBusy) {
+            setBackfillOpen(false);
+          }
+        }}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            disabled={backfillBusy}
+            onClick={() => setBackfillOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button disabled={backfillBusy} onClick={() => void runBackfill()}>
+            {backfillBusy ? "Completando…" : "Completar"}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

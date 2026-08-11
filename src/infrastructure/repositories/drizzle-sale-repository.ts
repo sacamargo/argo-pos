@@ -1,5 +1,5 @@
-import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import { paymentMethods, saleItems, saleReversals, sales } from "@/database/schema";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
+import { paymentMethods, products, saleItems, saleReversals, sales } from "@/database/schema";
 import { users } from "@/database/schema/users";
 import type {
   Sale,
@@ -347,6 +347,41 @@ export class DrizzleSaleRepository implements SaleRepository {
         quantity: row.quantity,
       })),
     };
+  }
+
+  async backfillMissingCostsForSessionIds(sessionIds: string[]): Promise<number> {
+    if (sessionIds.length === 0) {
+      return 0;
+    }
+
+    const candidates = await this.db
+      .select({
+        id: saleItems.id,
+        costCents: products.costCents,
+      })
+      .from(saleItems)
+      .innerJoin(sales, eq(saleItems.saleId, sales.id))
+      .innerJoin(products, eq(saleItems.productId, products.id))
+      .where(
+        and(
+          inArray(sales.cashSessionId, sessionIds),
+          eq(sales.status, "completed"),
+          isNull(saleItems.unitCostCentsSnapshot),
+          isNotNull(products.costCents),
+        ),
+      );
+
+    for (const row of candidates) {
+      if (row.costCents === null) {
+        continue;
+      }
+      await this.db
+        .update(saleItems)
+        .set({ unitCostCentsSnapshot: row.costCents })
+        .where(eq(saleItems.id, row.id));
+    }
+
+    return candidates.length;
   }
 
   async markReversed(saleId: string): Promise<Sale> {

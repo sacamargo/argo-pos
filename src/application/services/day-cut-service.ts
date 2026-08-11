@@ -83,4 +83,26 @@ export class DayCutService {
       topProducts: aggregate.topProducts,
     };
   }
+
+  /**
+   * Completa snapshots de costo faltantes del día operativo con el costo actual
+   * del producto. No sobrescribe costos ya congelados.
+   */
+  async backfillMissingCosts(raw: unknown): Promise<{
+    updatedLines: number;
+    summary: DayCutSummary;
+  }> {
+    const input = dayCutQuerySchema.parse(raw);
+    const { fromIso, toIso } = localDayBounds(input.date);
+    const sessions = await this.cashSessions.listByOpenedAtRange(fromIso, toIso);
+    if (sessions.length === 0) {
+      throw new Error("No hay jornada de caja para este día.");
+    }
+
+    const updatedLines = await this.sales.backfillMissingCostsForSessionIds(
+      sessions.map((session) => session.id),
+    );
+    const summary = await this.getDaySummary({ date: input.date });
+    return { updatedLines, summary };
+  }
 }

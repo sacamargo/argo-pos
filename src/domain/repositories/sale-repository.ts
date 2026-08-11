@@ -91,6 +91,11 @@ export interface SaleRepository {
     sessionIds: string[],
     topLimit?: number,
   ): Promise<CashSessionSalesAggregate>;
+  /**
+   * Fill null unit_cost_cents_snapshot from current product.costCents
+   * for completed sales in the given cash sessions. Never overwrites existing snapshots.
+   */
+  backfillMissingCostsForSessionIds(sessionIds: string[]): Promise<number>;
   markReversed(saleId: string): Promise<Sale>;
   createReversal(input: CreateSaleReversalInput): Promise<SaleReversal>;
   findReversalBySaleId(saleId: string): Promise<SaleReversal | null>;
