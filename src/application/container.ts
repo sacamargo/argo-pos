@@ -151,7 +151,7 @@ export async function getAppServices(): Promise<AppServices> {
     ),
     saleQueries: new SaleQueryService(sales, paymentMethods),
     dashboard: new DashboardService(sales, cashSessions, ingredients),
-    dayCut: new DayCutService(cashSessions, sales, users),
+    dayCut: new DayCutService(cashSessions, sales, users, products),
     users: new UserService(users),
     settings: new SettingsService(appSettings),
     backups: new BackupService(backups, new TauriBackupFileStore()),
