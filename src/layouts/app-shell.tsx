@@ -20,6 +20,7 @@ import type { PublicUser } from "@/domain/entities/user";
 import { canAccessSection } from "@/domain/services/permissions";
 import { CashSessionControls } from "@/modules/cash/components/cash-session-controls";
 import { BrandAvatar } from "@/modules/shared/components/brand-avatar";
+import { SystemClock } from "@/modules/shared/components/system-clock";
 import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
 import { useModuleVisibilityStore } from "@/shared/hooks/use-module-visibility";
@@ -82,6 +83,7 @@ export function AppShell({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <SystemClock />
           <CashSessionControls compact />
           <Button
             variant="outline"
