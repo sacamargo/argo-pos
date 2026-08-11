@@ -16,6 +16,7 @@ import { UsersScreen } from "@/modules/users/components/users-screen";
 import { PlaceholderScreen } from "@/modules/shared/components/placeholder-screen";
 import { formatAppTitle } from "@/shared/constants/branding";
 import { NAV_ITEMS, type AppSection } from "@/shared/constants/navigation";
+import { useCashSessionStore } from "@/shared/hooks/use-cash-session";
 import { useModuleVisibilityStore } from "@/shared/hooks/use-module-visibility";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import type { PublicUser } from "@/domain/entities/user";
@@ -60,6 +61,7 @@ export function App() {
   const clearSession = useSessionStore((state) => state.clearSession);
   const moduleConfig = useModuleVisibilityStore((state) => state.config);
   const hydrateModules = useModuleVisibilityStore((state) => state.hydrate);
+  const refreshCash = useCashSessionStore((state) => state.refresh);
 
   const [section, setSection] = useState<AppSection>("dashboard");
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
@@ -87,7 +89,10 @@ export function App() {
       return;
     }
     void hydrateModules();
-  }, [user, dbStatus?.ready, hydrateModules]);
+    void refreshCash().catch(() => {
+      // El store guarda el error; la UI de caja lo muestra.
+    });
+  }, [user, dbStatus?.ready, hydrateModules, refreshCash]);
 
   if (!hydrated || !dbStatus) {
     return (

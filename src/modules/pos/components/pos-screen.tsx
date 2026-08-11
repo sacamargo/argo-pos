@@ -16,19 +16,22 @@ import { PaymentModal, SaleSuccessModal } from "@/modules/pos/components/payment
 import { PosCart } from "@/modules/pos/components/pos-cart";
 import { PosCategories } from "@/modules/pos/components/pos-categories";
 import { PosProductGrid } from "@/modules/pos/components/pos-product-grid";
+import { useCashSessionStore } from "@/shared/hooks/use-cash-session";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import { getErrorMessage } from "@/shared/utils/error-message";
 import { notify } from "@/shared/hooks/use-toast";
 
 export function PosScreen() {
   const user = useSessionStore((state) => state.user);
+  const cashSummary = useCashSessionStore((state) => state.summary);
+  const refreshCash = useCashSessionStore((state) => state.refresh);
+  const cashOpen = cashSummary?.session.status === "open";
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart>(emptyCart());
   const [loading, setLoading] = useState(true);
-  const [cashOpen, setCashOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payOpen, setPayOpen] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
@@ -40,11 +43,10 @@ export function PosScreen() {
     void (async () => {
       try {
         const services = await getAppServices();
-        const [categoryRows, productRows, methodRows, openSession] = await Promise.all([
+        const [categoryRows, productRows, methodRows] = await Promise.all([
           services.categories.listActive(),
           services.products.listActive(),
           services.sales.listPaymentMethods(),
-          services.cashSessions.getOpenSession(),
         ]);
         if (cancelled) {
           return;
@@ -52,7 +54,7 @@ export function PosScreen() {
         setCategories(categoryRows);
         setProducts(productRows);
         setMethods(methodRows);
-        setCashOpen(Boolean(openSession));
+        await refreshCash();
       } catch {
         if (!cancelled) {
           setError("No se pudo cargar el POS.");
@@ -66,7 +68,7 @@ export function PosScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshCash]);
 
   const visibleProducts = useMemo(
     () =>
@@ -86,10 +88,9 @@ export function PosScreen() {
     setBusy(true);
     setPayError(null);
     try {
-      const { sales, cashSessions } = await getAppServices();
-      const openSession = await cashSessions.getOpenSession();
-      if (!openSession) {
-        setCashOpen(false);
+      const { sales } = await getAppServices();
+      await refreshCash();
+      if (useCashSessionStore.getState().summary?.session.status !== "open") {
         throw new Error("No hay caja abierta. Abre la caja antes de cobrar.");
       }
       const sale = await sales.createSale({
