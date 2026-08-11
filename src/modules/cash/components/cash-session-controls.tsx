@@ -6,6 +6,7 @@ import { OpenCashModal } from "@/modules/cash/components/open-cash-modal";
 import { useCashSessionStore } from "@/shared/hooks/use-cash-session";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import { notify } from "@/shared/hooks/use-toast";
+import { formatCashDateTime } from "@/shared/utils/format-datetime";
 import { formatPesos } from "@/shared/utils/money";
 
 type CashSessionControlsProps = {
@@ -98,6 +99,11 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
           <Badge variant={isOpen ? "success" : "secondary"}>
             {showLoading ? "Caja…" : isOpen ? "Caja abierta" : "Caja cerrada"}
           </Badge>
+          {isOpen && summary ? (
+            <span className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:inline">
+              Apertura: {formatCashDateTime(summary.session.openedAt)}
+            </span>
+          ) : null}
           {!showLoading && !isOpen ? (
             <Button size="sm" variant="outline" onClick={() => setOpenModal(true)}>
               Abrir
@@ -145,10 +151,13 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
             </Badge>
           </div>
           {isOpen && summary ? (
-            <p className="text-sm text-muted-foreground">
-              Apertura {formatPesos(summary.session.openingAmountCents)} · Esperado{" "}
-              {formatPesos(summary.expectedCashCents)} · {summary.totals.salesCount} ventas
-            </p>
+            <div className="space-y-0.5 text-sm text-muted-foreground">
+              <p>
+                Apertura {formatPesos(summary.session.openingAmountCents)} · Esperado{" "}
+                {formatPesos(summary.expectedCashCents)} · {summary.totals.salesCount} ventas
+              </p>
+              <p>Apertura: {formatCashDateTime(summary.session.openedAt)}</p>
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               Abre la caja para poder cobrar en el POS.
