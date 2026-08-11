@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAppServices } from "@/application/container";
-import type { CashSessionSummary } from "@/domain/entities/cash-session";
 import { Badge, Button } from "@/components";
 import { CloseCashModal } from "@/modules/cash/components/close-cash-modal";
 import { OpenCashModal } from "@/modules/cash/components/open-cash-modal";
+import { useCashSessionStore } from "@/shared/hooks/use-cash-session";
 import { useSessionStore } from "@/shared/hooks/use-session";
 import { notify } from "@/shared/hooks/use-toast";
 import { formatPesos } from "@/shared/utils/money";
@@ -14,38 +14,26 @@ type CashSessionControlsProps = {
 
 export function CashSessionControls({ compact = false }: CashSessionControlsProps) {
   const user = useSessionStore((state) => state.user);
-  const [summary, setSummary] = useState<CashSessionSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const summary = useCashSessionStore((state) => state.summary);
+  const loading = useCashSessionStore((state) => state.loading);
+  const hydrated = useCashSessionStore((state) => state.hydrated);
+  const storeError = useCashSessionStore((state) => state.error);
+  const refresh = useCashSessionStore((state) => state.refresh);
+  const openSession = useCashSessionStore((state) => state.openSession);
+  const closeSession = useCashSessionStore((state) => state.closeSession);
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [closeModal, setCloseModal] = useState(false);
 
-  const reload = useCallback(async () => {
-    const { cashSessions } = await getAppServices();
-    const next = await cashSessions.getOpenSummary();
-    setSummary(next);
-  }, []);
-
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await reload();
-      } catch {
-        if (!cancelled) {
-          setError("No se pudo cargar el estado de caja.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [reload]);
+    if (!hydrated) {
+      void refresh().catch(() => {
+        // El store ya guarda el mensaje de error.
+      });
+    }
+  }, [hydrated, refresh]);
 
   const handleOpen = async (openingAmountCents: number, note?: string) => {
     if (!user) {
@@ -54,14 +42,12 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
     setBusy(true);
     setError(null);
     try {
-      const { cashSessions } = await getAppServices();
-      await cashSessions.openSession({
+      await openSession({
         openedByUserId: user.id,
         openingAmountCents,
         note,
       });
       setOpenModal(false);
-      await reload();
       notify({ tone: "success", title: "Caja abierta" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo abrir la caja";
@@ -79,19 +65,18 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
     setBusy(true);
     setError(null);
     try {
-      const { cashSessions, backups } = await getAppServices();
-      await cashSessions.closeSession({
+      await closeSession({
         closedByUserId: user.id,
         closingAmountCents,
         note,
       });
       try {
+        const { backups } = await getAppServices();
         await backups.createBackup({ note: "Auto al cerrar caja" });
       } catch {
         // El cierre ya quedó; no bloquear por fallo de backup.
       }
       setCloseModal(false);
-      await reload();
       notify({ tone: "success", title: "Caja cerrada" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo cerrar la caja";
@@ -103,20 +88,22 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
   };
 
   const isOpen = summary?.session.status === "open";
+  const showLoading = loading && !hydrated;
+  const displayError = error ?? (!openModal && !closeModal ? storeError : null);
 
   if (compact) {
     return (
       <>
         <div className="flex items-center gap-2">
           <Badge variant={isOpen ? "success" : "secondary"}>
-            {loading ? "Caja…" : isOpen ? "Caja abierta" : "Caja cerrada"}
+            {showLoading ? "Caja…" : isOpen ? "Caja abierta" : "Caja cerrada"}
           </Badge>
-          {!loading && !isOpen ? (
+          {!showLoading && !isOpen ? (
             <Button size="sm" variant="outline" onClick={() => setOpenModal(true)}>
               Abrir
             </Button>
           ) : null}
-          {!loading && isOpen ? (
+          {!showLoading && isOpen ? (
             <Button size="sm" variant="outline" onClick={() => setCloseModal(true)}>
               Cerrar
             </Button>
@@ -154,7 +141,7 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
           <div className="flex items-center gap-2">
             <h2 className="text-base font-semibold">Caja</h2>
             <Badge variant={isOpen ? "success" : "secondary"}>
-              {loading ? "…" : isOpen ? "Abierta" : "Cerrada"}
+              {showLoading ? "…" : isOpen ? "Abierta" : "Cerrada"}
             </Badge>
           </div>
           {isOpen && summary ? (
@@ -167,17 +154,21 @@ export function CashSessionControls({ compact = false }: CashSessionControlsProp
               Abre la caja para poder cobrar en el POS.
             </p>
           )}
-          {error && !openModal && !closeModal ? (
-            <p className="text-sm text-destructive">{error}</p>
+          {displayError ? (
+            <p className="text-sm text-destructive">{displayError}</p>
           ) : null}
         </div>
         <div className="flex gap-2">
           {!isOpen ? (
-            <Button onClick={() => setOpenModal(true)} disabled={loading}>
+            <Button onClick={() => setOpenModal(true)} disabled={showLoading}>
               Abrir caja
             </Button>
           ) : (
-            <Button variant="outline" onClick={() => setCloseModal(true)} disabled={loading}>
+            <Button
+              variant="outline"
+              onClick={() => setCloseModal(true)}
+              disabled={showLoading}
+            >
               Cerrar caja
             </Button>
           )}
